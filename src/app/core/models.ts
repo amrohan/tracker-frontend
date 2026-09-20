@@ -1,18 +1,65 @@
 export type FieldType =
-  | 'text' | 'longText' | 'number' | 'currency' | 'date' | 'dateTime' | 'boolean'
-  | 'select' | 'multiSelect' | 'rating' | 'reference' | 'multiReference' | 'url';
-export type AggregationType = 'none' | 'count' | 'sum' | 'average' | 'min' | 'max';
-export type CoverType = 'none' | 'gradient' | 'color' | 'image';
-export type ValueKind = 'text' | 'number' | 'date' | 'dateTime' | 'boolean' | 'choice' | 'multiChoice';
+  | "text"
+  | "longText"
+  | "number"
+  | "currency"
+  | "date"
+  | "dateTime"
+  | "boolean"
+  | "select"
+  | "multiSelect"
+  | "rating"
+  | "reference"
+  | "multiReference"
+  | "url";
+export type AggregationType =
+  | "none"
+  | "count"
+  | "sum"
+  | "average"
+  | "min"
+  | "max";
+export type CoverType = "none" | "gradient" | "color" | "image";
+export type ValueKind =
+  | "text"
+  | "number"
+  | "date"
+  | "dateTime"
+  | "boolean"
+  | "choice"
+  | "multiChoice";
 export type FilterOperator =
-  | 'contains' | 'notContains' | 'equal' | 'notEqual' | 'startsWith'
-  | 'greaterThan' | 'greaterThanOrEqual' | 'lessThan' | 'lessThanOrEqual'
-  | 'between' | 'before' | 'after' | 'isEmpty' | 'isNotEmpty';
+  | "contains"
+  | "notContains"
+  | "equal"
+  | "notEqual"
+  | "startsWith"
+  | "greaterThan"
+  | "greaterThanOrEqual"
+  | "lessThan"
+  | "lessThanOrEqual"
+  | "between"
+  | "before"
+  | "after"
+  | "isEmpty"
+  | "isNotEmpty";
 
-export interface User { id: string; email: string; displayName: string; }
-export interface AuthResponse { accessToken: string; expiresAt: string; user: User; }
+export interface User {
+  id: string;
+  email: string;
+  displayName: string;
+}
+export interface AuthResponse {
+  accessToken: string;
+  expiresAt: string;
+  user: User;
+}
 
-export interface Cover { type: CoverType; value?: string | null; version?: number | null; }
+export interface Cover {
+  type: CoverType;
+  value?: string | null;
+  version?: number | null;
+}
 
 export interface FieldConfig {
   options?: string[] | null;
@@ -38,50 +85,136 @@ export interface Field {
 }
 
 export interface CollectionSummary {
-  id: string; name: string; description?: string | null; icon: string; cover: Cover;
-  recordCount: number; fieldCount: number; lastActivityAt?: string | null;
-  createdAt: string; updatedAt: string;
+  id: string;
+  name: string;
+  description?: string | null;
+  icon: string;
+  cover: Cover;
+  recordCount: number;
+  fieldCount: number;
+  lastActivityAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CollectionDetail {
-  id: string; name: string; description?: string | null; icon: string; cover: Cover;
-  recordCount: number; lastActivityAt?: string | null; createdAt: string; updatedAt: string;
+  id: string;
+  name: string;
+  description?: string | null;
+  icon: string;
+  cover: Cover;
+  recordCount: number;
+  lastActivityAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
   fields: Field[];
 }
 
 export interface FieldTypeInfo {
-  type: FieldType; label: string; kind: ValueKind;
-  operators: FilterOperator[]; aggregations: AggregationType[];
-  sortable: boolean; convertibleTo: FieldType[];
+  type: FieldType;
+  label: string;
+  kind: ValueKind;
+  operators: FilterOperator[];
+  aggregations: AggregationType[];
+  sortable: boolean;
+  convertibleTo: FieldType[];
 }
 
 export interface TrackerRecord {
-  id: string; collectionId: string; values: Record<string, unknown>;
-  createdAt: string; updatedAt: string; version: number;
+  id: string;
+  collectionId: string;
+  values: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+  version: number;
 }
-export interface RecordReference { id: string; collectionId: string; label: string; }
+export interface RecordReference {
+  id: string;
+  collectionId: string;
+  label: string;
+}
 export interface RecordList {
-  items: TrackerRecord[]; total: number; page: number; pageSize: number;
+  items: TrackerRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
   references: Record<string, RecordReference>;
 }
-export interface RecordDetail { record: TrackerRecord; references: Record<string, RecordReference>; }
-export interface LookupItem { id: string; label: string; }
+export interface RecordDetail {
+  record: TrackerRecord;
+  references: Record<string, RecordReference>;
+}
+export interface LookupItem {
+  id: string;
+  label: string;
+}
 
 export interface SummaryMetric {
-  fieldId: string; fieldName: string; fieldType: FieldType; aggregation: AggregationType;
-  currency?: string | null; value?: number | string | null;
+  fieldId: string;
+  fieldName: string;
+  fieldType: FieldType;
+  aggregation: AggregationType;
+  currency?: string | null;
+  value?: number | string | null;
 }
-export interface SummaryReport { recordCount: number; lastActivityAt?: string | null; metrics: SummaryMetric[]; }
+export interface SummaryReport {
+  recordCount: number;
+  lastActivityAt?: string | null;
+  metrics: SummaryMetric[];
+}
 
-export interface ApiFilter { fieldId: string; operator: FilterOperator; value?: unknown; value2?: unknown; }
+export interface ApiFilter {
+  fieldId: string;
+  operator: FilterOperator;
+  value?: unknown;
+  value2?: unknown;
+}
 
 export interface FieldInput {
-  name: string; type: FieldType; required: boolean; config: FieldConfig | null;
-  aggregation: AggregationType; isTitle: boolean; showInList: boolean; description: string | null;
+  name: string;
+  type: FieldType;
+  required: boolean;
+  config: FieldConfig | null;
+  aggregation: AggregationType;
+  isTitle: boolean;
+  showInList: boolean;
+  description: string | null;
 }
 
 /** What the cover picker returns. */
 export type CoverSelection =
-  | { type: 'none' }
-  | { type: 'gradient' | 'color'; value: string }
-  | { type: 'image'; blob: Blob };
+  | { type: "none" }
+  | { type: "gradient" | "color"; value: string }
+  | { type: "image"; blob: Blob };
+
+export type MissingPolicy = "error" | "skip" | "create";
+
+export interface ImportRequest {
+  mappings: {
+    column: number;
+    fieldId: string;
+    dateOrder: string | null;
+    decimalComma: boolean;
+  }[];
+  rows: (string | null)[][];
+  options: {
+    skipInvalidRows: boolean;
+    missingReference: MissingPolicy;
+    missingOption: MissingPolicy;
+    timeZone: string;
+  };
+  dryRun: boolean;
+}
+export interface ImportRowError {
+  row: number;
+  field: string;
+  message: string;
+}
+export interface ImportResult {
+  total: number;
+  valid: number;
+  imported: number;
+  errorCount: number;
+  errors: ImportRowError[];
+  committed: boolean;
+}
