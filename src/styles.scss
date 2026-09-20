@@ -1,0 +1,67 @@
+@use '@angular/material' as mat;
+
+// Material 3 theme. `color-scheme: light dark` + theme-type color-scheme => tokens use light-dark(),
+// so switching theme is just changing `color-scheme` on <html> (see ThemeService).
+html {
+  color-scheme: light dark;
+  @include mat.theme((
+    color: (
+      primary: mat.$cyan-palette,
+      tertiary: mat.$orange-palette,
+      theme-type: color-scheme,
+    ),
+    typography: (
+      plain-family: 'Figtree, system-ui, sans-serif',
+      brand-family: 'Bricolage Grotesque, Figtree, system-ui, sans-serif',
+      bold-weight: 700,
+      medium-weight: 600,
+      regular-weight: 400,
+    ),
+    density: 0,
+  ));
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font-family: var(--mat-sys-body-large-font, 'Figtree', system-ui, sans-serif);
+}
+
+h1, h2, h3 { font-family: var(--mat-sys-headline-large-font, 'Bricolage Grotesque', sans-serif); margin: 0; }
+
+a { color: var(--mat-sys-primary); }
+
+:focus-visible { outline: 2px solid var(--mat-sys-primary); outline-offset: 2px; }
+
+// ---- shared layout helpers -------------------------------------------------
+.page { max-width: 1200px; margin: 0 auto; padding: 24px 20px 64px; }
+.page-narrow { max-width: 760px; margin: 0 auto; padding: 24px 20px 64px; }
+.row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.spacer { flex: 1 1 auto; }
+.muted { color: var(--mat-sys-on-surface-variant); }
+.field-error { color: var(--mat-sys-error); font-size: 0.85rem; margin: -10px 0 12px 4px; }
+.full { width: 100%; }
+.stack { display: grid; gap: 4px; }
+
+.surface-card {
+  background: var(--mat-sys-surface-container-low);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.empty-state {
+  text-align: center; padding: 56px 20px; color: var(--mat-sys-on-surface-variant);
+  border: 2px dashed var(--mat-sys-outline-variant); border-radius: 20px;
+  .material-icons { font-size: 48px; opacity: .6; }
+  h3 { color: var(--mat-sys-on-surface); margin: 8px 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
