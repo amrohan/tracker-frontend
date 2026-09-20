@@ -318,3 +318,8 @@ a {
     z-index: 10;
   }
 }
+
+/* a record drawer is open: lock the page behind it */
+body:has(app-record-drawer) {
+  overflow: hidden;
+}

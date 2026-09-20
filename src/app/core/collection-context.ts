@@ -33,6 +33,13 @@ export class CollectionContext {
       this.fields().find((f) => f.type === "text") ??
       this.fields()[0],
   );
+
+  readonly recordsVersion = signal(0);
+
+  recordsChanged(): void {
+    this.recordsVersion.update((v) => v + 1);
+    this.detail.reload(); // keeps the record count fresh
+  }
 }
 
 /** Call from a component field initializer: keeps the context in sync with the route's :id. */

@@ -1,3 +1,4 @@
+import { BreakpointObserver } from "@angular/cdk/layout";
 import { httpResource } from "@angular/common/http";
 import {
   Component,
@@ -8,6 +9,7 @@ import {
   signal,
   untracked,
 } from "@angular/core";
+import { toSignal } from "@angular/core/rxjs-interop";
 import { MatButtonModule } from "@angular/material/button";
 import { MatDialog } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
@@ -16,12 +18,12 @@ import { MatInputModule } from "@angular/material/input";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatPaginatorModule, PageEvent } from "@angular/material/paginator";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
-import { Router, RouterLink } from "@angular/router";
-import { firstValueFrom } from "rxjs";
+import { Router, RouterLink, RouterOutlet } from "@angular/router";
+import { firstValueFrom, map } from "rxjs";
 
 import { CollectionContext } from "../../core/collection-context";
 import { FieldTypeCatalog } from "../../core/field-types.service";
-import { formatMetric } from "../../core/format";
+import { formatMetric, metricLabel } from "../../core/format";
 import {
   httpStatus,
   problemExtension,
@@ -57,105 +59,141 @@ import { FilterDraft, toApiFilters } from "./filters";
     MatProgressBarModule,
     FieldValue,
     FilterPanel,
+    RouterOutlet,
   ],
 
   template: `
     <div class="page table-page">
-      <!-- =====================================================
-           TOOLBAR
-           ===================================================== -->
-
+      <!-- ============================ TOOLBAR ============================ -->
       <section class="toolbar" aria-label="Record controls">
-        <div class="toolbar-main">
-          <!-- Search -->
-          <mat-form-field
-            appearance="outline"
-            subscriptSizing="dynamic"
-            class="search"
-          >
-            <mat-label>Search records</mat-label>
+        <mat-form-field
+          appearance="outline"
+          subscriptSizing="dynamic"
+          class="search"
+        >
+          <mat-label>Search records</mat-label>
+          <input
+            matInput
+            [value]="searchInput()"
+            (input)="onSearch($event)"
+            autocomplete="off"
+          />
+          @if (searchInput()) {
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              aria-label="Clear search"
+              (click)="searchInput.set('')"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          } @else {
+            <mat-icon matSuffix class="search-icon">search</mat-icon>
+          }
+        </mat-form-field>
 
-            <input
-              matInput
-              [value]="searchInput()"
-              (input)="onSearch($event)"
-              autocomplete="off"
-            />
-
-            @if (searchInput()) {
-              <button
-                mat-icon-button
-                matSuffix
-                type="button"
-                aria-label="Clear search"
-                (click)="searchInput.set('')"
-              >
-                <mat-icon>close</mat-icon>
-              </button>
-            } @else {
-              <mat-icon matSuffix class="search-suffix-icon">search</mat-icon>
-            }
-          </mat-form-field>
-
-          <!-- Filters Toggle -->
+        <div class="tools">
           <button
             mat-stroked-button
             type="button"
-            class="filter-button"
-            [class.active-filters]="activeFilters().length > 0"
-            [class.is-open]="showFilters()"
+            class="tool-btn"
+            [class.on]="showFilters() || activeFilters().length > 0"
             (click)="showFilters.set(!showFilters())"
             [attr.aria-expanded]="showFilters()"
           >
             <mat-icon>tune</mat-icon>
-
-            <span class="filter-text">Filters</span>
-
+            <span class="label">Filters</span>
             @if (activeFilters().length) {
-              <span class="count" aria-label="Active filters">
-                {{ activeFilters().length }}
-              </span>
+              <span class="count" aria-label="Active filters">{{
+                activeFilters().length
+              }}</span>
             }
           </button>
-        </div>
 
-        <!-- Secondary actions -->
-        <div class="toolbar-actions">
-          <a
-            mat-stroked-button
-            class="action-btn"
-            [routerLink]="['/collections', ctx.id(), 'import']"
-          >
-            <mat-icon>upload</mat-icon>
-            <span>Import</span>
-          </a>
+          @if (isMobile()) {
+            <!-- phones: sort lives in a menu because cards have no column headers -->
+            <button
+              mat-stroked-button
+              type="button"
+              class="tool-btn"
+              [class.on]="!!sortBy()"
+              [matMenuTriggerFor]="sortMenu"
+            >
+              <mat-icon>swap_vert</mat-icon>
+              <span class="label">{{ sortLabel() }}</span>
+            </button>
+            <mat-menu #sortMenu="matMenu">
+              <button mat-menu-item type="button" (click)="resetSort()">
+                <mat-icon>{{ sortBy() ? "" : "check" }}</mat-icon>
+                <span>Newest first</span>
+              </button>
+              @for (f of sortableColumns(); track f.id) {
+                <button mat-menu-item type="button" (click)="pickSort(f)">
+                  <mat-icon>{{
+                    sortBy() === f.id
+                      ? sortDir() === "asc"
+                        ? "arrow_upward"
+                        : "arrow_downward"
+                      : ""
+                  }}</mat-icon>
+                  <span>{{ f.name }}</span>
+                </button>
+              }
+            </mat-menu>
 
-          <button
-            mat-stroked-button
-            type="button"
-            class="action-btn"
-            (click)="export()"
-            [disabled]="!data()?.total"
-          >
-            <mat-icon>download</mat-icon>
-            <span>Export CSV</span>
-          </button>
+            <button
+              mat-icon-button
+              type="button"
+              class="more-btn"
+              [matMenuTriggerFor]="moreMenu"
+              aria-label="More actions"
+            >
+              <mat-icon>more_horiz</mat-icon>
+            </button>
+            <mat-menu #moreMenu="matMenu">
+              <a
+                mat-menu-item
+                [routerLink]="['/collections', ctx.id(), 'import']"
+              >
+                <mat-icon>upload</mat-icon><span>Import</span>
+              </a>
+              <button
+                mat-menu-item
+                type="button"
+                [disabled]="!data()?.total"
+                (click)="export()"
+              >
+                <mat-icon>download</mat-icon><span>Export CSV</span>
+              </button>
+            </mat-menu>
+          } @else {
+            <span class="spacer"></span>
+            <a
+              mat-stroked-button
+              class="tool-btn"
+              [routerLink]="['/collections', ctx.id(), 'import']"
+            >
+              <mat-icon>upload</mat-icon><span class="label">Import</span>
+            </a>
+            <button
+              mat-stroked-button
+              type="button"
+              class="tool-btn"
+              (click)="export()"
+              [disabled]="!data()?.total"
+            >
+              <mat-icon>download</mat-icon><span class="label">Export CSV</span>
+            </button>
+          }
         </div>
       </section>
-
-      <!-- =====================================================
-           FILTER PANEL
-           ===================================================== -->
 
       @if (showFilters()) {
         <div class="filters">
           <app-filter-panel [fields]="ctx.fields()" [(filters)]="filters" />
         </div>
       }
-
-      <!-- =====================================================
-           LOADING
-           ===================================================== -->
 
       @if (list.isLoading()) {
         <mat-progress-bar
@@ -165,235 +203,305 @@ import { FilterDraft, toApiFilters } from "./filters";
         />
       }
 
-      <!-- =====================================================
-           ERROR
-           ===================================================== -->
-
+      <!-- ============================ CONTENT ============================ -->
       @if (list.error() && !data()) {
         <div class="empty-state">
           <div class="empty-icon-box error-box" aria-hidden="true">
             <mat-icon>cloud_off</mat-icon>
           </div>
-
           <h3>Could not load records</h3>
-
           <p>Something went wrong while loading the records.</p>
-
           <button mat-stroked-button type="button" (click)="list.reload()">
-            <mat-icon>refresh</mat-icon>
-            Try again
+            <mat-icon>refresh</mat-icon> Try again
           </button>
         </div>
       } @else if (data(); as d) {
-        <!-- ================= EMPTY ================= -->
-
         @if (d.total === 0 && !hasQuery()) {
           <div class="empty-state">
             <div class="empty-icon-box" aria-hidden="true">
               <mat-icon>playlist_add</mat-icon>
             </div>
-
             <h3>No records yet</h3>
-
-            <p>
-              Add your first entry to
-              {{ ctx.detail.value()?.name }}.
-            </p>
-
+            <p>Add your first entry to {{ ctx.detail.value()?.name }}.</p>
             <a
               mat-flat-button
               [routerLink]="['/collections', ctx.id(), 'records', 'new']"
             >
-              <mat-icon>add</mat-icon>
-              Add a record
+              <mat-icon>add</mat-icon> Add a record
             </a>
           </div>
-        }
-
-        <!-- ================= NO RESULTS ================= -->
-
-        @else if (d.total === 0) {
+        } @else if (d.total === 0) {
           <div class="empty-state">
             <div class="empty-icon-box" aria-hidden="true">
               <mat-icon>search_off</mat-icon>
             </div>
-
             <h3>Nothing matches</h3>
-
             <p>Try changing your search or filters.</p>
-
             <button mat-stroked-button type="button" (click)="clearAll()">
-              <mat-icon>filter_alt_off</mat-icon>
-              Clear search and filters
+              <mat-icon>filter_alt_off</mat-icon> Clear search and filters
             </button>
           </div>
-        }
+        } @else {
+          <p class="count-line" aria-live="polite">
+            @if (hasQuery() && total()) {
+              {{ d.total }} of {{ total() }} records match
+            } @else {
+              {{ d.total }} {{ d.total === 1 ? "record" : "records" }}
+            }
+          </p>
 
-        <!-- ================= TABLE ================= -->
+          @if (isMobile()) {
+            <!-- ======================= PHONE: CARDS ======================= -->
+            <ul
+              class="cards"
+              role="list"
+              [class.dim]="list.isLoading()"
+              aria-label="Records"
+            >
+              @for (r of d.items; track r.id) {
+                <li class="card" (click)="open(r)">
+                  <div class="card-head">
+                    @if (titleCol(); as tf) {
+                      <a
+                        class="card-title"
+                        [routerLink]="[
+                          '/collections',
+                          ctx.id(),
+                          'records',
+                          r.id,
+                        ]"
+                        (click)="$event.stopPropagation()"
+                      >
+                        <app-field-value
+                          [field]="tf"
+                          [value]="r.values[tf.key]"
+                          [references]="d.references"
+                        />
+                      </a>
+                    }
+                    <span class="spacer"></span>
+                    <span (click)="$event.stopPropagation()">
+                      <button
+                        mat-icon-button
+                        type="button"
+                        [matMenuTriggerFor]="cardMenu"
+                        [attr.aria-label]="'Actions for ' + labelOf(r)"
+                      >
+                        <mat-icon>more_vert</mat-icon>
+                      </button>
+                      <mat-menu #cardMenu="matMenu">
+                        <a
+                          mat-menu-item
+                          [routerLink]="[
+                            '/collections',
+                            ctx.id(),
+                            'records',
+                            r.id,
+                          ]"
+                          ><mat-icon>visibility</mat-icon><span>View</span></a
+                        >
 
-        @else {
-          <div
-            class="table-container surface-card"
-            [class.loading-table]="list.isLoading()"
-          >
-            <div class="table-scroll">
-              <table>
-                <!-- ================= HEADER ================= -->
+                        <a
+                          mat-menu-item
+                          [routerLink]="[
+                            '/collections',
+                            ctx.id(),
+                            'records',
+                            r.id,
+                            'edit',
+                          ]"
+                          ><mat-icon>edit</mat-icon><span>Edit</span>
+                        </a>
+                        <button
+                          mat-menu-item
+                          type="button"
+                          class="delete-item"
+                          (click)="remove(r)"
+                        >
+                          <mat-icon>delete</mat-icon><span>Delete</span>
+                        </button>
+                      </mat-menu>
+                    </span>
+                  </div>
 
-                <thead>
-                  <tr>
-                    @for (f of columns(); track f.id) {
-                      <th scope="col" [attr.aria-sort]="ariaSort(f)">
-                        @if (catalog.sortable(f.type)) {
-                          <button
-                            type="button"
-                            class="sort"
-                            (click)="toggleSort(f)"
-                          >
-                            <span>{{ f.name }}</span>
+                  <dl class="card-body">
+                    @for (f of cardFields(); track f.id) {
+                      @if (hasValue(r, f)) {
+                        <div class="kv">
+                          <dt>{{ f.name }}</dt>
+                          <dd>
+                            <app-field-value
+                              [field]="f"
+                              [value]="r.values[f.key]"
+                              [references]="d.references"
+                            />
+                          </dd>
+                        </div>
+                      }
+                    }
+                  </dl>
+                </li>
+              }
+            </ul>
 
-                            <mat-icon class="arrow">
-                              {{
+            @if (metrics().length) {
+              <section class="totals" aria-label="Totals">
+                <h4>
+                  Totals
+                  @if (hasQuery()) {
+                    <span>(matching records)</span>
+                  }
+                </h4>
+                <div class="totals-grid">
+                  @for (m of metrics(); track m.fieldId + m.aggregation) {
+                    <div class="total">
+                      <span class="t-label">{{ label(m) }}</span>
+                      <span class="t-value">{{ format(m) }}</span>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+          } @else {
+            <!-- ====================== DESKTOP: TABLE ====================== -->
+            <div
+              class="table-container surface-card"
+              [class.loading-table]="list.isLoading()"
+            >
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      @for (f of columns(); track f.id) {
+                        <th scope="col" [attr.aria-sort]="ariaSort(f)">
+                          @if (catalog.sortable(f.type)) {
+                            <button
+                              type="button"
+                              class="sort"
+                              (click)="toggleSort(f)"
+                            >
+                              <span>{{ f.name }}</span>
+                              <mat-icon class="arrow">{{
                                 sortBy() === f.id
                                   ? sortDir() === "asc"
                                     ? "arrow_upward"
                                     : "arrow_downward"
                                   : "unfold_more"
-                              }}
-                            </mat-icon>
-                          </button>
-                        } @else {
-                          <span>{{ f.name }}</span>
-                        }
+                              }}</mat-icon>
+                            </button>
+                          } @else {
+                            <span>{{ f.name }}</span>
+                          }
+                        </th>
+                      }
+                      <th class="actions-col" scope="col">
+                        <span class="sr-only">Actions</span>
                       </th>
-                    }
+                    </tr>
+                  </thead>
 
-                    <th class="actions-col" scope="col">
-                      <span class="sr-only">Actions</span>
-                    </th>
-                  </tr>
-                </thead>
-
-                <!-- ================= BODY ================= -->
-
-                <tbody>
-                  @for (r of d.items; track r.id) {
-                    <tr class="record-row" (click)="open(r)">
-                      @for (f of columns(); track f.id; let first = $first) {
-                        <td>
-                          @if (first) {
+                  <tbody>
+                    @for (r of d.items; track r.id) {
+                      <tr class="record-row" (click)="open(r)">
+                        @for (f of columns(); track f.id; let first = $first) {
+                          <td>
+                            @if (first) {
+                              <a
+                                class="first"
+                                [routerLink]="[
+                                  '/collections',
+                                  ctx.id(),
+                                  'records',
+                                  r.id,
+                                ]"
+                                (click)="$event.stopPropagation()"
+                              >
+                                <app-field-value
+                                  [field]="f"
+                                  [value]="r.values[f.key]"
+                                  [references]="d.references"
+                                />
+                              </a>
+                            } @else {
+                              <app-field-value
+                                [field]="f"
+                                [value]="r.values[f.key]"
+                                [references]="d.references"
+                              />
+                            }
+                          </td>
+                        }
+                        <td
+                          class="actions-col"
+                          (click)="$event.stopPropagation()"
+                        >
+                          <button
+                            mat-icon-button
+                            class="row-action-btn"
+                            [matMenuTriggerFor]="rowMenu"
+                            [attr.aria-label]="'Actions for ' + labelOf(r)"
+                          >
+                            <mat-icon>more_vert</mat-icon>
+                          </button>
+                          <mat-menu #rowMenu="matMenu">
                             <a
-                              class="first"
+                              mat-menu-item
                               [routerLink]="[
                                 '/collections',
                                 ctx.id(),
                                 'records',
                                 r.id,
                               ]"
-                              (click)="$event.stopPropagation()"
+                              ><mat-icon>visibility</mat-icon
+                              ><span>View</span></a
                             >
-                              <app-field-value
-                                [field]="f"
-                                [value]="r.values[f.key]"
-                                [references]="d.references"
-                              />
-                            </a>
-                          } @else {
-                            <app-field-value
-                              [field]="f"
-                              [value]="r.values[f.key]"
-                              [references]="d.references"
-                            />
-                          }
+
+                            <a
+                              mat-menu-item
+                              [routerLink]="[
+                                '/collections',
+                                ctx.id(),
+                                'records',
+                                r.id,
+                                'edit',
+                              ]"
+                              ><mat-icon>edit</mat-icon><span>Edit</span></a
+                            >
+                            <button
+                              mat-menu-item
+                              type="button"
+                              class="delete-item"
+                              (click)="remove(r)"
+                            >
+                              <mat-icon>delete</mat-icon><span>Delete</span>
+                            </button>
+                          </mat-menu>
                         </td>
-                      }
+                      </tr>
+                    }
+                  </tbody>
 
-                      <!-- Row actions (Sticky on horizontal scroll) -->
-                      <td
-                        class="actions-col"
-                        (click)="$event.stopPropagation()"
-                      >
-                        <button
-                          mat-icon-button
-                          class="row-action-btn"
-                          [matMenuTriggerFor]="rowMenu"
-                          [attr.aria-label]="'Actions for ' + labelOf(r)"
-                        >
-                          <mat-icon>more_vert</mat-icon>
-                        </button>
-
-                        <mat-menu #rowMenu="matMenu">
-                          <a
-                            mat-menu-item
-                            [routerLink]="[
-                              '/collections',
-                              ctx.id(),
-                              'records',
-                              r.id,
-                            ]"
-                          >
-                            <mat-icon>visibility</mat-icon>
-                            <span>View</span>
-                          </a>
-
-                          <a
-                            mat-menu-item
-                            [routerLink]="[
-                              '/collections',
-                              ctx.id(),
-                              'records',
-                              r.id,
-                              'edit',
-                            ]"
-                          >
-                            <mat-icon>edit</mat-icon>
-                            <span>Edit</span>
-                          </a>
-
-                          <button
-                            mat-menu-item
-                            type="button"
-                            class="delete-item"
-                            (click)="remove(r)"
-                          >
-                            <mat-icon>delete</mat-icon>
-                            <span>Delete</span>
-                          </button>
-                        </mat-menu>
-                      </td>
-                    </tr>
+                  @if (metrics().length) {
+                    <tfoot>
+                      <tr>
+                        @for (f of columns(); track f.id) {
+                          <td>
+                            @if (metricByField().get(f.id); as m) {
+                              <span class="agg">
+                                <span class="agg-label">{{ aggName(m) }}</span>
+                                <span class="agg-value">{{ format(m) }}</span>
+                              </span>
+                            }
+                          </td>
+                        }
+                        <td class="actions-col"></td>
+                      </tr>
+                    </tfoot>
                   }
-                </tbody>
-
-                <!-- ================= SUMMARY ================= -->
-
-                @if (summary.value()?.metrics?.length) {
-                  <tfoot>
-                    <tr>
-                      @for (f of columns(); track f.id) {
-                        <td>
-                          @if (metricByField().get(f.id); as m) {
-                            <span class="agg">
-                              <span class="agg-label">
-                                {{ aggName(m) }}
-                              </span>
-                              <span class="agg-value">
-                                {{ format(m) }}
-                              </span>
-                            </span>
-                          }
-                        </td>
-                      }
-
-                      <td class="actions-col"></td>
-                    </tr>
-                  </tfoot>
-                }
-              </table>
+                </table>
+              </div>
             </div>
-          </div>
-
-          <!-- ================= PAGINATION ================= -->
+          }
 
           <mat-paginator
             class="paginator"
@@ -401,94 +509,64 @@ import { FilterDraft, toApiFilters } from "./filters";
             [pageIndex]="page() - 1"
             [pageSize]="pageSize()"
             [pageSizeOptions]="[10, 25, 50, 100]"
+            [hidePageSize]="isMobile()"
+            [showFirstLastButtons]="!isMobile()"
             (page)="onPage($event)"
             aria-label="Select page of records"
           />
         }
       }
     </div>
+    <router-outlet />
   `,
 
   styles: `
     :host {
       display: block;
+      --row-hover: color-mix(
+        in srgb,
+        var(--mat-sys-primary) 7%,
+        var(--mat-sys-surface)
+      );
     }
-
-    /* =========================================================
-       PAGE
-       ========================================================= */
-
     .table-page {
       padding-top: 16px;
     }
+    .spacer {
+      flex: 1 1 auto;
+    }
 
-    /* =========================================================
-       TOOLBAR
-       ========================================================= */
-
+    /* ---------------- toolbar ---------------- */
     .toolbar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       gap: 12px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
-
-    .toolbar-main {
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .search {
+      flex: 0 1 380px;
+      min-width: 200px;
+    }
+    .search-icon {
+      color: var(--mat-sys-on-surface-variant);
+      opacity: 0.8;
+    }
+    .tools {
       flex: 1;
-    }
-
-    .toolbar-actions {
       display: flex;
       align-items: center;
       gap: 8px;
-      flex-shrink: 0;
+      min-width: 0;
     }
-
-    .search {
-      flex: 1 1 320px;
-      max-width: 400px;
-      min-width: 200px;
-    }
-
-    .search-suffix-icon {
-      color: var(--mat-sys-on-surface-variant, #49454f);
-      opacity: 0.8;
-    }
-
-    .filter-button {
-      flex-shrink: 0;
-      height: 48px;
-      padding: 0 16px;
+    .tool-btn {
+      height: 44px;
       border-radius: 12px;
-      transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
     }
-
-    .filter-button.is-open,
-    .filter-button.active-filters {
-      background: var(--mat-sys-secondary-container, #e8def8);
-      color: var(--mat-sys-on-secondary-container, #1d192b);
-      border-color: color-mix(
-        in srgb,
-        var(--mat-sys-secondary, #625b71) 60%,
-        transparent
-      );
+    .tool-btn.on {
+      background: var(--mat-sys-secondary-container);
+      color: var(--mat-sys-on-secondary-container);
     }
-
-    .action-btn {
-      height: 40px;
-      border-radius: 10px;
-      font-weight: 500;
-    }
-
-    /* =========================================================
-       FILTER COUNT
-       ========================================================= */
-
     .count {
       min-width: 20px;
       height: 20px;
@@ -497,115 +575,100 @@ import { FilterDraft, toApiFilters } from "./filters";
       margin-left: 6px;
       padding: 0 5px;
       border-radius: 999px;
-      background: var(--mat-sys-primary, #6750a4);
-      color: var(--mat-sys-on-primary, #ffffff);
+      background: var(--mat-sys-primary);
+      color: var(--mat-sys-on-primary);
       font-size: 0.6875rem;
       font-weight: 700;
       line-height: 1;
     }
-
-    /* =========================================================
-       FILTERS
-       ========================================================= */
-
     .filters {
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
-
-    /* =========================================================
-       LOADING PROGRESS BAR
-       ========================================================= */
-
     .loading {
       height: 4px;
       margin-bottom: 10px;
       border-radius: 999px;
       overflow: hidden;
     }
-
-    /* =========================================================
-       TABLE CONTAINER
-       ========================================================= */
-
-    .table-container {
-      position: relative;
-      border-radius: 16px;
-      border: 1px solid var(--mat-sys-outline-variant, #e0e2ec);
-      background: var(--mat-sys-surface, #ffffff);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-      overflow: hidden;
-      transition: opacity 180ms ease;
+    .count-line {
+      margin: 4px 2px 10px;
+      font-size: 0.875rem;
+      color: var(--mat-sys-on-surface-variant);
     }
 
+    /* ---------------- desktop table ---------------- */
+    .table-container {
+      padding: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--mat-sys-outline-variant);
+      background: var(--mat-sys-surface);
+      transition: opacity 0.18s ease;
+    }
     .table-container.loading-table {
       opacity: 0.6;
       pointer-events: none;
     }
-
     .table-scroll {
-      max-height: calc(100vh - 300px);
+      max-height: calc(100vh - 290px);
       min-height: 220px;
       overflow: auto;
       -webkit-overflow-scrolling: touch;
     }
-
-    /* =========================================================
-       TABLE
-       ========================================================= */
-
     table {
       width: 100%;
       min-width: 680px;
       border-collapse: separate;
       border-spacing: 0;
     }
-
     th,
     td {
       padding: 12px 16px;
       text-align: left;
       vertical-align: middle;
-      border-bottom: 1px solid var(--mat-sys-outline-variant, #e0e2ec);
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+      font-size: 0.9375rem;
     }
-
-    /* =========================================================
-       TABLE HEADER
-       ========================================================= */
 
     thead th {
       position: sticky;
       top: 0;
-      z-index: 2;
+      z-index: 3;
       height: 46px;
-      background: var(--mat-sys-surface-container, #f3edf7);
-      color: var(--mat-sys-on-surface, #1d1b20);
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
       white-space: nowrap;
+      background: var(--mat-sys-surface-container);
+      color: var(--mat-sys-on-surface);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
-
-    /* =========================================================
-       ROWS
-       ========================================================= */
+    /* first column stays visible when scrolling wide tables sideways */
+    tbody td:first-child,
+    tfoot td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: var(--mat-sys-surface);
+    }
+    thead th:first-child {
+      left: 0;
+      z-index: 5;
+    }
+    tfoot td:first-child {
+      background: var(--mat-sys-surface-container);
+      z-index: 2;
+    }
 
     .record-row {
       cursor: pointer;
-      transition: background-color 100ms ease;
     }
-
-    .record-row:hover {
-      background: var(--mat-sys-surface-container-lowest, #fdfbff);
+    .record-row:hover > td {
+      background: var(--row-hover);
     }
-
     .record-row:last-child td {
       border-bottom: 0;
     }
-
-    /* =========================================================
-       SORT
-       ========================================================= */
 
     .sort {
       display: inline-flex;
@@ -618,66 +681,37 @@ import { FilterDraft, toApiFilters } from "./filters";
       background: transparent;
       color: inherit;
       font: inherit;
-      font-weight: inherit;
       letter-spacing: inherit;
       text-transform: inherit;
       cursor: pointer;
-      white-space: nowrap;
-      transition:
-        background-color 140ms ease,
-        color 140ms ease;
     }
-
     .sort:hover {
-      background: var(--mat-sys-surface-container-high, #ece6f0);
-      color: var(--mat-sys-primary, #6750a4);
+      background: var(--mat-sys-surface-container-high);
+      color: var(--mat-sys-primary);
     }
-
-    .sort:focus-visible {
-      outline: 2px solid var(--mat-sys-primary, #6750a4);
-      outline-offset: 2px;
-    }
-
     .sort .arrow {
       width: 18px;
       height: 18px;
       font-size: 18px;
       opacity: 0.55;
-      transition:
-        opacity 140ms ease,
-        color 140ms ease;
     }
-
-    .sort:hover .arrow {
+    .sort:hover .arrow,
+    th[aria-sort] .arrow {
       opacity: 1;
     }
-
-    th[aria-sort="ascending"] .arrow,
-    th[aria-sort="descending"] .arrow {
-      opacity: 1;
-      color: var(--mat-sys-primary, #6750a4);
+    th[aria-sort] .arrow {
+      color: var(--mat-sys-primary);
     }
-
-    /* =========================================================
-       FIRST COLUMN / PRIMARY LINK
-       ========================================================= */
 
     .first {
-      display: inline-block;
-      max-width: 100%;
-      color: var(--mat-sys-primary, #6750a4);
+      color: var(--mat-sys-primary);
       font-weight: 600;
       text-decoration: none;
       overflow-wrap: anywhere;
     }
-
     .first:hover {
       text-decoration: underline;
     }
-
-    /* =========================================================
-       STICKY ACTIONS COLUMN
-       ========================================================= */
 
     .actions-col {
       width: 52px;
@@ -686,149 +720,198 @@ import { FilterDraft, toApiFilters } from "./filters";
       text-align: right;
       position: sticky;
       right: 0;
-      background: var(--mat-sys-surface, #ffffff);
       z-index: 1;
-      box-shadow: -3px 0 6px -2px rgba(0, 0, 0, 0.05);
+      background: var(--mat-sys-surface);
+      box-shadow: -1px 0 0 var(--mat-sys-outline-variant);
     }
-
     thead .actions-col {
-      background: var(--mat-sys-surface-container, #f3edf7);
-      z-index: 3;
+      background: var(--mat-sys-surface-container);
+      z-index: 4;
     }
-
-    .record-row:hover .actions-col {
-      background: var(--mat-sys-surface-container-lowest, #fdfbff);
-    }
-
     tfoot .actions-col {
-      background: var(--mat-sys-surface-container, #f3edf7);
+      background: var(--mat-sys-surface-container);
       z-index: 2;
     }
-
     .row-action-btn {
-      color: var(--mat-sys-on-surface-variant, #49454f);
+      color: var(--mat-sys-on-surface-variant);
     }
-
-    .delete-item {
-      color: var(--mat-sys-error, #ba1a1a);
-    }
-
-    .delete-item mat-icon {
-      color: var(--mat-sys-error, #ba1a1a);
-    }
-
-    /* =========================================================
-       SUMMARY FOOTER
-       ========================================================= */
 
     tfoot td {
       position: sticky;
       bottom: 0;
       z-index: 2;
-      background: var(--mat-sys-surface-container, #f3edf7);
-      color: var(--mat-sys-on-surface, #1d1b20);
-      font-weight: 600;
-      border-top: 2px solid var(--mat-sys-outline-variant, #e0e2ec);
+      background: var(--mat-sys-surface-container);
+      border-top: 2px solid var(--mat-sys-outline-variant);
       border-bottom: 0;
+      font-weight: 600;
     }
-
     .agg {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       padding: 4px 8px;
       border-radius: 6px;
-      background: var(--mat-sys-surface-container-high, #ece6f0);
-      font-size: 0.8125rem;
+      background: var(--mat-sys-surface-container-high);
       white-space: nowrap;
     }
-
     .agg-label {
-      color: var(--mat-sys-on-surface-variant, #49454f);
+      color: var(--mat-sys-on-surface-variant);
       font-size: 0.7rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.03em;
     }
-
     .agg-value {
       font-weight: 700;
     }
 
-    /* =========================================================
-       PAGINATOR
-       ========================================================= */
-
-    .paginator {
-      margin-top: 6px;
-      background: transparent;
-      border-radius: 12px;
+    .delete-item,
+    .delete-item mat-icon {
+      color: var(--mat-sys-error);
     }
 
-    /* =========================================================
-       EMPTY STATES
-       ========================================================= */
+    /* ---------------- phone cards ---------------- */
+    .cards {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+      transition: opacity 0.18s ease;
+    }
+    .cards.dim {
+      opacity: 0.6;
+    }
+    .card {
+      padding: 6px 6px 14px 16px;
+      border-radius: 16px;
+      cursor: pointer;
+      background: var(--mat-sys-surface-container-low);
+      border: 1px solid var(--mat-sys-outline-variant);
+    }
+    .card:active {
+      background: var(--row-hover);
+    }
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 48px;
+    }
+    .card-title {
+      min-width: 0;
+      font-size: 1.0625rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--mat-sys-primary);
+      text-decoration: none;
+      overflow-wrap: anywhere;
+    }
+    .card-body {
+      margin: 0;
+      padding-right: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px 16px;
+    }
+    .kv {
+      min-width: 0;
+    }
+    dt {
+      font-size: 0.75rem;
+      color: var(--mat-sys-on-surface-variant);
+      margin-bottom: 2px;
+    }
+    dd {
+      margin: 0;
+      font-size: 0.9375rem;
+      overflow-wrap: anywhere;
+    }
 
+    .totals {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: var(--mat-sys-surface-container);
+      border: 1px solid var(--mat-sys-outline-variant);
+    }
+    .totals h4 {
+      margin: 0 0 10px;
+      font-size: 0.9rem;
+    }
+    .totals h4 span {
+      font-weight: 400;
+      color: var(--mat-sys-on-surface-variant);
+    }
+    .totals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+    }
+    .total {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .t-label {
+      font-size: 0.75rem;
+      color: var(--mat-sys-on-surface-variant);
+    }
+    .t-value {
+      font-size: 1.125rem;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .paginator {
+      margin-top: 8px;
+      background: transparent;
+    }
+
+    /* ---------------- empty states ---------------- */
     .empty-state {
-      min-height: 260px;
+      min-height: 240px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 40px 20px;
+      padding: 36px 20px;
       margin: 12px 0;
       border-radius: 16px;
-      border: 1.5px dashed var(--mat-sys-outline-variant, #cac4d0);
-      background: var(--mat-sys-surface, #ffffff);
+      border: 1.5px dashed var(--mat-sys-outline-variant);
+      background: var(--mat-sys-surface);
     }
-
     .empty-icon-box {
       width: 56px;
       height: 56px;
       display: grid;
       place-items: center;
       border-radius: 16px;
-      background: var(--mat-sys-surface-container, #f3edf7);
-      color: var(--mat-sys-on-surface-variant, #49454f);
       margin-bottom: 14px;
+      background: var(--mat-sys-surface-container);
+      color: var(--mat-sys-on-surface-variant);
     }
-
     .empty-icon-box mat-icon {
       font-size: 28px;
       width: 28px;
       height: 28px;
     }
-
     .empty-icon-box.error-box {
-      background: var(--mat-sys-error-container, #ffdad6);
-      color: var(--mat-sys-on-error-container, #410002);
+      background: var(--mat-sys-error-container);
+      color: var(--mat-sys-on-error-container);
     }
-
     .empty-state h3 {
       margin: 0 0 6px;
       font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--mat-sys-on-surface, #1d1b20);
     }
-
     .empty-state p {
       max-width: 420px;
-      margin: 0 0 20px;
-      font-size: 0.9rem;
+      margin: 0 0 18px;
+      font-size: 0.9375rem;
       line-height: 1.45;
-      color: var(--mat-sys-on-surface-variant, #49454f);
+      color: var(--mat-sys-on-surface-variant);
     }
-
-    .empty-state button,
-    .empty-state a {
-      border-radius: 10px;
-      min-height: 40px;
-    }
-
-    /* =========================================================
-       SCREEN READER ONLY
-       ========================================================= */
 
     .sr-only {
       position: absolute;
@@ -842,104 +925,43 @@ import { FilterDraft, toApiFilters } from "./filters";
       border: 0;
     }
 
-    /* =========================================================
-       TABLET (<= 900px)
-       ========================================================= */
-
-    @media (max-width: 900px) {
+    /* ---------------- phones ---------------- */
+    @media (max-width: 767px) {
+      .table-page {
+        padding-top: 10px;
+        padding-bottom: 96px;
+      } /* room for the floating "Add record" button */
       .toolbar {
         flex-direction: column;
         align-items: stretch;
-        gap: 10px;
-      }
-
-      .toolbar-main {
-        width: 100%;
-      }
-
-      .toolbar-actions {
-        justify-content: flex-end;
-      }
-    }
-
-    /* =========================================================
-       MOBILE (<= 640px)
-       ========================================================= */
-
-    @media (max-width: 640px) {
-      .table-page {
-        padding-top: 10px;
-      }
-
-      .toolbar {
-        gap: 8px;
-        margin-bottom: 10px;
-      }
-
-      .toolbar-main {
-        display: flex;
-        align-items: center;
         gap: 8px;
       }
-
       .search {
         flex: 1 1 auto;
         min-width: 0;
-        max-width: none;
       }
-
-      .filter-button {
+      .tools {
+        gap: 6px;
+      }
+      .tool-btn {
         padding: 0 12px;
       }
-
-      .toolbar-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        width: 100%;
-        gap: 8px;
-      }
-
-      .action-btn {
-        width: 100%;
-        justify-content: center;
-      }
-
-      .table-container {
-        border-radius: 14px;
-      }
-
-      .table-scroll {
-        max-height: 58vh;
-      }
-
-      th,
-      td {
-        padding: 10px 12px;
+      .more-btn {
+        margin-left: auto;
       }
     }
-
-    /* =========================================================
-       TINY PHONES (<= 380px)
-       ========================================================= */
-
     @media (max-width: 380px) {
-      .filter-text {
+      .tool-btn .label {
         display: none;
       }
-
-      .filter-button {
+      .tool-btn {
         padding: 0 10px;
-      }
-
-      .action-btn span {
-        font-size: 0.8125rem;
+        min-width: 44px;
       }
     }
-
     @media (prefers-reduced-motion: reduce) {
-      .record-row,
-      .filter-button,
-      .table-container {
+      .table-container,
+      .cards {
         transition: none;
       }
     }
@@ -947,252 +969,201 @@ import { FilterDraft, toApiFilters } from "./filters";
 })
 export class TableView {
   protected readonly ctx = inject(CollectionContext);
-
   protected readonly catalog = inject(FieldTypeCatalog);
-
   private readonly records = inject(RecordsApi);
-
   private readonly dialog = inject(MatDialog);
-
   private readonly notify = inject(Notify);
-
   private readonly router = inject(Router);
+  private seenVersion = untracked(() => this.ctx.recordsVersion());
 
-  /* =========================================================
-     STATE
-     ========================================================= */
+  /** Phones get a card list; tablets and desktops get the table. */
+  protected readonly isMobile = toSignal(
+    inject(BreakpointObserver)
+      .observe("(max-width: 767px)")
+      .pipe(map((state) => state.matches)),
+    { initialValue: false },
+  );
 
+  /* ------------------------------ state ------------------------------ */
   protected readonly searchInput = signal("");
-
   protected readonly search = signal("");
-
   protected readonly sortBy = signal<string | null>(null);
-
   protected readonly sortDir = signal<"asc" | "desc">("desc");
-
   protected readonly page = signal(1);
-
   protected readonly pageSize = signal(25);
-
   protected readonly filters = signal<FilterDraft[]>([]);
-
   protected readonly showFilters = signal(false);
 
-  /* =========================================================
-     COLUMNS / FILTERS
-     ========================================================= */
-
+  /* ------------------------ columns / filters ------------------------ */
   protected readonly columns = computed<Field[]>(() =>
     this.ctx.fields().filter((f) => f.showInList),
   );
-
+  protected readonly titleCol = computed<Field | undefined>(
+    () => this.columns()[0],
+  );
+  protected readonly cardFields = computed<Field[]>(() =>
+    this.columns().slice(1),
+  );
+  protected readonly sortableColumns = computed<Field[]>(() =>
+    this.columns().filter((f) => this.catalog.sortable(f.type)),
+  );
   protected readonly activeFilters = computed(() =>
     toApiFilters(this.filters(), this.ctx.fieldsById(), this.catalog),
   );
-
   protected readonly hasQuery = computed(
     () => !!this.search() || this.activeFilters().length > 0,
   );
+  /** Total records in the collection (for "3 of 24 match"). */
+  protected readonly total = computed(
+    () => this.ctx.detail.value()?.recordCount ?? 0,
+  );
 
-  /* =========================================================
-     REQUEST PARAMETERS
-     ========================================================= */
+  protected readonly sortLabel = computed(() => {
+    const id = this.sortBy();
+    return id ? (this.ctx.fieldsById().get(id)?.name ?? "Sort") : "Sort";
+  });
 
+  /* ------------------------ request parameters ----------------------- */
   private readonly baseParams = computed(() => {
     const p: Record<string, string | number> = {};
-
-    if (this.search()) {
-      p["search"] = this.search();
-    }
-
+    if (this.search()) p["search"] = this.search();
     const f = this.activeFilters();
-
-    if (f.length) {
-      p["filters"] = JSON.stringify(f);
-    }
-
+    if (f.length) p["filters"] = JSON.stringify(f);
     return p;
   });
 
   private readonly listParams = computed(() => {
     const p: Record<string, string | number> = {
       ...this.baseParams(),
-
       page: this.page(),
-
       pageSize: this.pageSize(),
     };
-
     const by = this.sortBy();
-
     if (by) {
       p["sortBy"] = by;
-
       p["sortDir"] = this.sortDir();
     }
-
     return p;
   });
 
-  /* =========================================================
-     DATA
-     ========================================================= */
-
+  /* -------------------------------- data ----------------------------- */
   protected readonly list = httpResource<RecordList>(() => {
     const id = this.ctx.id();
-
     return id
-      ? {
-          url: `/api/collections/${id}/records`,
-          params: this.listParams(),
-        }
+      ? { url: `/api/collections/${id}/records`, params: this.listParams() }
       : undefined;
   });
 
-  /**
-   * Summary uses the same search and filters
-   * so the footer totals describe the records
-   * currently represented by the table.
-   */
+  /** Same search and filters, so totals always describe what the list shows. */
   protected readonly summary = httpResource<SummaryReport>(() => {
     const id = this.ctx.id();
-
     return id
-      ? {
-          url: `/api/collections/${id}/summary`,
-          params: this.baseParams(),
-        }
+      ? { url: `/api/collections/${id}/summary`, params: this.baseParams() }
       : undefined;
   });
 
-  /**
-   * Keep the previous page visible while
-   * the next request is loading.
-   */
+  /** Keeps the previous page on screen while the next one loads. */
   protected readonly data = linkedSignal<
     RecordList | undefined,
     RecordList | undefined
   >({
     source: () => this.list.value(),
-
     computation: (next, previous) => next ?? previous?.value,
   });
 
+  protected readonly metrics = computed<SummaryMetric[]>(
+    () => this.summary.value()?.metrics ?? [],
+  );
   protected readonly metricByField = computed(
-    () =>
-      new Map(
-        (this.summary.value()?.metrics ?? []).map(
-          (m) => [m.fieldId, m] as const,
-        ),
-      ),
+    () => new Map(this.metrics().map((m) => [m.fieldId, m] as const)),
   );
 
-  /* =========================================================
-     EFFECTS
-     ========================================================= */
-
   constructor() {
-    /*
-     * Debounce search input.
-     */
+    // reload the list and totals when a drawer saved or deleted a record
+    effect(() => {
+      const version = this.ctx.recordsVersion();
+      untracked(() => {
+        if (version === this.seenVersion) return;
+        this.seenVersion = version;
+        this.list.reload();
+        this.summary.reload();
+      });
+    });
+    // debounce the search box
     effect((onCleanup) => {
       const value = this.searchInput().trim();
-
       const timer = setTimeout(() => this.search.set(value), 300);
-
       onCleanup(() => clearTimeout(timer));
     });
 
-    /*
-     * Any query/filter/sort change
-     * returns to the first page.
-     */
+    // any query / sort change returns to the first page
     effect(() => {
       this.search();
-
       this.activeFilters();
-
       this.sortBy();
-
       this.sortDir();
-
       untracked(() => this.page.set(1));
     });
 
-    /*
-     * Server may clamp the page.
-     */
+    // the server clamps out-of-range pages
     effect(() => {
       const d = this.list.value();
-
       if (d && d.page !== untracked(this.page)) {
         untracked(() => this.page.set(d.page));
       }
     });
   }
 
-  /* =========================================================
-     SEARCH / PAGINATION
-     ========================================================= */
-
+  /* --------------------------- search / paging ----------------------- */
   protected onSearch(event: Event): void {
     this.searchInput.set((event.target as HTMLInputElement).value);
   }
 
   protected onPage(event: PageEvent): void {
     this.pageSize.set(event.pageSize);
-
     this.page.set(event.pageIndex + 1);
   }
 
-  /* =========================================================
-     SORT
-     ========================================================= */
-
+  /* -------------------------------- sort ----------------------------- */
+  /** Desktop header click: asc -> desc -> default. */
   protected toggleSort(field: Field): void {
     if (this.sortBy() !== field.id) {
       this.sortBy.set(field.id);
-
       this.sortDir.set("asc");
-
-      return;
-    }
-
-    if (this.sortDir() === "asc") {
+    } else if (this.sortDir() === "asc") {
       this.sortDir.set("desc");
-
-      return;
+    } else {
+      this.resetSort();
     }
+  }
 
+  /** Phone menu: choose a field; choosing it again flips the direction. */
+  protected pickSort(field: Field): void {
+    if (this.sortBy() !== field.id) {
+      this.sortBy.set(field.id);
+      this.sortDir.set("asc");
+    } else {
+      this.sortDir.set(this.sortDir() === "asc" ? "desc" : "asc");
+    }
+  }
+
+  protected resetSort(): void {
     this.sortBy.set(null);
-
     this.sortDir.set("desc");
   }
 
   protected ariaSort(field: Field): string | null {
-    if (this.sortBy() !== field.id) {
-      return null;
-    }
-
+    if (this.sortBy() !== field.id) return null;
     return this.sortDir() === "asc" ? "ascending" : "descending";
   }
 
-  /* =========================================================
-     CLEAR
-     ========================================================= */
-
   protected clearAll(): void {
     this.searchInput.set("");
-
     this.search.set("");
-
     this.filters.set([]);
   }
 
-  /* =========================================================
-     NAVIGATION
-     ========================================================= */
-
+  /* ---------------------------- navigation --------------------------- */
   protected open(record: TrackerRecord): void {
     void this.router.navigate([
       "/collections",
@@ -1202,12 +1173,24 @@ export class TableView {
     ]);
   }
 
-  /* =========================================================
-     SUMMARY
-     ========================================================= */
+  /* ---------------------------- helpers ------------------------------ */
+  /** Cards skip empty fields to stay compact. */
+  protected hasValue(record: TrackerRecord, field: Field): boolean {
+    const v = record.values[field.key];
+    return !(
+      v === null ||
+      v === undefined ||
+      v === "" ||
+      (Array.isArray(v) && v.length === 0)
+    );
+  }
 
   protected format(metric: SummaryMetric): string {
     return formatMetric(metric);
+  }
+
+  protected label(metric: SummaryMetric): string {
+    return metricLabel(metric);
   }
 
   protected aggName(metric: SummaryMetric): string {
@@ -1221,29 +1204,16 @@ export class TableView {
     }[metric.aggregation];
   }
 
-  /* =========================================================
-     RECORD LABEL
-     ========================================================= */
-
   protected labelOf(record: TrackerRecord): string {
     const key = this.ctx.titleField()?.key;
-
     const value = key ? record.values[key] : null;
-
     return typeof value === "string" && value ? value : "this record";
   }
 
-  /* =========================================================
-     EXPORT
-     ========================================================= */
-
+  /* ------------------------------ export ----------------------------- */
   protected async export(): Promise<void> {
     const id = this.ctx.id();
-
-    if (!id) {
-      return;
-    }
-
+    if (!id) return;
     try {
       await this.records.exportCsv(
         id,
@@ -1255,10 +1225,7 @@ export class TableView {
     }
   }
 
-  /* =========================================================
-     DELETE
-     ========================================================= */
-
+  /* ------------------------------ delete ----------------------------- */
   protected async remove(record: TrackerRecord): Promise<void> {
     const name = this.labelOf(record);
 
@@ -1280,16 +1247,12 @@ export class TableView {
       }
 
       const count = problemExtension<number>(err, "referenceCount") ?? 0;
-
       const again = await this.confirm(
         "This record is referenced elsewhere",
         `${count} other record(s) point to “${name}”. Deleting it will clear those references.`,
         "Delete anyway",
       );
-
-      if (!again) {
-        return;
-      }
+      if (!again) return;
 
       try {
         await this.records.remove(record.id, true);
@@ -1299,17 +1262,10 @@ export class TableView {
     }
 
     this.notify.info("Record deleted.");
-
     this.list.reload();
-
     this.summary.reload();
-
     this.ctx.detail.reload();
   }
-
-  /* =========================================================
-     CONFIRM DIALOG
-     ========================================================= */
 
   private confirm(
     title: string,
@@ -1319,12 +1275,7 @@ export class TableView {
     return firstValueFrom(
       this.dialog
         .open<ConfirmDialog, unknown, boolean>(ConfirmDialog, {
-          data: {
-            title,
-            message,
-            confirmLabel,
-            destructive: true,
-          },
+          data: { title, message, confirmLabel, destructive: true },
         })
         .afterClosed(),
     ).then((value) => value === true);
