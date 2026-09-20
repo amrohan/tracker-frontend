@@ -63,27 +63,40 @@ import { CoverView } from "../../shared/cover-view";
               </p>
             }
 
-            <p class="meta">
-              <span>
-                {{ c.recordCount }}
-                {{ c.recordCount === 1 ? "record" : "records" }}
+            <div class="meta">
+              <span class="meta-item">
+                <mat-icon class="meta-icon" aria-hidden="true"
+                  >dataset</mat-icon
+                >
+                <span>
+                  {{ c.recordCount }}
+                  {{ c.recordCount === 1 ? "record" : "records" }}
+                </span>
               </span>
 
               <span class="dot" aria-hidden="true">·</span>
 
-              <span>
-                {{ c.fields.length }}
-                {{ c.fields.length === 1 ? "field" : "fields" }}
+              <span class="meta-item">
+                <mat-icon class="meta-icon" aria-hidden="true"
+                  >view_column</mat-icon
+                >
+                <span>
+                  {{ c.fields.length }}
+                  {{ c.fields.length === 1 ? "field" : "fields" }}
+                </span>
               </span>
 
               @if (c.lastActivityAt) {
                 <span class="dot" aria-hidden="true">·</span>
 
-                <span class="last">
-                  Updated {{ dateTime(c.lastActivityAt) }}
+                <span class="meta-item last">
+                  <mat-icon class="meta-icon" aria-hidden="true"
+                    >schedule</mat-icon
+                  >
+                  <span>Updated {{ dateTime(c.lastActivityAt) }}</span>
                 </span>
               }
-            </p>
+            </div>
           </div>
 
           <!-- Actions -->
@@ -100,6 +113,7 @@ import { CoverView } from "../../shared/cover-view";
 
             <button
               mat-icon-button
+              class="options-btn"
               [matMenuTriggerFor]="menu"
               aria-label="Collection options"
             >
@@ -109,22 +123,22 @@ import { CoverView } from "../../shared/cover-view";
             <mat-menu #menu="matMenu">
               <button mat-menu-item (click)="changeCover()">
                 <mat-icon>image</mat-icon>
-                Change cover
+                <span>Change cover</span>
               </button>
 
               <a mat-menu-item [routerLink]="['/collections', c.id, 'edit']">
                 <mat-icon>tune</mat-icon>
-                Edit fields &amp; details
+                <span>Edit fields &amp; details</span>
               </a>
 
               <a mat-menu-item [routerLink]="['/collections', c.id, 'import']">
                 <mat-icon>upload_file</mat-icon>
-                Import records
+                <span>Import records</span>
               </a>
 
-              <button mat-menu-item (click)="remove()">
+              <button mat-menu-item class="delete-item" (click)="remove()">
                 <mat-icon>delete</mat-icon>
-                Delete tracker
+                <span>Delete tracker</span>
               </button>
             </mat-menu>
           </div>
@@ -148,8 +162,7 @@ import { CoverView } from "../../shared/cover-view";
               }"
               [active]="tableLink.isActive"
             >
-              <mat-icon class="tab-icon"> table_rows </mat-icon>
-
+              <mat-icon class="tab-icon">table_rows</mat-icon>
               Table
             </a>
 
@@ -160,11 +173,17 @@ import { CoverView } from "../../shared/cover-view";
               #summaryLink="routerLinkActive"
               [active]="summaryLink.isActive"
             >
-              <mat-icon class="tab-icon"> insights </mat-icon>
-
+              <mat-icon class="tab-icon">insights</mat-icon>
               Summary
             </a>
           </nav>
+        </div>
+
+        <div class="goBack">
+          <button matButton="tonal" routerLink="/">
+            <mat-icon>arrow_back</mat-icon>
+            Go Back
+          </button>
         </div>
       </header>
 
@@ -173,13 +192,16 @@ import { CoverView } from "../../shared/cover-view";
         @if (c.fields.length === 0) {
           <div class="page">
             <div class="empty-state">
-              <span class="material-icons"> tune </span>
+              <div class="empty-icon-box" aria-hidden="true">
+                <mat-icon>tune</mat-icon>
+              </div>
 
               <h3>Add your first field</h3>
 
               <p>Fields define what you record — a name, a date, a rating…</p>
 
               <a mat-flat-button [routerLink]="['/collections', c.id, 'edit']">
+                <mat-icon>add</mat-icon>
                 Add fields
               </a>
             </div>
@@ -205,7 +227,9 @@ import { CoverView } from "../../shared/cover-view";
       <!-- ================= ERROR ================= -->
       <div class="page">
         <div class="empty-state">
-          <span class="material-icons"> search_off </span>
+          <div class="empty-icon-box error-box" aria-hidden="true">
+            <mat-icon>search_off</mat-icon>
+          </div>
 
           <h3>
             {{
@@ -213,7 +237,15 @@ import { CoverView } from "../../shared/cover-view";
             }}
           </h3>
 
-          <a mat-stroked-button routerLink="/"> Back to my trackers </a>
+          <p>
+            We couldn't load this tracker. It may have been removed or the link
+            might be broken.
+          </p>
+
+          <a mat-stroked-button routerLink="/">
+            <mat-icon>arrow_back</mat-icon>
+            Back to my trackers
+          </a>
         </div>
       </div>
     }
@@ -234,21 +266,22 @@ import { CoverView } from "../../shared/cover-view";
 
     .hero {
       position: relative;
-      height: clamp(112px, 22vw, 208px);
+      height: clamp(120px, 22vw, 216px);
       overflow: hidden;
+      background: var(--mat-sys-surface-container, #f3edf7);
     }
 
     .hero::after {
       content: "";
       position: absolute;
       inset: auto 0 0 0;
-      height: 45%;
+      height: 55%;
       pointer-events: none;
-
       background: linear-gradient(
         to bottom,
-        transparent,
-        color-mix(in srgb, var(--mat-sys-surface) 30%, transparent)
+        transparent 0%,
+        color-mix(in srgb, var(--mat-sys-surface, #ffffff) 65%, transparent) 65%,
+        var(--mat-sys-surface, #ffffff) 100%
       );
     }
 
@@ -258,22 +291,13 @@ import { CoverView } from "../../shared/cover-view";
 
     .head {
       position: relative;
-
       display: grid;
-
-      grid-template-columns:
-        auto
-        minmax(0, 1fr)
-        auto;
-
+      grid-template-columns: auto minmax(0, 1fr) auto;
       align-items: end;
-
-      column-gap: 16px;
-
+      column-gap: 20px;
       padding-top: 0;
-      padding-bottom: 12px;
-
-      margin-top: calc(clamp(56px, 8vw, 80px) / -2);
+      padding-bottom: 16px;
+      margin-top: calc(clamp(60px, 8vw, 84px) / -2);
     }
 
     /* =========================================================
@@ -281,23 +305,22 @@ import { CoverView } from "../../shared/cover-view";
        ========================================================= */
 
     .icon {
-      width: clamp(56px, 8vw, 80px);
-      height: clamp(56px, 8vw, 80px);
-
+      width: clamp(60px, 8vw, 84px);
+      height: clamp(60px, 8vw, 84px);
       border-radius: clamp(16px, 2.4vw, 24px);
-
       display: grid;
       place-items: center;
-
       flex-shrink: 0;
-
-      font-size: clamp(1.75rem, 1.2rem + 2vw, 2.6rem);
-
-      background: var(--mat-sys-surface);
-
-      border: 1px solid var(--mat-sys-outline-variant);
-
-      box-shadow: var(--mat-sys-level2);
+      font-size: clamp(1.85rem, 1.25rem + 2vw, 2.75rem);
+      background: var(--mat-sys-surface, #ffffff);
+      border: 3px solid var(--mat-sys-surface, #ffffff);
+      box-shadow:
+        0 4px 16px -2px rgba(0, 0, 0, 0.12),
+        0 2px 6px -1px rgba(0, 0, 0, 0.08);
+      user-select: none;
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
     }
 
     /* =========================================================
@@ -311,29 +334,23 @@ import { CoverView } from "../../shared/cover-view";
 
     h1 {
       margin: 0;
-
-      font-size: clamp(1.5rem, 1.15rem + 1.6vw, 2.4rem);
-
-      line-height: 1.15;
+      font-size: clamp(1.5rem, 1.15rem + 1.6vw, 2.35rem);
+      line-height: 1.18;
+      font-weight: 700;
       letter-spacing: -0.02em;
-
+      color: var(--mat-sys-on-surface, #1d1b20);
       overflow-wrap: anywhere;
       word-break: break-word;
     }
 
     .desc {
       margin: 6px 0 0;
-
-      font-size: 1rem;
+      font-size: 0.95rem;
       line-height: 1.45;
-
-      color: var(--mat-sys-on-surface-variant);
-
+      color: var(--mat-sys-on-surface-variant, #49454f);
       display: -webkit-box;
-
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
-
       overflow: hidden;
     }
 
@@ -342,21 +359,32 @@ import { CoverView } from "../../shared/cover-view";
        ========================================================= */
 
     .meta {
-      margin: 8px 0 0;
-
+      margin: 10px 0 0;
       font-size: 0.875rem;
-
-      color: var(--mat-sys-on-surface-variant);
-
+      color: var(--mat-sys-on-surface-variant, #49454f);
       display: flex;
-
+      align-items: center;
       flex-wrap: wrap;
+      gap: 4px 8px;
+    }
 
-      gap: 0 6px;
+    .meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 500;
+    }
+
+    .meta-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      opacity: 0.75;
     }
 
     .dot {
-      opacity: 0.7;
+      opacity: 0.45;
+      font-weight: 700;
     }
 
     /* =========================================================
@@ -365,14 +393,31 @@ import { CoverView } from "../../shared/cover-view";
 
     .actions {
       display: flex;
-
       align-items: center;
-
-      gap: 4px;
-
+      gap: 6px;
       align-self: start;
+      padding-top: calc(clamp(60px, 8vw, 84px) / 2 + 6px);
+    }
 
-      padding-top: calc(clamp(56px, 8vw, 80px) / 2 + 8px);
+    .add-desktop {
+      min-height: 40px;
+      padding: 0 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    .options-btn {
+      color: var(--mat-sys-on-surface-variant, #49454f);
+      border-radius: 10px;
+    }
+
+    .delete-item {
+      color: var(--mat-sys-error, #ba1a1a);
+    }
+
+    .delete-item mat-icon {
+      color: var(--mat-sys-error, #ba1a1a);
     }
 
     /* =========================================================
@@ -384,63 +429,78 @@ import { CoverView } from "../../shared/cover-view";
       padding-bottom: 0;
     }
 
-    .tab-icon {
-      margin-right: 8px;
-
-      font-size: 20px;
-
-      width: 20px;
-      height: 20px;
+    [mat-tab-link] {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      min-width: 120px;
+      height: 48px;
+      letter-spacing: 0.01em;
     }
 
-    [mat-tab-link] {
-      font-size: 0.95rem;
-      min-width: 112px;
+    .tab-icon {
+      margin-right: 8px;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* =========================================================
-       EMPTY STATE
+       EMPTY & ERROR STATE
        ========================================================= */
 
     .empty-state {
-      min-height: 260px;
-
+      min-height: 280px;
       display: flex;
-
       flex-direction: column;
-
       align-items: center;
-
       justify-content: center;
-
       text-align: center;
-
       padding: 48px 20px;
     }
 
-    .empty-state .material-icons {
-      font-size: 48px;
+    .empty-icon-box {
+      width: 60px;
+      height: 60px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: var(--mat-sys-surface-container, #f3edf7);
+      color: var(--mat-sys-on-surface-variant, #49454f);
+      margin-bottom: 16px;
+    }
 
-      width: 48px;
-      height: 48px;
+    .empty-icon-box mat-icon {
+      font-size: 30px;
+      width: 30px;
+      height: 30px;
+    }
 
-      margin-bottom: 12px;
-
-      color: var(--mat-sys-on-surface-variant);
+    .empty-icon-box.error-box {
+      background: var(--mat-sys-error-container, #ffdad6);
+      color: var(--mat-sys-on-error-container, #410002);
     }
 
     .empty-state h3 {
       margin: 0 0 8px;
-
-      font-size: 1.25rem;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--mat-sys-on-surface, #1d1b20);
     }
 
     .empty-state p {
-      max-width: 420px;
-
+      max-width: 440px;
       margin: 0 0 20px;
+      font-size: 0.925rem;
+      line-height: 1.5;
+      color: var(--mat-sys-on-surface-variant, #49454f);
+    }
 
-      color: var(--mat-sys-on-surface-variant);
+    .empty-state a {
+      border-radius: 10px;
+      min-height: 40px;
     }
 
     /* =========================================================
@@ -449,77 +509,71 @@ import { CoverView } from "../../shared/cover-view";
 
     .fab {
       display: none;
-
       position: fixed;
+      right: 20px;
+      bottom: max(20px, calc(env(safe-area-inset-bottom) + 16px));
+      z-index: 25;
+      border-radius: 16px;
+      box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.16),
+        0 2px 6px rgba(0, 0, 0, 0.08);
+      transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+    }
 
-      right: 16px;
-
-      bottom: max(16px, env(safe-area-inset-bottom));
-
-      z-index: 20;
+    .fab:active {
+      transform: scale(0.97);
     }
 
     /* =========================================================
-       RESPONSIVE
+       RESPONSIVE (TABLETS & PHONES)
        ========================================================= */
 
     @media (max-width: 640px) {
       .head {
         /*
-         * Two columns on mobile.
-         *
-         * Icon | Title
-         *
-         * Actions are positioned independently
-         * so they don't squeeze the title.
+         * Responsive 2-row layout:
+         * Row 1: [Icon] ... [Options Button]
+         * Row 2: [Titles & Meta (100% width)]
          */
-        grid-template-columns:
-          auto
-          minmax(0, 1fr);
-
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        row-gap: 12px;
         column-gap: 12px;
-
-        margin-top: -28px;
-
-        padding-bottom: 12px;
+        margin-top: -30px;
+        padding-bottom: 14px;
       }
 
       .icon {
-        width: 56px;
-        height: 56px;
-
+        grid-column: 1;
+        grid-row: 1;
+        width: 58px;
+        height: 58px;
         border-radius: 16px;
-
-        font-size: 1.75rem;
-      }
-
-      .titles {
-        padding-bottom: 0;
-
-        /*
-         * Prevent text from overflowing
-         * underneath the menu button.
-         */
-        padding-right: 44px;
-      }
-
-      h1 {
-        font-size: 1.5rem;
-      }
-
-      .desc {
-        font-size: 0.9rem;
-
-        -webkit-line-clamp: 2;
+        font-size: 1.8rem;
       }
 
       .actions {
-        position: absolute;
-
-        top: 36px;
-        right: 0;
-
+        grid-column: 2;
+        grid-row: 1;
+        align-self: center;
         padding-top: 0;
+      }
+
+      .titles {
+        grid-column: 1 / -1;
+        padding-bottom: 0;
+        padding-right: 0;
+      }
+
+      h1 {
+        font-size: 1.45rem;
+      }
+
+      .desc {
+        font-size: 0.875rem;
+        -webkit-line-clamp: 2;
       }
 
       .add-desktop {
@@ -530,55 +584,61 @@ import { CoverView } from "../../shared/cover-view";
         display: inline-flex;
       }
 
-      .last {
-        display: none;
+      .tabs-wrap {
+        margin-bottom: 12px;
       }
 
       [mat-tab-link] {
         min-width: 0;
-
         flex: 1;
-
         justify-content: center;
+        font-size: 0.875rem;
+        height: 44px;
       }
 
       .tab-icon {
-        margin-right: 4px;
+        margin-right: 6px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
       }
     }
 
     /* =========================================================
-       VERY SMALL PHONES
+       VERY SMALL PHONES (<= 380px)
        ========================================================= */
 
     @media (max-width: 380px) {
       .head {
-        column-gap: 10px;
+        margin-top: -24px;
       }
 
       .icon {
         width: 50px;
         height: 50px;
-
         border-radius: 14px;
-
         font-size: 1.5rem;
       }
 
-      .titles {
-        padding-right: 40px;
-      }
-
       h1 {
-        font-size: 1.3rem;
+        font-size: 1.25rem;
       }
 
       .meta {
         font-size: 0.8rem;
       }
 
-      .tab-icon {
-        display: none;
+      .meta-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .icon,
+      .fab {
+        transition: none;
       }
     }
   `,
@@ -625,10 +685,7 @@ export class CollectionPage {
       this.dialog
         .open<
           CoverPickerDialog,
-          {
-            cover: Cover;
-            collectionId: string | null;
-          },
+          { cover: Cover; collectionId: string | null },
           CoverSelection
         >(CoverPickerDialog, {
           data: {

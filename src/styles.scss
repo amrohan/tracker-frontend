@@ -302,3 +302,19 @@ a {
     scroll-behavior: auto !important;
   }
 }
+
+.goBack {
+  position: absolute;
+  top: 6rem;
+  left: 1rem;
+  z-index: 10;
+}
+
+@media (max-width: 640px) {
+  .goBack {
+    position: absolute;
+    top: 4.5rem;
+    left: 0.5rem;
+    z-index: 10;
+  }
+}
