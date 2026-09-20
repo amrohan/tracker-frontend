@@ -1,67 +1,304 @@
-@use '@angular/material' as mat;
+@use "@angular/material" as mat;
 
-// Material 3 theme. `color-scheme: light dark` + theme-type color-scheme => tokens use light-dark(),
-// so switching theme is just changing `color-scheme` on <html> (see ThemeService).
+// ================================================================
+// MATERIAL 3 THEME
+// ================================================================
+
 html {
   color-scheme: light dark;
-  @include mat.theme((
-    color: (
-      primary: mat.$cyan-palette,
-      tertiary: mat.$orange-palette,
-      theme-type: color-scheme,
-    ),
-    typography: (
-      plain-family: 'Figtree, system-ui, sans-serif',
-      brand-family: 'Bricolage Grotesque, Figtree, system-ui, sans-serif',
-      bold-weight: 700,
-      medium-weight: 600,
-      regular-weight: 400,
-    ),
-    density: 0,
-  ));
+
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$cyan-palette,
+        tertiary: mat.$orange-palette,
+        theme-type: color-scheme,
+      ),
+      typography: (
+        plain-family: "Figtree, system-ui, sans-serif",
+        brand-family: "Bricolage Grotesque, Figtree, system-ui, sans-serif",
+        bold-weight: 700,
+        medium-weight: 600,
+        regular-weight: 400,
+      ),
+      density: -2,
+    )
+  );
 }
 
-*, *::before, *::after { box-sizing: border-box; }
+// ================================================================
+// RESET / BASE
+// ================================================================
 
-html, body { height: 100%; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
 
 body {
   margin: 0;
+
   background: var(--mat-sys-surface);
+
   color: var(--mat-sys-on-surface);
-  font-family: var(--mat-sys-body-large-font, 'Figtree', system-ui, sans-serif);
+
+  font-family: var(--mat-sys-body-large-font, "Figtree", system-ui, sans-serif);
+
+  line-height: 1.5;
 }
 
-h1, h2, h3 { font-family: var(--mat-sys-headline-large-font, 'Bricolage Grotesque', sans-serif); margin: 0; }
+// ================================================================
+// TYPOGRAPHY
+// ================================================================
 
-a { color: var(--mat-sys-primary); }
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(
+    --mat-sys-headline-large-font,
+    "Bricolage Grotesque",
+    "Figtree",
+    system-ui,
+    sans-serif
+  );
 
-:focus-visible { outline: 2px solid var(--mat-sys-primary); outline-offset: 2px; }
+  margin: 0;
 
-// ---- shared layout helpers -------------------------------------------------
-.page { max-width: 1200px; margin: 0 auto; padding: 24px 20px 64px; }
-.page-narrow { max-width: 760px; margin: 0 auto; padding: 24px 20px 64px; }
-.row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.spacer { flex: 1 1 auto; }
-.muted { color: var(--mat-sys-on-surface-variant); }
-.field-error { color: var(--mat-sys-error); font-size: 0.85rem; margin: -10px 0 12px 4px; }
-.full { width: 100%; }
-.stack { display: grid; gap: 4px; }
+  color: var(--mat-sys-on-surface);
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+}
+
+p {
+  margin-top: 0;
+}
+
+a {
+  color: var(--mat-sys-primary);
+}
+
+// ================================================================
+// ACCESSIBILITY
+// ================================================================
+
+:focus-visible {
+  outline: 2px solid var(--mat-sys-primary);
+
+  outline-offset: 2px;
+}
+
+// ================================================================
+// SHARED PAGE LAYOUT
+// ================================================================
+
+.page {
+  width: 100%;
+  max-width: 1200px;
+
+  margin-inline: auto;
+
+  padding: 24px 20px 64px;
+}
+
+.page-narrow {
+  width: 100%;
+  max-width: 760px;
+
+  margin-inline: auto;
+
+  padding: 24px 20px 64px;
+}
+
+// ================================================================
+// RESPONSIVE PAGE PADDING
+// ================================================================
+
+@media (max-width: 768px) {
+  .page,
+  .page-narrow {
+    padding: 20px 16px 48px;
+  }
+}
+
+@media (max-width: 640px) {
+  .page,
+  .page-narrow {
+    padding: 16px 14px 40px;
+  }
+}
+
+// ================================================================
+// FLEX HELPERS
+// ================================================================
+
+.row {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  flex-wrap: wrap;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+// ================================================================
+// TEXT HELPERS
+// ================================================================
+
+.muted {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.full {
+  width: 100%;
+}
+
+// ================================================================
+// STACK
+// ================================================================
+
+.stack {
+  display: grid;
+  gap: 4px;
+}
+
+// ================================================================
+// FORM ERROR
+// ================================================================
+
+.field-error {
+  margin: -10px 0 12px 4px;
+
+  color: var(--mat-sys-error);
+
+  font-size: 0.85rem;
+
+  line-height: 1.4;
+}
+
+// ================================================================
+// SHARED SURFACE CARD
+// ================================================================
 
 .surface-card {
   background: var(--mat-sys-surface-container-low);
+
   border: 1px solid var(--mat-sys-outline-variant);
+
   border-radius: 16px;
+
   padding: 20px;
 }
 
+// ================================================================
+// EMPTY STATE
+// ================================================================
+
 .empty-state {
-  text-align: center; padding: 56px 20px; color: var(--mat-sys-on-surface-variant);
-  border: 2px dashed var(--mat-sys-outline-variant); border-radius: 20px;
-  .material-icons { font-size: 48px; opacity: .6; }
-  h3 { color: var(--mat-sys-on-surface); margin: 8px 0; }
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-height: 220px;
+
+  padding: 48px 20px;
+
+  text-align: center;
+
+  color: var(--mat-sys-on-surface-variant);
+
+  border: 2px dashed var(--mat-sys-outline-variant);
+
+  border-radius: 20px;
+
+  .material-icons,
+  mat-icon {
+    width: 48px;
+    height: 48px;
+
+    font-size: 48px;
+
+    opacity: 0.6;
+
+    margin-bottom: 8px;
+  }
+
+  h3 {
+    margin: 8px 0;
+
+    color: var(--mat-sys-on-surface);
+
+    font-size: 1.2rem;
+  }
+
+  p {
+    max-width: 480px;
+
+    margin: 0 0 20px;
+
+    line-height: 1.5;
+  }
 }
 
+// ================================================================
+// SHARED RESPONSIVE CARD GRID
+// ================================================================
+
+.card-grid {
+  display: grid;
+
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+
+    gap: 12px;
+  }
+}
+
+// ================================================================
+// REDUCED MOTION
+// ================================================================
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+
+    animation-iteration-count: 1 !important;
+
+    transition-duration: 0.01ms !important;
+
+    scroll-behavior: auto !important;
+  }
 }
