@@ -15,6 +15,7 @@ import { RecordDetail } from "../../core/models";
 import { Notify } from "../../core/notify.service";
 import { RecordsApi } from "../../core/records-api.service";
 import { RecordDrawer } from "../../shared/record-drawer";
+import { recordLabel } from "../collection/record-list.utils";
 import { DynamicForm } from "./dynamic-form";
 
 @Component({
@@ -36,6 +37,12 @@ import { DynamicForm } from "./dynamic-form";
       (closed)="cancel()"
     >
       @if (ready()) {
+        <!-- @if (!recordId()) {
+          <p class="hint">
+            <mat-icon aria-hidden="true">info</mat-icon>
+            Fields marked with an asterisk (*) are required.
+          </p>
+        } -->
         <app-dynamic-form
           [fields]="ctx.fields()"
           [initial]="record.value()?.record.values ?? null"
@@ -49,7 +56,7 @@ import { DynamicForm } from "./dynamic-form";
       } @else if (record.error()) {
         <div class="state">
           <mat-icon aria-hidden="true">error_outline</mat-icon>
-          <p>Could not load this record.</p>
+          <p>Could not load this record. It may have been deleted.</p>
           <button mat-stroked-button type="button" (click)="cancel()">
             Close
           </button>
@@ -60,6 +67,25 @@ import { DynamicForm } from "./dynamic-form";
     </app-record-drawer>
   `,
   styles: `
+    .hint {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 16px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: var(--mat-sys-surface-container);
+      color: var(--mat-sys-on-surface-variant);
+      font-size: 0.8125rem;
+    }
+    .hint mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      flex: none;
+      opacity: 0.85;
+    }
+
     .state {
       display: grid;
       justify-items: center;
@@ -99,13 +125,13 @@ export class RecordFormPage {
   );
 
   protected readonly recordTitle = computed(() => {
-    const key = this.ctx.titleField()?.key;
     const d = this.record.value();
-    const label = key && d ? d.record.values[key] : null;
-    return typeof label === "string" && label ? label : "record";
+    return d
+      ? recordLabel(d.record, this.ctx.titleField()?.key, "record")
+      : "record";
   });
 
-  /** Cancel returns to the record when editing, otherwise to the table. */
+  /** Cancel always returns to the table behind the drawer. */
   protected cancel(): void {
     void this.router.navigate(["/collections", this.id()]);
   }

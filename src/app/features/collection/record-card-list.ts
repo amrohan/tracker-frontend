@@ -11,7 +11,6 @@ import { FieldValue } from "../../shared/field-value";
 import { RecordActionMenu } from "../../shared/record-action-menu";
 import { hasVisibleValue } from "./record-list.utils";
 
-/** Mobile record view: one card per record, plus a totals card when the collection has aggregations. */
 @Component({
   selector: "app-record-card-list",
   imports: [RouterLink, FieldValue, RecordActionMenu],
@@ -202,8 +201,8 @@ export class RecordCardList {
   protected readonly metricLabel = metricLabel;
 
   protected labelOf(r: TrackerRecord): string {
-    const key = this.titleField()?.key;
-    const v = key ? r.values[key] : null;
+    const id = this.titleField()?.id;
+    const v = id ? r.values[id] : null;
     return typeof v === "string" && v ? v : "this record";
   }
 }

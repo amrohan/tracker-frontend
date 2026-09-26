@@ -38,7 +38,6 @@ function buildInitial(
   imports: [DynamicField, MatButtonModule, MatIconModule],
   template: `
     <form (submit)="onSubmit($event)" novalidate class="form-layout">
-      <!-- Dynamic Fields -->
       <div class="fields-list">
         @for (f of fields(); track f.id) {
           <div class="field-item">
@@ -53,7 +52,6 @@ function buildInitial(
         }
       </div>
 
-      <!-- Validation Error Summary Banner -->
       @if (attempted() && errorCount() > 0) {
         <div class="form-alert" role="alert">
           <mat-icon class="alert-icon" aria-hidden="true"
@@ -69,7 +67,6 @@ function buildInitial(
         </div>
       }
 
-      <!-- Actions -->
       <div class="actions">
         <button
           mat-button
@@ -80,7 +77,6 @@ function buildInitial(
         >
           Cancel
         </button>
-
         <button
           mat-flat-button
           type="submit"
@@ -93,165 +89,125 @@ function buildInitial(
     </form>
   `,
   styles: `
+    :host {
+      display: block;
+    }
+
+    .form-layout {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---------------- fields ---------------- */
+    .fields-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .field-item {
+      width: 100%;
+    }
+
+    /* ---------------- validation summary ---------------- */
+    .form-alert {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: var(--mat-sys-error-container);
+      color: var(--mat-sys-on-error-container);
+      font-size: 0.875rem;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+    .alert-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      flex: none;
+    }
+
+    /* ---------------- actions ---------------- */
+    /* sticky within the record drawer: --drawer-pad / --drawer-bg come from RecordDrawer */
     .actions {
       position: sticky;
       bottom: 0;
       z-index: 2;
-      margin: 16px calc(-1 * var(--drawer-pad, 0px))
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      margin: 20px calc(-1 * var(--drawer-pad, 0px))
         calc(-1 * var(--drawer-pad, 0px));
-      padding: 12px var(--drawer-pad, 0px)
-        calc(12px + env(safe-area-inset-bottom));
-      background: var(--drawer-bg, transparent);
+      padding: 16px var(--drawer-pad, 0px)
+        calc(16px + env(safe-area-inset-bottom));
+      background: var(--drawer-bg, var(--mat-sys-surface));
       border-top: 1px solid var(--mat-sys-outline-variant);
     }
-    @media (max-width: 560px) {
-      .actions button {
-        flex: 1;
-        min-height: 46px;
+
+    .cancel-btn {
+      min-height: 42px;
+      padding: 0 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      color: var(--mat-sys-on-surface-variant);
+      transition:
+        background-color 140ms ease,
+        color 140ms ease;
+    }
+    .cancel-btn:hover:not([disabled]) {
+      background: var(--mat-sys-surface-container-high);
+      color: var(--mat-sys-on-surface);
+    }
+
+    .submit-btn {
+      min-height: 42px;
+      padding: 0 22px;
+      border-radius: 10px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    /* ---------------- phones ---------------- */
+    @media (max-width: 600px) {
+      .fields-list {
+        gap: 14px;
       }
-      .actions .spacer {
-        display: none;
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .cancel-btn,
+      .submit-btn {
+        width: 100%;
+        min-height: 46px;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .actions {
+        grid-template-columns: 1fr;
+      }
+      .cancel-btn {
+        order: 2;
+      }
+      .submit-btn {
+        order: 1;
+      } /* primary action reachable first with one thumb */
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cancel-btn,
+      .submit-btn {
+        transition: none;
       }
     }
   `,
-  // styles: `
-  //   :host {
-  //     display: block;
-  //   }
-
-  //   .form-layout {
-  //     display: flex;
-  //     flex-direction: column;
-  //   }
-
-  //   /* =========================================================
-  //      FIELDS
-  //      ========================================================= */
-
-  //   .fields-list {
-  //     display: flex;
-  //     flex-direction: column;
-  //     gap: 16px;
-  //   }
-
-  //   .field-item {
-  //     width: 100%;
-  //   }
-
-  //   /* =========================================================
-  //      ALERT
-  //      ========================================================= */
-
-  //   .form-alert {
-  //     display: flex;
-  //     align-items: center;
-  //     gap: 10px;
-  //     margin-top: 18px;
-  //     padding: 12px 16px;
-  //     border-radius: 12px;
-  //     background: var(--mat-sys-error-container, #ffdad6);
-  //     color: var(--mat-sys-on-error-container, #410002);
-  //     font-size: 0.875rem;
-  //     font-weight: 500;
-  //     line-height: 1.4;
-  //   }
-
-  //   .alert-icon {
-  //     font-size: 20px;
-  //     width: 20px;
-  //     height: 20px;
-  //     flex-shrink: 0;
-  //   }
-
-  //   /* =========================================================
-  //      ACTIONS
-  //      ========================================================= */
-
-  //   .actions {
-  //     display: flex;
-  //     align-items: center;
-  //     justify-content: flex-end;
-  //     gap: 12px;
-  //     margin-top: 24px;
-  //     padding-top: 16px;
-  //     border-top: 1px solid var(--mat-sys-outline-variant, #e0e2ec);
-  //   }
-
-  //   .cancel-btn {
-  //     min-height: 42px;
-  //     padding: 0 18px;
-  //     border-radius: 10px;
-  //     font-weight: 600;
-  //     color: var(--mat-sys-on-surface-variant, #49454f);
-  //     transition:
-  //       background-color 140ms ease,
-  //       color 140ms ease;
-  //   }
-
-  //   .cancel-btn:hover:not([disabled]) {
-  //     background: var(--mat-sys-surface-container-high, #ece6f0);
-  //     color: var(--mat-sys-on-surface, #1d1b20);
-  //   }
-
-  //   .submit-btn {
-  //     min-height: 42px;
-  //     padding: 0 22px;
-  //     border-radius: 10px;
-  //     font-weight: 600;
-  //     letter-spacing: 0.01em;
-  //   }
-
-  //   /* =========================================================
-  //      RESPONSIVE (MOBILE <= 600px)
-  //      ========================================================= */
-
-  //   @media (max-width: 600px) {
-  //     .fields-list {
-  //       gap: 14px;
-  //     }
-
-  //     .actions {
-  //       display: grid;
-  //       grid-template-columns: 1fr 1fr;
-  //       gap: 10px;
-  //       margin-top: 20px;
-  //       padding-top: 14px;
-  //     }
-
-  //     .cancel-btn,
-  //     .submit-btn {
-  //       width: 100%;
-  //       min-height: 44px;
-  //       justify-content: center;
-  //     }
-  //   }
-
-  //   /* =========================================================
-  //      EXTRA SMALL PHONES (<= 380px)
-  //      ========================================================= */
-
-  //   @media (max-width: 380px) {
-  //     .actions {
-  //       grid-template-columns: 1fr;
-  //     }
-
-  //     /* Stack submit button first or cancel button clearly */
-  //     .cancel-btn {
-  //       order: 2;
-  //     }
-
-  //     .submit-btn {
-  //       order: 1;
-  //     }
-  //   }
-
-  //   @media (prefers-reduced-motion: reduce) {
-  //     .cancel-btn,
-  //     .submit-btn {
-  //       transition: none;
-  //     }
-  //   }
-  // `,
 })
 export class DynamicForm {
   readonly fields = input.required<Field[]>();

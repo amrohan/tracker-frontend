@@ -46,7 +46,7 @@ import { MatIcon } from "@angular/material/icon";
 
           <tbody>
             @for (r of items(); track r.id) {
-              <tr class="record-row" (click)="open.emit(r)">
+              <tr class="record-row">
                 @for (f of columns(); track f.id; let first = $first) {
                   <td>
                     @if (first) {
