@@ -24,10 +24,7 @@ import { CollectionCard } from "./collection-card";
     CollectionCard,
   ],
   template: `
-    <div class="page dashboard">
-      <!-- =====================================================
-           HEADER
-           ===================================================== -->
+    <div class="dashboard">
       <header class="head">
         <div class="heading">
           <span class="eyebrow">Workspace</span>
@@ -49,26 +46,31 @@ import { CollectionCard } from "./collection-card";
           routerLink="/collections/new"
         >
           <mat-icon>add</mat-icon>
-          New tracker
+          <span>New tracker</span>
         </a>
       </header>
 
-      <!-- =====================================================
-           LOADING BAR
-           ===================================================== -->
-      @if (collections.isLoading()) {
+      @if (isRefreshing()) {
         <mat-progress-bar
-          class="loading"
+          class="loading-bar"
           mode="indeterminate"
-          aria-label="Loading trackers"
+          aria-label="Updating trackers"
         />
       }
 
-      <!-- =====================================================
-           ERROR STATE
-           ===================================================== -->
-      @if (collections.error()) {
-        <div class="state-card error-state">
+      @if (isInitialLoading()) {
+        <div class="card-grid" aria-hidden="true">
+          @for (item of skeletonPlaceholders; track $index) {
+            <div class="skeleton-card">
+              <div class="skeleton-icon"></div>
+              <div class="skeleton-line title"></div>
+              <div class="skeleton-line text"></div>
+              <div class="skeleton-line footer"></div>
+            </div>
+          }
+        </div>
+      } @else if (collections.error()) {
+        <div class="state-card error-state" role="alert">
           <div class="state-icon error-icon" aria-hidden="true">
             <mat-icon>cloud_off</mat-icon>
           </div>
@@ -83,12 +85,7 @@ import { CollectionCard } from "./collection-card";
             Try again
           </button>
         </div>
-      }
-
-      <!-- =====================================================
-           EMPTY STATE (NO TRACKERS CREATED YET)
-           ===================================================== -->
-      @else if (all().length === 0 && collections.hasValue()) {
+      } @else if (all().length === 0 && collections.hasValue()) {
         <div class="state-card empty-state">
           <div class="state-icon" aria-hidden="true">
             <mat-icon>library_add</mat-icon>
@@ -103,14 +100,8 @@ import { CollectionCard } from "./collection-card";
             Create a tracker
           </a>
         </div>
-      }
-
-      <!-- =====================================================
-           TRACKERS CONTENT
-           ===================================================== -->
-      @else if (all().length > 0) {
+      } @else if (all().length > 0) {
         <section class="content" aria-label="Your trackers">
-          <!-- ================= TOOLBAR ================= -->
           <div class="tools">
             <mat-form-field
               appearance="outline"
@@ -123,6 +114,7 @@ import { CollectionCard } from "./collection-card";
                 matInput
                 [value]="query()"
                 (input)="onQuery($event)"
+                (keydown.escape)="clearQuery()"
                 placeholder="Search by name or description…"
                 autocomplete="off"
               />
@@ -132,7 +124,7 @@ import { CollectionCard } from "./collection-card";
                   matSuffix
                   type="button"
                   aria-label="Clear search"
-                  (click)="query.set('')"
+                  (click)="clearQuery()"
                 >
                   <mat-icon>close</mat-icon>
                 </button>
@@ -156,8 +148,7 @@ import { CollectionCard } from "./collection-card";
             </mat-button-toggle-group>
           </div>
 
-          <!-- ================= RESULT INFO ================= -->
-          <div class="result-info">
+          <div class="result-info" aria-live="polite">
             @if (query()) {
               <span>
                 <strong>{{ visible().length }}</strong>
@@ -172,7 +163,6 @@ import { CollectionCard } from "./collection-card";
             }
           </div>
 
-          <!-- ================= NO SEARCH RESULTS ================= -->
           @if (visible().length === 0) {
             <div class="state-card no-results">
               <div class="state-icon" aria-hidden="true">
@@ -180,15 +170,12 @@ import { CollectionCard } from "./collection-card";
               </div>
               <h3>No trackers found</h3>
               <p>No trackers match “{{ query() }}”. Try a different keyword.</p>
-              <button mat-stroked-button type="button" (click)="query.set('')">
+              <button mat-stroked-button type="button" (click)="clearQuery()">
                 <mat-icon>close</mat-icon>
                 Clear search
               </button>
             </div>
-          }
-
-          <!-- ================= CARDS GRID ================= -->
-          @else {
+          } @else {
             <div class="card-grid">
               @for (c of visible(); track c.id) {
                 <app-collection-card [collection]="c" />
@@ -200,18 +187,12 @@ import { CollectionCard } from "./collection-card";
     </div>
   `,
   styles: `
-    /* =========================================================
-       DASHBOARD LAYOUT
-       ========================================================= */
     .dashboard {
-      max-width: 1200px;
+      max-width: 1240px;
       margin: 0 auto;
       padding: 32px 20px 48px;
     }
 
-    /* =========================================================
-       HEADER
-       ========================================================= */
     .head {
       display: flex;
       align-items: flex-start;
@@ -287,18 +268,12 @@ import { CollectionCard } from "./collection-card";
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
     }
 
-    /* =========================================================
-       LOADING INDICATOR
-       ========================================================= */
-    .loading {
+    .loading-bar {
       margin-bottom: 20px;
       border-radius: 999px;
       height: 4px;
     }
 
-    /* =========================================================
-       CONTENT & TOOLBAR
-       ========================================================= */
     .content {
       min-width: 0;
     }
@@ -312,7 +287,7 @@ import { CollectionCard } from "./collection-card";
     }
 
     .search-field {
-      width: min(380px, 100%);
+      width: min(400px, 100%);
     }
 
     .search-prefix {
@@ -335,9 +310,6 @@ import { CollectionCard } from "./collection-card";
       margin-right: 6px;
     }
 
-    /* =========================================================
-       RESULT INFO
-       ========================================================= */
     .result-info {
       min-height: 24px;
       margin-bottom: 16px;
@@ -345,18 +317,62 @@ import { CollectionCard } from "./collection-card";
       font-size: 0.85rem;
     }
 
-    /* =========================================================
-       CARD GRID
-       ========================================================= */
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 20px;
     }
 
-    /* =========================================================
-       EMPTY & STATE CARDS (UNIFIED)
-       ========================================================= */
+    .skeleton-card {
+      min-height: 160px;
+      padding: 20px;
+      border-radius: 16px;
+      background: var(--mat-sys-surface-container, #f3edf7);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .skeleton-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--mat-sys-surface-container-high, #e8e8ec);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    .skeleton-line {
+      border-radius: 4px;
+      background: var(--mat-sys-surface-container-high, #e8e8ec);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    .skeleton-line.title {
+      width: 60%;
+      height: 18px;
+    }
+
+    .skeleton-line.text {
+      width: 85%;
+      height: 14px;
+    }
+
+    .skeleton-line.footer {
+      width: 40%;
+      height: 12px;
+      margin-top: auto;
+    }
+
+    @keyframes pulse {
+      0%,
+      100% {
+        opacity: 0.55;
+      }
+      50% {
+        opacity: 0.95;
+      }
+    }
+
     .state-card {
       min-height: 280px;
       display: flex;
@@ -408,9 +424,6 @@ import { CollectionCard } from "./collection-card";
       line-height: 1.45;
     }
 
-    /* =========================================================
-       RESPONSIVE ADAPTATIONS
-       ========================================================= */
     @media (max-width: 768px) {
       .dashboard {
         padding: 24px 16px 36px;
@@ -459,31 +472,54 @@ export class DashboardPage {
     () => "/api/collections",
   );
 
+  protected readonly skeletonPlaceholders = Array(6).fill(null);
   protected readonly query = signal("");
   protected readonly sort = signal<"recent" | "name">("recent");
+
   protected readonly all = computed(() => this.collections.value() ?? []);
 
-  protected readonly visible = computed(() => {
-    const q = this.query().trim().toLowerCase();
+  protected readonly isInitialLoading = computed(
+    () => this.collections.isLoading() && !this.collections.hasValue(),
+  );
 
-    const list = this.all().filter(
-      (c) =>
-        !q ||
-        c.name.toLowerCase().includes(q) ||
-        (c.description ?? "").toLowerCase().includes(q),
-    );
+  protected readonly isRefreshing = computed(
+    () => this.collections.isLoading() && this.collections.hasValue(),
+  );
+
+  protected readonly visible = computed(() => {
+    const rawQuery = this.query().trim().toLowerCase();
+    const tokens = rawQuery ? rawQuery.split(/\s+/) : [];
+
+    const list = this.all().filter((c) => {
+      if (!tokens.length) {
+        return true;
+      }
+      const searchable = `${c.name} ${c.description ?? ""}`.toLowerCase();
+      return tokens.every((token) => searchable.includes(token));
+    });
 
     if (this.sort() === "name") {
-      return [...list].sort((a, b) => a.name.localeCompare(b.name));
+      return [...list].sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, {
+          numeric: true,
+          sensitivity: "base",
+        }),
+      );
     }
 
-    const stamp = (c: CollectionSummary) =>
-      Date.parse(c.lastActivityAt ?? c.updatedAt);
+    const toTimestamp = (c: CollectionSummary) => {
+      const raw = c.lastActivityAt ?? c.updatedAt;
+      return raw ? Date.parse(raw) || 0 : 0;
+    };
 
-    return [...list].sort((a, b) => stamp(b) - stamp(a));
+    return [...list].sort((a, b) => toTimestamp(b) - toTimestamp(a));
   });
 
   protected onQuery(event: Event): void {
     this.query.set((event.target as HTMLInputElement).value);
+  }
+
+  protected clearQuery(): void {
+    this.query.set("");
   }
 }
