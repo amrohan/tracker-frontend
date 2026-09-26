@@ -107,7 +107,6 @@ import { CoverView } from "../../shared/cover-view";
               [routerLink]="['/collections', c.id, 'records', 'new']"
               [disabled]="c.fields.length === 0"
             >
-              <mat-icon>add</mat-icon>
               Add record
             </a>
 
@@ -219,7 +218,6 @@ import { CoverView } from "../../shared/cover-view";
           class="fab"
           [routerLink]="['/collections', c.id, 'records', 'new']"
         >
-          <mat-icon>add</mat-icon>
           Add record
         </a>
       }
@@ -653,12 +651,6 @@ export class CollectionPage {
   private readonly notify = inject(Notify);
   private readonly router = inject(Router);
 
-  /**
-   * Phones:
-   * - tabs stretch to full width
-   * - desktop Add Record button disappears
-   * - mobile FAB appears
-   */
   protected readonly isCompact = toSignal(
     inject(BreakpointObserver)
       .observe("(max-width: 640px)")

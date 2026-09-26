@@ -154,7 +154,7 @@ import { LocalStorageService } from "../../core/local-storage.service";
             mat-row
             *matRowDef="let r; columns: displayedColumns()"
             class="record-row"
-            (click)="open.emit(r)"
+            (click)="handleRowClick(r)"
           ></tr>
           @if (metrics().length) {
             <tr
@@ -492,5 +492,8 @@ export class RecordTable {
     const first = this.columns()[0];
     const v = first ? r.values[first.key] : null;
     return typeof v === "string" && v ? v : "this record";
+  }
+  handleRowClick(r: TrackerRecord) {
+    console.log(r);
   }
 }
