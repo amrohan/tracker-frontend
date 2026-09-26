@@ -4,14 +4,12 @@
 // MATERIAL 3 THEME
 // ================================================================
 
-html {
-  color-scheme: light dark;
-
+@mixin color-theme($primary, $tertiary) {
   @include mat.theme(
     (
       color: (
-        primary: mat.$cyan-palette,
-        tertiary: mat.$orange-palette,
+        primary: $primary,
+        tertiary: $tertiary,
         theme-type: color-scheme,
       ),
       typography: (
@@ -24,6 +22,34 @@ html {
       density: -2,
     )
   );
+}
+
+html[data-color-theme="ocean"] {
+  @include color-theme(mat.$cyan-palette, mat.$orange-palette);
+}
+html[data-color-theme="sky"] {
+  @include color-theme(mat.$azure-palette, mat.$rose-palette);
+}
+html[data-color-theme="grape"] {
+  @include color-theme(mat.$violet-palette, mat.$chartreuse-palette);
+}
+html[data-color-theme="berry"] {
+  @include color-theme(mat.$magenta-palette, mat.$spring-green-palette);
+}
+html[data-color-theme="forest"] {
+  @include color-theme(mat.$green-palette, mat.$magenta-palette);
+}
+html[data-color-theme="sunset"] {
+  @include color-theme(mat.$orange-palette, mat.$azure-palette);
+}
+html[data-color-theme="blossom"] {
+  @include color-theme(mat.$rose-palette, mat.$green-palette);
+}
+html[data-color-theme="indigo"] {
+  @include color-theme(mat.$blue-palette, mat.$yellow-palette);
+}
+html[data-color-theme="ember"] {
+  @include color-theme(mat.$red-palette, mat.$cyan-palette);
 }
 
 // ================================================================

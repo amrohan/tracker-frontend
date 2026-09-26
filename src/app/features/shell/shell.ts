@@ -51,12 +51,7 @@ import { ThemeMode, ThemeService } from "../../core/theme.service";
               (click)="theme.mode.set(opt.mode)"
             >
               <mat-icon>{{ opt.icon }}</mat-icon>
-
               <span>{{ opt.label }}</span>
-
-              @if (theme.mode() === opt.mode) {
-                <mat-icon class="tick">check</mat-icon>
-              }
             </button>
           }
         </mat-menu>
@@ -87,16 +82,13 @@ import { ThemeMode, ThemeService } from "../../core/theme.service";
 
           <mat-divider />
 
-          <button mat-menu-item>
-            <mat-icon>person_outline</mat-icon>
-            <span>Profile</span>
-          </button>
+          <a mat-menu-item routerLink="/">
+            <mat-icon>person_outline<</mat-icon><span>Profile</span>
+          </a>
 
-          <button mat-menu-item>
-            <mat-icon>settings</mat-icon>
-            <span>Settings</span>
-          </button>
-
+          <a mat-menu-item routerLink="/settings">
+            <mat-icon>settings</mat-icon><span>Settings</span>
+          </a>
           <mat-divider />
 
           <button mat-menu-item class="logout" (click)="auth.logout()">
