@@ -107,12 +107,7 @@ export class RecordFormPage {
 
   /** Cancel returns to the record when editing, otherwise to the table. */
   protected cancel(): void {
-    const rid = this.recordId();
-    void this.router.navigate(
-      rid
-        ? ["/collections", this.id(), "records", rid]
-        : ["/collections", this.id()],
-    );
+    void this.router.navigate(["/collections", this.id()]);
   }
 
   protected async save(values: Record<string, unknown>): Promise<void> {
