@@ -88,16 +88,14 @@ export const routes: Routes = [
                         (m) => m.RecordDetailPage,
                       ),
                   },
-                  {
-                    path: "import",
-                    loadComponent: () =>
-                      import("./features/import/import-page").then(
-                        (m) => m.ImportPage,
-                      ),
-                  },
                 ],
               },
             ],
+          },
+          {
+            path: "import",
+            loadComponent: () =>
+              import("./features/import/import-page").then((m) => m.ImportPage),
           },
         ],
       },
@@ -108,64 +106,6 @@ export const routes: Routes = [
             (m) => m.SettingsPage,
           ),
       },
-      // {
-      //   path: "collections/:id",
-      //   providers: [CollectionContext],
-      //   children: [
-      //     {
-      //       path: "",
-      //       loadComponent: () =>
-      //         import("./features/collection/collection-page").then(
-      //           (m) => m.CollectionPage,
-      //         ),
-      //       children: [
-      //         {
-      //           path: "",
-      //           pathMatch: "full",
-      //           loadComponent: () =>
-      //             import("./features/collection/table-view").then(
-      //               (m) => m.TableView,
-      //             ),
-      //         },
-      //         {
-      //           path: "summary",
-      //           loadComponent: () =>
-      //             import("./features/collection/summary-view").then(
-      //               (m) => m.SummaryView,
-      //             ),
-      //         },
-      //       ],
-      //     },
-
-      //     {
-      //       path: "records/new",
-      //       loadComponent: () =>
-      //         import("./features/records/record-form-page").then(
-      //           (m) => m.RecordFormPage,
-      //         ),
-      //     },
-      //     {
-      //       path: "records/:recordId/edit",
-      //       loadComponent: () =>
-      //         import("./features/records/record-form-page").then(
-      //           (m) => m.RecordFormPage,
-      //         ),
-      //     },
-      //     {
-      //       path: "records/:recordId",
-      //       loadComponent: () =>
-      //         import("./features/records/record-detail-page").then(
-      //           (m) => m.RecordDetailPage,
-      //         ),
-      //     },
-
-      //     {
-      //       path: "import",
-      //       loadComponent: () =>
-      //         import("./features/import/import-page").then((m) => m.ImportPage),
-      //     },
-      //   ],
-      // },
     ],
   },
   { path: "**", redirectTo: "" },

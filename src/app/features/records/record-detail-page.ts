@@ -91,14 +91,14 @@ import { recordLabel } from "../collection/record-list.utils";
           class="danger"
           (click)="remove()"
         >
-          <mat-icon>delete_outline</mat-icon> Delete
+          Delete
         </button>
         <span class="spacer"></span>
         <a
           mat-flat-button
           [routerLink]="['/collections', id(), 'records', recordId(), 'edit']"
         >
-          <mat-icon>edit</mat-icon> Edit
+          Edit
         </a>
       </div>
     </app-record-drawer>

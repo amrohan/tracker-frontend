@@ -14,10 +14,6 @@ import { MatIconModule } from "@angular/material/icon";
 
 let nextId = 0;
 
-/**
- * Slide-over panel (right on desktop, bottom sheet on phones).
- * Default slot = body. An element with the `drawerFooter` attribute = pinned footer (shown when [footer] is true).
- */
 @Component({
   selector: "app-record-drawer",
   imports: [CdkTrapFocus, MatButtonModule, MatIconModule],
