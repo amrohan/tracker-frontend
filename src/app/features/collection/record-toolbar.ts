@@ -50,7 +50,6 @@ import { Field } from "../../core/models";
         <button
           mat-stroked-button
           type="button"
-          class="tool-btn"
           [class.on]="filtersOpen() || activeFilterCount() > 0"
           (click)="toggleFilters.emit()"
           [attr.aria-expanded]="filtersOpen()"
@@ -69,7 +68,6 @@ import { Field } from "../../core/models";
           <button
             mat-stroked-button
             type="button"
-            class="tool-btn"
             [class.on]="!!sortField()"
             [matMenuTriggerFor]="sortMenu"
           >
@@ -166,15 +164,6 @@ import { Field } from "../../core/models";
       align-items: center;
       gap: 8px;
       min-width: 0;
-    }
-    .tool-btn {
-      height: 44px;
-      border-radius: 12px;
-      white-space: nowrap;
-    }
-    .tool-btn.on {
-      background: var(--mat-sys-secondary-container);
-      color: var(--mat-sys-on-secondary-container);
     }
     .count {
       min-width: 20px;

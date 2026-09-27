@@ -112,7 +112,7 @@ import { RecordToolbar } from "./record-toolbar";
               mat-flat-button
               [routerLink]="['/collections', collectionId(), 'records', 'new']"
             >
-              <mat-icon>add</mat-icon> Add a record
+              Add a record
             </a>
           </div>
         } @else if (d.total === 0) {
