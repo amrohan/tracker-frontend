@@ -17,7 +17,6 @@ import { RecordsApi } from "../../core/records-api.service";
 import { RecordDrawer } from "../../shared/record-drawer";
 import { recordLabel } from "../collection/record-list.utils";
 import { DynamicForm } from "./dynamic-form";
-import { NzDateAdapter } from "ng-zorro-antd/core/time";
 
 @Component({
   selector: "app-record-form-page",

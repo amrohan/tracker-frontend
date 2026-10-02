@@ -54,7 +54,11 @@ function buildInitial(
 
       @if (attempted() && errorCount() > 0) {
         <div class="form-alert" role="alert">
-          <nz-icon nzType="exclamation-circle" class="alert-icon" aria-hidden="true" />
+          <nz-icon
+            nzType="exclamation-circle"
+            class="alert-icon"
+            aria-hidden="true"
+          />
           <span>
             Please correct the
             {{
@@ -141,7 +145,7 @@ function buildInitial(
         calc(-1 * var(--drawer-pad, 0px));
       padding: 16px var(--drawer-pad, 0px)
         calc(16px + env(safe-area-inset-bottom));
-      background: var(--drawer-bg, var(--app-surface));
+      background: var(--drawer-bg, var(--app-surface-container));
       border-top: 1px solid var(--app-outline-variant);
     }
 

@@ -45,7 +45,6 @@ import { CollectionCard } from "./collection-card";
           class="create-button"
           routerLink="/collections/new"
         >
-          <nz-icon nzType="plus" />
           <span>New tracker</span>
         </a>
       </header>
@@ -115,7 +114,11 @@ import { CollectionCard } from "./collection-card";
               <span nzInputPrefix><nz-icon nzType="search" /></span>
               @if (query()) {
                 <span nzInputSuffix>
-                  <nz-icon nzType="close-circle" (click)="clearQuery()" style="cursor:pointer" />
+                  <nz-icon
+                    nzType="close-circle"
+                    (click)="clearQuery()"
+                    style="cursor:pointer"
+                  />
                 </span>
               }
             </nz-input-wrapper>
@@ -128,12 +131,16 @@ import { CollectionCard } from "./collection-card";
               aria-label="Sort trackers"
             >
               <label nz-radio-button nzValue="recent">
-                <nz-icon nzType="history" />
-                <span>Recent</span>
+                <div class="flex gap-2">
+                  <nz-icon nzType="history" />
+                  <span>Recent</span>
+                </div>
               </label>
               <label nz-radio-button nzValue="name">
-                <nz-icon nzType="sort-ascending" />
-                <span>Name</span>
+                <div class="flex gap-2">
+                  <nz-icon nzType="sort-ascending" />
+                  <span>Name</span>
+                </div>
               </label>
             </nz-radio-group>
           </div>
@@ -160,7 +167,12 @@ import { CollectionCard } from "./collection-card";
               </div>
               <h3>No trackers found</h3>
               <p>No trackers match "{{ query() }}". Try a different keyword.</p>
-              <button nz-button nzType="default" type="button" (click)="clearQuery()">
+              <button
+                nz-button
+                nzType="default"
+                type="button"
+                (click)="clearQuery()"
+              >
                 <nz-icon nzType="close" />
                 Clear search
               </button>

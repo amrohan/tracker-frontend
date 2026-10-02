@@ -280,7 +280,7 @@ import { CoverView } from "../../shared/cover-view";
 
     .hero {
       position: relative;
-      height: clamp(120px, 22vw, 216px);
+      height: clamp(80px, 14vw, 140px);
       overflow: hidden;
       background: var(--app-surface-container, #f3edf7);
     }
