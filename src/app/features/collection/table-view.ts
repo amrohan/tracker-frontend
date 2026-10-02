@@ -10,13 +10,13 @@ import {
   untracked,
 } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { MatButtonModule } from "@angular/material/button";
-import { MatDialog } from "@angular/material/dialog";
-import { MatIconModule } from "@angular/material/icon";
-import { MatPaginatorModule, PageEvent } from "@angular/material/paginator";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { Router, RouterLink, RouterOutlet } from "@angular/router";
 import { firstValueFrom, map } from "rxjs";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzPaginationModule } from "ng-zorro-antd/pagination";
+import { NzSpinModule } from "ng-zorro-antd/spin";
+import { NzModalService } from "ng-zorro-antd/modal";
 
 import { CollectionContext } from "../../core/collection-context";
 import { FieldTypeCatalog } from "../../core/field-types.service";
@@ -47,10 +47,10 @@ import { RecordToolbar } from "./record-toolbar";
   imports: [
     RouterLink,
     RouterOutlet,
-    MatButtonModule,
-    MatIconModule,
-    MatPaginatorModule,
-    MatProgressBarModule,
+    NzButtonModule,
+    NzIconModule,
+    NzPaginationModule,
+    NzSpinModule,
     FilterPanel,
     RecordToolbar,
     RecordCardList,
@@ -82,34 +82,38 @@ import { RecordToolbar } from "./record-toolbar";
       }
 
       @if (list.isLoading()) {
-        <mat-progress-bar
-          class="loading"
-          mode="indeterminate"
-          aria-label="Loading records"
-        />
+        <div class="loading-bar">
+          <nz-spin nzSimple nzSize="small" />
+        </div>
       }
 
       @if (list.error() && !data()) {
         <div class="empty-state">
           <div class="empty-icon-box error-box" aria-hidden="true">
-            <mat-icon>cloud_off</mat-icon>
+            <nz-icon nzType="disconnect" />
           </div>
           <h3>Could not load records</h3>
           <p>Something went wrong while loading the records.</p>
-          <button mat-stroked-button type="button" (click)="list.reload()">
-            <mat-icon>refresh</mat-icon> Try again
+          <button
+            nz-button
+            nzType="default"
+            type="button"
+            (click)="list.reload()"
+          >
+            <nz-icon nzType="reload" /> Try again
           </button>
         </div>
       } @else if (data(); as d) {
         @if (d.total === 0 && !hasQuery()) {
           <div class="empty-state">
             <div class="empty-icon-box" aria-hidden="true">
-              <mat-icon>playlist_add</mat-icon>
+              <nz-icon nzType="file-text" />
             </div>
             <h3>No records yet</h3>
             <p>Add your first entry to {{ ctx.detail.value()?.name }}.</p>
             <a
-              mat-flat-button
+              nz-button
+              nzType="primary"
               [routerLink]="['/collections', collectionId(), 'records', 'new']"
             >
               Add a record
@@ -118,12 +122,17 @@ import { RecordToolbar } from "./record-toolbar";
         } @else if (d.total === 0) {
           <div class="empty-state">
             <div class="empty-icon-box" aria-hidden="true">
-              <mat-icon>search_off</mat-icon>
+              <nz-icon nzType="search" />
             </div>
             <h3>Nothing matches</h3>
             <p>Try changing your search or filters.</p>
-            <button mat-stroked-button type="button" (click)="clearAll()">
-              <mat-icon>filter_alt_off</mat-icon> Clear search and filters
+            <button
+              nz-button
+              nzType="default"
+              type="button"
+              (click)="clearAll()"
+            >
+              <nz-icon nzType="filter" /> Clear search and filters
             </button>
           </div>
         } @else {
@@ -164,17 +173,20 @@ import { RecordToolbar } from "./record-toolbar";
             />
           }
 
-          <mat-paginator
-            class="paginator"
-            [length]="d.total"
-            [pageIndex]="page() - 1"
-            [pageSize]="pageSize()"
-            [pageSizeOptions]="[10, 25, 50, 100]"
-            [hidePageSize]="isMobile()"
-            [showFirstLastButtons]="!isMobile()"
-            (page)="onPage($event)"
-            aria-label="Select page of records"
-          />
+          <div class="paginator-wrap">
+            <nz-pagination
+              [nzTotal]="d.total"
+              [nzPageIndex]="page()"
+              [nzPageSize]="pageSize()"
+              [nzPageSizeOptions]="[10, 25, 50, 100]"
+              [nzShowSizeChanger]="!isMobile()"
+              [nzShowQuickJumper]="!isMobile()"
+              (nzPageIndexChange)="page.set($event)"
+              (nzPageSizeChange)="pageSize.set($event)"
+              [nzShowTotal]="totalTpl"
+            />
+            <ng-template #totalTpl let-total>Total {{ total }} items</ng-template>
+          </div>
         }
       }
     </div>
@@ -191,20 +203,23 @@ import { RecordToolbar } from "./record-toolbar";
     .filters {
       margin-bottom: 14px;
     }
-    .loading {
-      height: 4px;
-      margin-bottom: 10px;
-      border-radius: 999px;
-      overflow: hidden;
+    .loading-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 2px 10px;
+      color: var(--app-text-muted);
+      font-size: 0.85rem;
     }
     .count-line {
       margin: 4px 2px 10px;
       font-size: 0.875rem;
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--app-text-muted);
     }
-    .paginator {
-      margin-top: 8px;
-      background: transparent;
+    .paginator-wrap {
+      margin-top: 16px;
+      display: flex;
+      justify-content: flex-end;
     }
 
     .empty-state {
@@ -217,8 +232,8 @@ import { RecordToolbar } from "./record-toolbar";
       padding: 36px 20px;
       margin: 12px 0;
       border-radius: 16px;
-      border: 1.5px dashed var(--mat-sys-outline-variant);
-      background: var(--mat-sys-surface);
+      border: 1.5px dashed var(--app-outline-variant);
+      background: var(--app-surface);
     }
     .empty-icon-box {
       width: 56px;
@@ -227,17 +242,13 @@ import { RecordToolbar } from "./record-toolbar";
       place-items: center;
       border-radius: 16px;
       margin-bottom: 14px;
-      background: var(--mat-sys-surface-container);
-      color: var(--mat-sys-on-surface-variant);
-    }
-    .empty-icon-box mat-icon {
+      background: var(--app-surface-container);
+      color: var(--app-text-muted);
       font-size: 28px;
-      width: 28px;
-      height: 28px;
     }
     .empty-icon-box.error-box {
-      background: var(--mat-sys-error-container);
-      color: var(--mat-sys-on-error-container);
+      background: var(--app-error-container);
+      color: var(--app-on-error-container);
     }
     .empty-state h3 {
       margin: 0 0 6px;
@@ -248,14 +259,14 @@ import { RecordToolbar } from "./record-toolbar";
       margin: 0 0 18px;
       font-size: 0.9375rem;
       line-height: 1.45;
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--app-text-muted);
     }
 
     @media (max-width: 767px) {
       .table-page {
         padding-top: 10px;
         padding-bottom: 96px;
-      } /* room for the floating "Add record" button */
+      }
     }
   `,
 })
@@ -263,7 +274,7 @@ export class TableView {
   protected readonly ctx = inject(CollectionContext);
   protected readonly catalog = inject(FieldTypeCatalog);
   private readonly records = inject(RecordsApi);
-  private readonly dialog = inject(MatDialog);
+  private readonly modal = inject(NzModalService);
   private readonly notify = inject(Notify);
   private readonly router = inject(Router);
   private seenVersion = untracked(() => this.ctx.recordsVersion());
@@ -404,12 +415,6 @@ export class TableView {
     });
   }
 
-  /* ------------------------------- paging ------------------------------ */
-  protected onPage(event: PageEvent): void {
-    this.pageSize.set(event.pageSize);
-    this.page.set(event.pageIndex + 1);
-  }
-
   /* -------------------------------- sort -------------------------------- */
   /** Desktop header click: asc -> desc -> default. */
   protected toggleSort(field: Field): void {
@@ -476,7 +481,7 @@ export class TableView {
     if (
       !(await this.confirm(
         "Delete record?",
-        `“${name}” will be permanently deleted.`,
+        `"${name}" will be permanently deleted.`,
         "Delete",
       ))
     )
@@ -491,7 +496,7 @@ export class TableView {
       const count = problemExtension<number>(err, "referenceCount") ?? 0;
       const again = await this.confirm(
         "This record is referenced elsewhere",
-        `${count} other record(s) point to “${name}”. Deleting it will clear those references.`,
+        `${count} other record(s) point to "${name}". Deleting it will clear those references.`,
         "Delete anyway",
       );
       if (!again) return;
@@ -514,12 +519,14 @@ export class TableView {
     message: string,
     confirmLabel: string,
   ): Promise<boolean> {
-    return firstValueFrom(
-      this.dialog
-        .open<ConfirmDialog, unknown, boolean>(ConfirmDialog, {
-          data: { title, message, confirmLabel, destructive: true },
-        })
-        .afterClosed(),
-    ).then((value) => value === true);
+    return new Promise<boolean>((resolve) => {
+      const modalRef = this.modal.create<ConfirmDialog, unknown, boolean>({
+        nzContent: ConfirmDialog,
+        nzData: { title, message, confirmLabel, destructive: true },
+        nzFooter: null,
+        nzWidth: 420,
+      });
+      modalRef.afterClose.subscribe((value) => resolve(value === true));
+    });
   }
 }

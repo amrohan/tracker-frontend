@@ -1,33 +1,47 @@
-import { Component, computed, input, model } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
+import { Component, input, model } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { NzRateModule } from "ng-zorro-antd/rate";
 
 @Component({
-  selector: 'app-rating-input',
-  imports: [MatIconModule],
+  selector: "app-rating-input",
+  imports: [FormsModule, NzRateModule],
   template: `
-    <div class="stars" role="radiogroup" [attr.aria-label]="label()">
-      @for (n of steps(); track n) {
-        <button type="button" class="star" role="radio" [attr.aria-checked]="value() === n"
-                [attr.aria-label]="n + ' of ' + max()" (click)="pick(n)">
-          <mat-icon>{{ (value() ?? 0) >= n ? 'star' : 'star_border' }}</mat-icon>
+    <div class="rating-wrap" [attr.aria-label]="label()">
+      <nz-rate
+        [ngModel]="value()"
+        (ngModelChange)="value.set($event)"
+        [nzCount]="max()"
+        [nzAllowClear]="true"
+      />
+      @if (value()) {
+        <button type="button" class="clear" (click)="value.set(null)">
+          Clear
         </button>
       }
-      @if (value()) { <button type="button" class="clear" (click)="value.set(null)">Clear</button> }
     </div>
   `,
   styles: `
-    .stars { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
-    .star { background: none; border: 0; cursor: pointer; padding: 2px; color: var(--mat-sys-tertiary); border-radius: 50%; }
-    .clear { background: none; border: 0; cursor: pointer; color: var(--mat-sys-on-surface-variant); margin-left: 8px; font: inherit; text-decoration: underline; }
+    .rating-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .clear {
+      background: none;
+      border: 0;
+      cursor: pointer;
+      color: var(--app-text-muted);
+      font-size: 0.85rem;
+      text-decoration: underline;
+      padding: 0;
+    }
+    .clear:hover {
+      color: var(--app-text);
+    }
   `,
 })
 export class RatingInput {
   readonly value = model<number | null>(null);
   readonly max = input(5);
-  readonly label = input('Rating');
-  protected readonly steps = computed(() => Array.from({ length: this.max() }, (_, i) => i + 1));
-
-  protected pick(n: number): void {
-    this.value.set(this.value() === n ? null : n); // clicking the current star clears it
-  }
+  readonly label = input("Rating");
 }

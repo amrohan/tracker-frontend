@@ -14,25 +14,24 @@ import {
   signal,
   untracked,
 } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatDialog } from "@angular/material/dialog";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatIconModule } from "@angular/material/icon";
-import { MatInputModule } from "@angular/material/input";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { Router, RouterLink } from "@angular/router";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzInputModule } from "ng-zorro-antd/input";
+import { NzModalService } from "ng-zorro-antd/modal";
+import { NzSpinModule } from "ng-zorro-antd/spin";
+
 import {
   CollectionsApi,
   CreateCollectionBody,
 } from "../../core/collections-api.service";
 import { coverBackground, fallbackBackground } from "../../core/cover-presets";
+import { fieldErrors, problemMessage } from "../../core/http-errors";
 import {
   EMOJIS,
-  TYPE_ICONS,
   TYPE_LABELS,
   defaultConfig,
 } from "../../core/labels";
-import { fieldErrors, problemMessage } from "../../core/http-errors";
 import {
   CollectionDetail,
   CollectionSummary,
@@ -59,23 +58,23 @@ import { FieldEditor } from "./field-editor";
   imports: [
     CdkDropList,
     CdkDrag,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatProgressBarModule,
     RouterLink,
+    NzButtonModule,
+    NzIconModule,
+    NzInputModule,
+    NzSpinModule,
     FieldEditor,
     CoverView,
   ],
   template: `
     <div class="builder">
       <a
-        mat-button
+        nz-button
+        nzType="text"
         class="back"
         [routerLink]="isEdit() ? ['/collections', id()] : ['/']"
       >
-        <mat-icon>arrow_back</mat-icon>
+        <nz-icon nzType="arrow-left" />
         {{ isEdit() ? "Back to tracker" : "My trackers" }}
       </a>
 
@@ -87,7 +86,9 @@ import { FieldEditor } from "./field-editor";
       </header>
 
       @if (isEdit() && !hydrated()) {
-        <mat-progress-bar mode="indeterminate" />
+        <div class="loading-state">
+          <nz-spin nzSimple />
+        </div>
       } @else {
         <!-- ============ LOOK & FEEL ============ -->
         <section class="card looks" aria-labelledby="looks-h">
@@ -103,11 +104,12 @@ import { FieldEditor } from "./field-editor";
             }
             <button
               type="button"
-              mat-flat-button
+              nz-button
+              nzType="primary"
               class="cover-btn"
               (click)="pickCover()"
             >
-              <mat-icon>image</mat-icon>
+              <nz-icon nzType="picture" />
               {{ hasCover() ? "Change cover" : "Add cover" }}
             </button>
           </div>
@@ -121,7 +123,7 @@ import { FieldEditor } from "./field-editor";
               aria-label="Choose an icon"
             >
               <span aria-hidden="true">{{ icon() }}</span>
-              <mat-icon class="edit-badge" aria-hidden="true">edit</mat-icon>
+              <nz-icon nzType="edit" class="edit-badge" aria-hidden="true" />
             </button>
             <p class="muted icon-hint">Tap the icon to change it</p>
           </div>
@@ -141,42 +143,43 @@ import { FieldEditor } from "./field-editor";
                   </button>
                 }
               </div>
-              <mat-form-field
-                appearance="outline"
+              <input
+                nz-input
+                maxlength="16"
+                (input)="onCustomIcon($event)"
+                placeholder="Or paste any emoji"
                 class="custom-emoji"
-                subscriptSizing="dynamic"
-              >
-                <mat-label>Or paste any emoji</mat-label>
-                <input matInput maxlength="16" (input)="onCustomIcon($event)" />
-              </mat-form-field>
+              />
             </div>
           }
         </section>
 
         <!-- ============ DETAILS ============ -->
-        <section class="card" aria-labelledby="details-h">
+        <section class="card details-card" aria-labelledby="details-h">
           <h2 id="details-h">Details</h2>
-          <mat-form-field appearance="outline" class="full">
-            <mat-label>Name</mat-label>
+          <div class="form-group">
+            <label class="form-label">Name</label>
             <input
-              matInput
+              nz-input
               maxlength="100"
               [value]="name()"
               (input)="name.set(text($event))"
               placeholder="e.g. Movies, Hangouts, Car maintenance"
             />
-            <mat-hint align="end">{{ name().length }}/100</mat-hint>
-          </mat-form-field>
-          <mat-form-field appearance="outline" class="full">
-            <mat-label>Description (optional)</mat-label>
+            <span class="hint align-end">{{ name().length }}/100</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description (optional)</label>
             <textarea
-              matInput
+              nz-input
               rows="2"
               maxlength="1000"
               [value]="description()"
               (input)="description.set(text($event))"
+              placeholder="Brief description"
             ></textarea>
-          </mat-form-field>
+          </div>
         </section>
 
         <!-- ============ FIELDS ============ -->
@@ -192,12 +195,13 @@ import { FieldEditor } from "./field-editor";
             </div>
             <span class="spacer"></span>
             <button
-              mat-flat-button
+              nz-button
+              nzType="primary"
               type="button"
               class="add-top"
               (click)="addField()"
             >
-              <mat-icon>add</mat-icon> Add field
+              <nz-icon nzType="plus" /> Add field
             </button>
           </div>
 
@@ -205,21 +209,22 @@ import { FieldEditor } from "./field-editor";
             <span class="quick-label">Quick add</span>
             @for (t of quickTypes; track t) {
               <button type="button" class="chip" (click)="addField(t)">
-                <mat-icon>{{ typeIcon(t) }}</mat-icon> {{ typeLabel(t) }}
+                <nz-icon [nzType]="typeIcon(t)" /> {{ typeLabel(t) }}
               </button>
             }
           </div>
 
           @if (fields().length === 0) {
             <div class="empty">
-              <mat-icon>view_list</mat-icon>
+              <nz-icon nzType="unordered-list" class="empty-icon" />
               <p><strong>No fields yet</strong></p>
               <p class="muted">
                 Start with a Text field for the name, then add dates, ratings or
                 links to other trackers.
               </p>
               <button
-                mat-stroked-button
+                nz-button
+                nzType="default"
                 type="button"
                 (click)="addField('text')"
               >
@@ -247,19 +252,20 @@ import { FieldEditor } from "./field-editor";
 
           @if (fields().length > 2) {
             <button
-              mat-stroked-button
+              nz-button
+              nzType="dashed"
               type="button"
               class="add-bottom"
               (click)="addField()"
             >
-              <mat-icon>add</mat-icon> Add another field
+              <nz-icon nzType="plus" /> Add another field
             </button>
           }
         </section>
 
         @if (problems().length) {
           <div class="problems" role="alert">
-            <mat-icon>error_outline</mat-icon>
+            <nz-icon nzType="exclamation-circle" class="problem-icon" />
             <div>
               <strong>Please fix before saving</strong>
               <ul>
@@ -278,20 +284,18 @@ import { FieldEditor } from "./field-editor";
             {{ fields().length === 1 ? "field" : "fields" }}</span
           >
           <span class="spacer"></span>
-          <a mat-button [routerLink]="isEdit() ? ['/collections', id()] : ['/']"
+          <a nz-button nzType="default" [routerLink]="isEdit() ? ['/collections', id()] : ['/']"
             >Cancel</a
           >
           <button
-            mat-flat-button
+            nz-button
+            nzType="primary"
             type="button"
+            [nzLoading]="saving()"
             [disabled]="saving()"
             (click)="save()"
           >
-            @if (saving()) {
-              Saving…
-            } @else {
-              {{ isEdit() ? "Save changes" : "Create tracker" }}
-            }
+            {{ isEdit() ? "Save changes" : "Create tracker" }}
           </button>
         </div>
       }
@@ -307,7 +311,8 @@ import { FieldEditor } from "./field-editor";
       padding: 12px 16px 0;
     }
     .back {
-      margin-left: -12px;
+      margin-left: -8px;
+      margin-bottom: 8px;
     }
     .head {
       margin: 4px 0 20px;
@@ -316,10 +321,11 @@ import { FieldEditor } from "./field-editor";
       font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.4rem);
       line-height: 1.15;
       letter-spacing: -0.02em;
+      margin: 0;
     }
     .lead {
       margin: 6px 0 0;
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--app-text-muted);
       font-size: 1rem;
       line-height: 1.5;
     }
@@ -334,16 +340,44 @@ import { FieldEditor } from "./field-editor";
       overflow: hidden;
       clip: rect(0 0 0 0);
     }
+    .loading-state {
+      display: flex;
+      justify-content: center;
+      padding: 64px 0;
+    }
 
     .card {
-      border: 1px solid var(--mat-sys-outline-variant);
+      border: 1px solid var(--app-outline-variant);
       border-radius: 20px;
       padding: clamp(14px, 3vw, 24px);
       margin-bottom: 16px;
+      background: var(--app-surface);
     }
     .looks {
       padding: 0;
       overflow: visible;
+    }
+    .details-card {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--app-text);
+    }
+    .hint {
+      font-size: 0.785rem;
+      color: var(--app-text-muted);
+    }
+    .align-end {
+      align-self: flex-end;
     }
 
     /* cover + icon */
@@ -380,9 +414,9 @@ import { FieldEditor } from "./field-editor";
       font-size: clamp(2rem, 1.4rem + 2.4vw, 2.8rem);
       display: grid;
       place-items: center;
-      background: var(--mat-sys-surface);
-      border: 1px solid var(--mat-sys-outline-variant);
-      box-shadow: var(--mat-sys-level2);
+      background: var(--app-surface);
+      border: 1px solid var(--app-outline-variant);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
     .edit-badge {
       position: absolute;
@@ -390,16 +424,17 @@ import { FieldEditor } from "./field-editor";
       bottom: -6px;
       width: 26px;
       height: 26px;
-      font-size: 16px;
+      font-size: 14px;
       display: grid;
       place-items: center;
       border-radius: 50%;
-      background: var(--mat-sys-primary);
-      color: var(--mat-sys-on-primary);
+      background: var(--app-primary);
+      color: var(--app-on-primary);
     }
     .icon-hint {
       margin: 0 0 6px;
       font-size: 0.875rem;
+      color: var(--app-text-muted);
     }
     .icon-panel {
       padding: 0 clamp(14px, 3vw, 24px) 18px;
@@ -416,12 +451,12 @@ import { FieldEditor } from "./field-editor";
       height: 44px;
       border-radius: 12px;
       border: 1px solid transparent;
-      background: var(--mat-sys-surface-container);
+      background: var(--app-surface-container);
       cursor: pointer;
     }
     .emoji.on {
-      border-color: var(--mat-sys-primary);
-      background: var(--mat-sys-primary-container);
+      border-color: var(--app-primary);
+      background: var(--app-primary-container);
     }
     .custom-emoji {
       width: min(240px, 100%);
@@ -445,8 +480,8 @@ import { FieldEditor } from "./field-editor";
       font-weight: 600;
       padding: 2px 10px;
       border-radius: 999px;
-      background: var(--mat-sys-secondary-container);
-      color: var(--mat-sys-on-secondary-container);
+      background: var(--app-surface-container-high);
+      color: var(--app-text);
     }
     .small-text {
       font-size: 0.875rem;
@@ -461,7 +496,7 @@ import { FieldEditor } from "./field-editor";
     }
     .quick-label {
       font-size: 0.8rem;
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--app-text-muted);
       margin-right: 2px;
     }
     .chip {
@@ -473,30 +508,31 @@ import { FieldEditor } from "./field-editor";
       cursor: pointer;
       font: inherit;
       font-size: 0.875rem;
-      background: var(--mat-sys-surface);
-      color: var(--mat-sys-on-surface);
-      border: 1px solid var(--mat-sys-outline-variant);
+      background: var(--app-surface);
+      color: var(--app-text);
+      border: 1px solid var(--app-outline-variant);
+      transition: all 0.15s ease;
     }
     .chip:hover {
-      background: var(--mat-sys-secondary-container);
+      background: var(--app-surface-container-high);
+      border-color: var(--app-primary);
+      color: var(--app-primary);
     }
-    .chip mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      color: var(--mat-sys-primary);
+    .chip nz-icon {
+      font-size: 15px;
+      color: var(--app-primary);
     }
     .empty {
       text-align: center;
       padding: 28px 16px;
-      border: 2px dashed var(--mat-sys-outline-variant);
+      border: 2px dashed var(--app-outline-variant);
       border-radius: 16px;
       margin-bottom: 12px;
     }
-    .empty mat-icon {
-      font-size: 40px;
-      width: 40px;
-      height: 40px;
+    .empty-icon {
+      font-size: 36px;
+      color: var(--app-text-muted);
+      margin-bottom: 8px;
       opacity: 0.55;
     }
     .empty p {
@@ -508,14 +544,7 @@ import { FieldEditor } from "./field-editor";
     .add-bottom {
       width: 100%;
       margin-top: 8px;
-      border-style: dashed;
-    }
-    .cdk-drag-preview {
-      box-shadow: var(--mat-sys-level4);
-      border-radius: 12px;
-    }
-    .cdk-drag-placeholder {
-      opacity: 0.3;
+      height: 42px;
     }
 
     /* problems */
@@ -525,8 +554,13 @@ import { FieldEditor } from "./field-editor";
       padding: 14px 16px;
       margin-bottom: 16px;
       border-radius: 16px;
-      background: var(--mat-sys-error-container);
-      color: var(--mat-sys-on-error-container);
+      background: var(--app-error-container, #ffdad6);
+      color: var(--app-on-error-container, #410002);
+    }
+    .problem-icon {
+      font-size: 20px;
+      flex: none;
+      margin-top: 2px;
     }
     .problems ul {
       margin: 6px 0 0;
@@ -544,19 +578,22 @@ import { FieldEditor } from "./field-editor";
       gap: 8px;
       margin: 0 -16px;
       padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-      background: color-mix(in srgb, var(--mat-sys-surface) 92%, transparent);
+      background: color-mix(in srgb, var(--app-surface) 92%, transparent);
       backdrop-filter: blur(8px);
-      border-top: 1px solid var(--mat-sys-outline-variant);
+      border-top: 1px solid var(--app-outline-variant);
     }
     .summary {
       font-size: 0.9rem;
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--app-text-muted);
+    }
+    .spacer {
+      flex: 1;
     }
 
     @media (max-width: 560px) {
       .add-top {
         display: none;
-      } /* the quick-add chips and bottom button cover this on phones */
+      }
       .cover-btn {
         right: 8px;
         bottom: 8px;
@@ -582,7 +619,7 @@ export class CollectionBuilder {
   private readonly api = inject(CollectionsApi);
   private readonly notify = inject(Notify);
   private readonly router = inject(Router);
-  private readonly dialog = inject(MatDialog);
+  private readonly modal = inject(NzModalService);
 
   protected readonly emojis = EMOJIS;
   protected readonly quickTypes: FieldType[] = [
@@ -658,7 +695,22 @@ export class CollectionBuilder {
     return (e.target as HTMLInputElement).value;
   }
   protected typeIcon(t: FieldType): string {
-    return TYPE_ICONS[t];
+    const map: Record<FieldType, string> = {
+      text: "font-size",
+      longText: "file-text",
+      number: "number",
+      currency: "dollar",
+      date: "calendar",
+      dateTime: "clock-circle",
+      boolean: "check-square",
+      select: "down-circle",
+      multiSelect: "unordered-list",
+      rating: "star",
+      reference: "link",
+      multiReference: "share-alt",
+      url: "global",
+    };
+    return map[t] || "file";
   }
   protected typeLabel(t: FieldType): string {
     return TYPE_LABELS[t];
@@ -694,29 +746,31 @@ export class CollectionBuilder {
     this.fields.set(list);
   }
 
-  protected pickCover(): void {
-    this.dialog
-      .open<
+  protected async pickCover(): Promise<void> {
+    const selection = await new Promise<CoverSelection | undefined>((resolve) => {
+      const modalRef = this.modal.create<
         CoverPickerDialog,
         { cover: Cover; collectionId: string | null },
         CoverSelection
-      >(CoverPickerDialog, {
-        data: { cover: this.cover(), collectionId: this.id() ?? null },
-        width: "560px",
-        maxWidth: "95vw",
-      })
-      .afterClosed()
-      .subscribe((selection) => {
-        if (!selection) return;
-        const previous = this.pendingImageUrl();
-        if (previous) URL.revokeObjectURL(previous);
-        this.pendingImageUrl.set(
-          selection.type === "image"
-            ? URL.createObjectURL(selection.blob)
-            : null,
-        );
-        this.pendingCover.set(selection);
+      >({
+        nzContent: CoverPickerDialog,
+        nzData: { cover: this.cover(), collectionId: this.id() ?? null },
+        nzFooter: null,
+        nzWidth: 560,
+        nzStyle: { maxWidth: "95vw" },
       });
+      modalRef.afterClose.subscribe((val) => resolve(val));
+    });
+
+    if (!selection) return;
+    const previous = this.pendingImageUrl();
+    if (previous) URL.revokeObjectURL(previous);
+    this.pendingImageUrl.set(
+      selection.type === "image"
+        ? URL.createObjectURL(selection.blob)
+        : null,
+    );
+    this.pendingCover.set(selection);
   }
 
   protected async save(): Promise<void> {

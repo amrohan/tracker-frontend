@@ -1,10 +1,10 @@
 import { NgTemplateOutlet } from "@angular/common";
 import { Component, inject, input, model } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatIconModule } from "@angular/material/icon";
-import { MatInputModule } from "@angular/material/input";
-import { MatSelectModule } from "@angular/material/select";
+import { FormsModule } from "@angular/forms";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzInputModule } from "ng-zorro-antd/input";
+import { NzSelectModule } from "ng-zorro-antd/select";
 
 import { FieldTypeCatalog } from "../../core/field-types.service";
 import { OP_LABELS } from "../../core/labels";
@@ -20,11 +20,11 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
   selector: "app-filter-panel",
   imports: [
     NgTemplateOutlet,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatSelectModule,
+    FormsModule,
+    NzButtonModule,
+    NzIconModule,
+    NzInputModule,
+    NzSelectModule,
     ReferenceSelector,
   ],
   template: `
@@ -33,7 +33,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       <div class="panel-header">
         <div class="panel-title">
           <span class="panel-icon" aria-hidden="true">
-            <mat-icon>tune</mat-icon>
+            <nz-icon nzType="control" />
           </span>
 
           <div class="panel-headings">
@@ -62,79 +62,57 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
               </div>
 
               <!-- Field Selector -->
-              <mat-form-field
-                appearance="outline"
-                subscriptSizing="dynamic"
-                class="c-field"
-              >
-                <mat-label>Field</mat-label>
-
-                <mat-select
-                  [value]="row.fieldId"
-                  (selectionChange)="setField(i, $event.value)"
+              <div class="c-field">
+                <nz-select
+                  [ngModel]="row.fieldId"
+                  (ngModelChange)="setField(i, $event)"
+                  nzPlaceHolder="Field"
+                  class="full-width"
                 >
                   @for (f of fields(); track f.id) {
-                    <mat-option [value]="f.id">
-                      {{ f.name }}
-                    </mat-option>
+                    <nz-option [nzValue]="f.id" [nzLabel]="f.name" />
                   }
-                </mat-select>
-              </mat-form-field>
+                </nz-select>
+              </div>
 
               <!-- Condition / Operator Selector -->
-              <mat-form-field
-                appearance="outline"
-                subscriptSizing="dynamic"
-                class="c-op"
-              >
-                <mat-label>Condition</mat-label>
-
-                <mat-select
-                  [value]="row.op"
-                  (selectionChange)="patch(i, { op: $event.value })"
+              <div class="c-op">
+                <nz-select
+                  [ngModel]="row.op"
+                  (ngModelChange)="patch(i, { op: $event })"
+                  nzPlaceHolder="Condition"
+                  class="full-width"
                 >
                   @for (op of operators(row); track op) {
-                    <mat-option [value]="op">
-                      {{ opLabel(op) }}
-                    </mat-option>
+                    <nz-option [nzValue]="op" [nzLabel]="opLabel(op)" />
                   }
-                </mat-select>
-              </mat-form-field>
+                </nz-select>
+              </div>
 
               <!-- Dynamic Value Input based on Field Kind -->
               @if (row.op && !noOperand(row.op)) {
                 @switch (kind(row)) {
                   @case ("number") {
-                    <mat-form-field
-                      appearance="outline"
-                      subscriptSizing="dynamic"
-                      class="c-val"
-                    >
-                      <mat-label>Value</mat-label>
-
+                    <div class="c-val">
                       <input
-                        matInput
+                        nz-input
                         type="number"
+                        placeholder="Value"
                         [value]="row.value ?? ''"
                         (input)="patch(i, { value: text($event) })"
                       />
-                    </mat-form-field>
+                    </div>
 
                     @if (row.op === "between") {
-                      <mat-form-field
-                        appearance="outline"
-                        subscriptSizing="dynamic"
-                        class="c-val"
-                      >
-                        <mat-label>And</mat-label>
-
+                      <div class="c-val">
                         <input
-                          matInput
+                          nz-input
                           type="number"
+                          placeholder="And"
                           [value]="row.value2 ?? ''"
                           (input)="patch(i, { value2: text($event) })"
                         />
-                      </mat-form-field>
+                      </div>
                     }
                   }
 
@@ -153,21 +131,17 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                   }
 
                   @case ("boolean") {
-                    <mat-form-field
-                      appearance="outline"
-                      subscriptSizing="dynamic"
-                      class="c-val"
-                    >
-                      <mat-label>Value</mat-label>
-
-                      <mat-select
-                        [value]="row.value"
-                        (selectionChange)="patch(i, { value: $event.value })"
+                    <div class="c-val">
+                      <nz-select
+                        [ngModel]="row.value"
+                        (ngModelChange)="patch(i, { value: $event })"
+                        nzPlaceHolder="Value"
+                        class="full-width"
                       >
-                        <mat-option value="true">Yes</mat-option>
-                        <mat-option value="false">No</mat-option>
-                      </mat-select>
-                    </mat-form-field>
+                        <nz-option nzValue="true" nzLabel="Yes" />
+                        <nz-option nzValue="false" nzLabel="No" />
+                      </nz-select>
+                    </div>
                   }
 
                   @case ("choice") {
@@ -185,33 +159,30 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                   }
 
                   @default {
-                    <mat-form-field
-                      appearance="outline"
-                      subscriptSizing="dynamic"
-                      class="c-val"
-                    >
-                      <mat-label>Value</mat-label>
-
+                    <div class="c-val">
                       <input
-                        matInput
+                        nz-input
+                        placeholder="Value"
                         [value]="row.value ?? ''"
                         (input)="patch(i, { value: text($event) })"
                       />
-                    </mat-form-field>
+                    </div>
                   }
                 }
               }
 
               <!-- Remove Action -->
               <button
-                mat-icon-button
+                nz-button
+                nzType="text"
+                nzShape="circle"
                 type="button"
                 class="remove-button"
                 (click)="remove(i)"
                 [attr.aria-label]="'Remove filter ' + (i + 1)"
                 [title]="'Remove filter ' + (i + 1)"
               >
-                <mat-icon>close</mat-icon>
+                <nz-icon nzType="close" />
               </button>
             </div>
           }
@@ -219,7 +190,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       } @else {
         <div class="empty-filters">
           <span class="empty-icon" aria-hidden="true">
-            <mat-icon>filter_alt</mat-icon>
+            <nz-icon nzType="filter" />
           </span>
 
           <div class="empty-text">
@@ -234,23 +205,25 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       <!-- Footer Actions -->
       <div class="panel-footer">
         <button
-          mat-flat-button
+          nz-button
+          nzType="primary"
           type="button"
           class="add-button"
           (click)="add()"
         >
-          <mat-icon>add</mat-icon>
+          <nz-icon nzType="plus" />
           Add filter
         </button>
 
         @if (filters().length) {
           <button
-            mat-button
+            nz-button
+            nzType="default"
             type="button"
             class="clear-button"
             (click)="filters.set([])"
           >
-            <mat-icon>clear_all</mat-icon>
+            <nz-icon nzType="clear" />
             Clear all
           </button>
         }
@@ -259,36 +232,25 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
 
     <!-- Template: Date / DateTime inputs -->
     <ng-template #dates let-row="row" let-i="i">
-      <mat-form-field
-        appearance="outline"
-        subscriptSizing="dynamic"
-        class="c-val"
-      >
-        <mat-label>Date</mat-label>
-
+      <div class="c-val">
         <input
-          matInput
+          nz-input
           type="date"
           [value]="row.value ?? ''"
           (input)="patch(i, { value: text($event) })"
         />
-      </mat-form-field>
+      </div>
 
       @if (row.op === "between") {
-        <mat-form-field
-          appearance="outline"
-          subscriptSizing="dynamic"
-          class="c-val"
-        >
-          <mat-label>And</mat-label>
-
+        <div class="c-val">
           <input
-            matInput
+            nz-input
             type="date"
+            placeholder="And"
             [value]="row.value2 ?? ''"
             (input)="patch(i, { value2: text($event) })"
           />
-        </mat-form-field>
+        </div>
       }
     </ng-template>
 
@@ -310,24 +272,18 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
           />
         </div>
       } @else if (f) {
-        <mat-form-field
-          appearance="outline"
-          subscriptSizing="dynamic"
-          class="c-val"
-        >
-          <mat-label>Option</mat-label>
-
-          <mat-select
-            [value]="row.value"
-            (selectionChange)="patch(i, { value: $event.value })"
+        <div class="c-val">
+          <nz-select
+            [ngModel]="row.value"
+            (ngModelChange)="patch(i, { value: $event })"
+            nzPlaceHolder="Option"
+            class="full-width"
           >
             @for (o of f.config.options ?? []; track o) {
-              <mat-option [value]="o">
-                {{ o }}
-              </mat-option>
+              <nz-option [nzValue]="o" [nzLabel]="o" />
             }
-          </mat-select>
-        </mat-form-field>
+          </nz-select>
+        </div>
       }
     </ng-template>
   `,
@@ -340,8 +296,8 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       margin: 12px 0 16px;
       padding: 20px;
       border-radius: 16px;
-      border: 1px solid var(--mat-sys-outline-variant, #e0e2ec);
-      background: var(--mat-sys-surface, #ffffff);
+      border: 1px solid var(--app-outline-variant, #e0e2ec);
+      background: var(--app-surface, #ffffff);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
 
@@ -351,7 +307,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       justify-content: space-between;
       gap: 16px;
       padding-bottom: 16px;
-      border-bottom: 1px solid var(--mat-sys-outline-variant, #e0e2ec);
+      border-bottom: 1px solid var(--app-outline-variant, #e0e2ec);
     }
 
     .panel-title {
@@ -368,14 +324,9 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       display: grid;
       place-items: center;
       border-radius: 12px;
-      background: var(--mat-sys-primary-container, #eaddff);
-      color: var(--mat-sys-on-primary-container, #21005d);
-    }
-
-    .panel-icon mat-icon {
-      font-size: 22px;
-      width: 22px;
-      height: 22px;
+      background: var(--app-primary-container, #eaddff);
+      color: var(--app-on-primary-container, #21005d);
+      font-size: 20px;
     }
 
     .panel-headings h3 {
@@ -383,14 +334,14 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       line-height: 1.25;
       font-weight: 700;
       margin: 0;
-      color: var(--mat-sys-on-surface, #1d1b20);
+      color: var(--app-text, #1d1b20);
     }
 
     .panel-headings p.muted {
       margin: 3px 0 0;
       font-size: 0.8125rem;
       line-height: 1.35;
-      color: var(--mat-sys-on-surface-variant, #49454f);
+      color: var(--app-text-muted, #49454f);
     }
 
     .filter-count {
@@ -400,8 +351,8 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       min-height: 28px;
       padding: 0 12px;
       border-radius: 999px;
-      background: var(--mat-sys-secondary-container, #e8def8);
-      color: var(--mat-sys-on-secondary-container, #1d192b);
+      background: var(--app-surface-container-high, #e8def8);
+      color: var(--app-text, #1d192b);
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.02em;
@@ -421,9 +372,9 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       gap: 10px;
       min-width: 0;
       padding: 10px 14px;
-      border: 1px solid var(--mat-sys-outline-variant, #e0e2ec);
+      border: 1px solid var(--app-outline-variant, #e0e2ec);
       border-radius: 14px;
-      background: var(--mat-sys-surface, #ffffff);
+      background: var(--app-surface, #ffffff);
       transition:
         border-color 160ms cubic-bezier(0.4, 0, 0.2, 1),
         background-color 160ms cubic-bezier(0.4, 0, 0.2, 1),
@@ -433,16 +384,16 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
     .filter-row:hover {
       border-color: color-mix(
         in srgb,
-        var(--mat-sys-primary, #6750a4) 40%,
-        var(--mat-sys-outline-variant, #e0e2ec)
+        var(--app-primary, #6750a4) 40%,
+        var(--app-outline-variant, #e0e2ec)
       );
-      background: var(--mat-sys-surface-container-lowest, #fdfbff);
+      background: var(--app-surface-container-lowest, #fdfbff);
     }
 
     .filter-row:focus-within {
-      border-color: var(--mat-sys-primary, #6750a4);
+      border-color: var(--app-primary, #6750a4);
       box-shadow:
-        0 0 0 1px var(--mat-sys-primary, #6750a4),
+        0 0 0 1px var(--app-primary, #6750a4),
         0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
@@ -453,8 +404,8 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       height: 32px;
       padding: 0 10px;
       border-radius: 8px;
-      background: var(--mat-sys-surface-container-high, #ece6f0);
-      color: var(--mat-sys-on-surface-variant, #49454f);
+      background: var(--app-surface-container-high, #ece6f0);
+      color: var(--app-text-muted, #49454f);
       font-size: 0.75rem;
       font-weight: 600;
       white-space: nowrap;
@@ -463,7 +414,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
     }
 
     .clause-tag {
-      color: var(--mat-sys-primary, #6750a4);
+      color: var(--app-primary, #6750a4);
       font-weight: 700;
       text-transform: uppercase;
       font-size: 0.6875rem;
@@ -480,6 +431,10 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       font-size: 0.6875rem;
       font-weight: 600;
       opacity: 0.75;
+    }
+
+    .full-width {
+      width: 100%;
     }
 
     .c-field {
@@ -508,19 +463,13 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
     }
 
     .remove-button {
-      flex: 0 0 40px;
-      width: 40px;
-      height: 40px;
-      color: var(--mat-sys-on-surface-variant, #49454f);
-      border-radius: 10px;
-      transition:
-        color 140ms ease,
-        background-color 140ms ease;
+      flex: 0 0 36px;
+      color: var(--app-text-muted, #49454f);
     }
 
     .remove-button:hover {
-      color: var(--mat-sys-error, #ba1a1a);
-      background: var(--mat-sys-error-container, #ffdad6);
+      color: var(--app-error, #ba1a1a);
+      background: var(--app-error-container, #ffdad6);
     }
 
     .empty-filters {
@@ -529,9 +478,9 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       gap: 14px;
       margin: 16px 0 6px;
       padding: 18px;
-      border: 1.5px dashed var(--mat-sys-outline-variant, #cac4d0);
+      border: 1.5px dashed var(--app-outline-variant, #cac4d0);
       border-radius: 14px;
-      background: var(--mat-sys-surface, #ffffff);
+      background: var(--app-surface, #ffffff);
     }
 
     .empty-icon {
@@ -541,14 +490,9 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       display: grid;
       place-items: center;
       border-radius: 12px;
-      background: var(--mat-sys-surface-container, #f3edf7);
-      color: var(--mat-sys-on-surface-variant, #49454f);
-    }
-
-    .empty-icon mat-icon {
+      background: var(--app-surface-container, #f3edf7);
+      color: var(--app-text-muted, #49454f);
       font-size: 22px;
-      width: 22px;
-      height: 22px;
     }
 
     .empty-text {
@@ -559,12 +503,12 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
     .empty-text strong {
       font-size: 0.925rem;
       font-weight: 600;
-      color: var(--mat-sys-on-surface, #1d1b20);
+      color: var(--app-text, #1d1b20);
     }
 
     .empty-text .muted {
       font-size: 0.8125rem;
-      color: var(--mat-sys-on-surface-variant, #49454f);
+      color: var(--app-text-muted, #49454f);
     }
 
     .panel-footer {
@@ -577,13 +521,16 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
     .panel-footer button {
       min-height: 40px;
       border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .clear-button {
-      color: var(--mat-sys-on-surface-variant, #49454f);
+      color: var(--app-text-muted, #49454f);
     }
 
-    /* Tablet and Medium screens (Wrap gracefully) */
+    /* Tablet and Medium screens */
     @media (max-width: 900px) and (min-width: 681px) {
       .filter-row {
         gap: 8px;
@@ -601,7 +548,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       }
     }
 
-    /* Mobile screens (Single-column card style) */
+    /* Mobile screens */
     @media (max-width: 680px) {
       .panel {
         margin: 8px 0 14px;
@@ -619,12 +566,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
         height: 38px;
         flex: 0 0 38px;
         border-radius: 10px;
-      }
-
-      .panel-icon mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
+        font-size: 18px;
       }
 
       .panel-headings p.muted {

@@ -1,58 +1,99 @@
-import { Component, ElementRef, computed, effect, inject, input, model, signal, viewChild } from '@angular/core';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { LookupItem, RecordReference } from '../core/models';
-import { RecordsApi } from '../core/records-api.service';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  model,
+  signal,
+} from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { NzSelectModule } from "ng-zorro-antd/select";
+import { LookupItem, RecordReference } from "../core/models";
+import { RecordsApi } from "../core/records-api.service";
 
 /** Picks one or many records of another collection. Works for any collection: labels come from its title field. */
 @Component({
-  selector: 'app-reference-selector',
-  imports: [MatFormFieldModule, MatChipsModule, MatAutocompleteModule, MatIconModule],
+  selector: "app-reference-selector",
+  imports: [FormsModule, NzSelectModule],
   template: `
-    <mat-form-field class="full" appearance="outline">
-      <mat-label>{{ label() }}</mat-label>
-      <mat-chip-grid #grid [attr.aria-label]="label()">
-        @for (id of selectedIds(); track id) {
-          <mat-chip-row (removed)="remove(id)">
-            {{ labelOf(id) }}
-            <button matChipRemove [attr.aria-label]="'Remove ' + labelOf(id)"><mat-icon>cancel</mat-icon></button>
-          </mat-chip-row>
-        }
-        @if (multiple() || selectedIds().length === 0) {
-          <input #inp placeholder="Search…" [matChipInputFor]="grid" [matAutocomplete]="auto"
-                 (input)="onInput($event)" (focus)="query.set(query())" />
-        }
-      </mat-chip-grid>
-      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="select($event.option.value)">
-        @for (o of options(); track o.id) {
-          <mat-option [value]="o.id" [disabled]="selectedIds().includes(o.id)">{{ o.label }}</mat-option>
-        } @empty {
-          <mat-option disabled>No matches</mat-option>
-        }
-      </mat-autocomplete>
-    </mat-form-field>
+    <nz-select
+      class="full-width-select"
+      [nzMode]="multiple() ? 'multiple' : 'default'"
+      [nzPlaceHolder]="label() || 'Search…'"
+      [nzServerSearch]="true"
+      [nzShowSearch]="true"
+      [nzAllowClear]="true"
+      [ngModel]="selectedModel()"
+      (ngModelChange)="onModelChange($event)"
+      (nzOnSearch)="onSearch($event)"
+    >
+      @for (o of combinedOptions(); track o.id) {
+        <nz-option [nzValue]="o.id" [nzLabel]="o.label" />
+      }
+    </nz-select>
+  `,
+  styles: `
+    :host {
+      display: block;
+      width: 100%;
+    }
+    .full-width-select {
+      width: 100%;
+    }
   `,
 })
 export class ReferenceSelector {
   readonly collectionId = input.required<string>();
   readonly multiple = input(false);
-  readonly label = input('');
+  readonly label = input("");
   readonly value = model<string | string[] | null>(null);
   /** Labels the server already resolved (edit mode), so chips render before any lookup. */
   readonly knownLabels = input<Record<string, RecordReference>>({});
 
   private readonly api = inject(RecordsApi);
-  private readonly inp = viewChild<ElementRef<HTMLInputElement>>('inp');
 
-  protected readonly query = signal('');
+  protected readonly query = signal("");
   protected readonly options = signal<LookupItem[]>([]);
   private readonly cache = signal<Record<string, string>>({});
 
-  protected readonly selectedIds = computed<string[]>(() => {
+  protected readonly selectedModel = computed(() => {
     const v = this.value();
-    return Array.isArray(v) ? v : v ? [v] : [];
+    if (this.multiple()) {
+      return Array.isArray(v) ? v : v ? [v] : [];
+    }
+    return Array.isArray(v) ? v[0] ?? null : v ?? null;
+  });
+
+  protected readonly combinedOptions = computed<LookupItem[]>(() => {
+    const map = new Map<string, string>();
+
+    // Seed with known labels
+    const known = this.knownLabels();
+    for (const [id, ref] of Object.entries(known)) {
+      if (ref?.label) map.set(id, ref.label);
+    }
+
+    // Add local cache
+    for (const [id, label] of Object.entries(this.cache())) {
+      map.set(id, label);
+    }
+
+    // Add active search results
+    for (const item of this.options()) {
+      map.set(item.id, item.label);
+    }
+
+    // Ensure selected IDs have an option even if not searched yet
+    const v = this.value();
+    const ids = Array.isArray(v) ? v : v ? [v] : [];
+    for (const id of ids) {
+      if (!map.has(id)) {
+        map.set(id, known[id]?.label || id);
+      }
+    }
+
+    return Array.from(map.entries()).map(([id, label]) => ({ id, label }));
   });
 
   constructor() {
@@ -63,7 +104,10 @@ export class ReferenceSelector {
         try {
           const items = await this.api.lookup(id, q);
           this.options.set(items);
-          this.cache.update((c) => ({ ...c, ...Object.fromEntries(items.map((i) => [i.id, i.label])) }));
+          this.cache.update((c) => ({
+            ...c,
+            ...Object.fromEntries(items.map((i) => [i.id, i.label])),
+          }));
         } catch {
           this.options.set([]);
         }
@@ -72,28 +116,16 @@ export class ReferenceSelector {
     });
   }
 
-  protected labelOf(id: string): string {
-    return this.cache()[id] ?? this.knownLabels()[id]?.label ?? 'Unknown record';
+  protected onSearch(q: string): void {
+    this.query.set(q);
   }
 
-  protected onInput(e: Event): void {
-    this.query.set((e.target as HTMLInputElement).value);
-  }
-
-  protected select(id: string): void {
+  protected onModelChange(val: string | string[] | null): void {
     if (this.multiple()) {
-      const current = this.selectedIds();
-      if (!current.includes(id)) this.value.set([...current, id]);
+      const arr = Array.isArray(val) ? val : val ? [val] : [];
+      this.value.set(arr.length ? arr : null);
     } else {
-      this.value.set(id);
+      this.value.set(val ?? null);
     }
-    this.query.set('');
-    const input = this.inp()?.nativeElement;
-    if (input) input.value = '';
-  }
-
-  protected remove(id: string): void {
-    const rest = this.selectedIds().filter((x) => x !== id);
-    this.value.set(this.multiple() ? rest : null);
   }
 }

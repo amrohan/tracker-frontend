@@ -10,18 +10,18 @@ import {
   output,
   signal,
 } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatExpansionModule } from "@angular/material/expansion";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatIconModule } from "@angular/material/icon";
-import { MatInputModule } from "@angular/material/input";
-import { MatSelectModule } from "@angular/material/select";
-import { MatSlideToggleModule } from "@angular/material/slide-toggle";
+import { FormsModule } from "@angular/forms";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzCollapseModule } from "ng-zorro-antd/collapse";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzInputModule } from "ng-zorro-antd/input";
+import { NzSelectModule } from "ng-zorro-antd/select";
+import { NzSwitchModule } from "ng-zorro-antd/switch";
+
 import { FieldTypeCatalog } from "../../core/field-types.service";
 import {
   AGG_LABELS,
   CURRENCIES,
-  TYPE_ICONS,
   TYPE_LABELS,
   defaultConfig,
 } from "../../core/labels";
@@ -38,295 +38,380 @@ import { FieldDraft } from "./field-draft";
   imports: [
     NgTemplateOutlet,
     CdkDragHandle,
-    MatExpansionModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatSlideToggleModule,
-    MatButtonModule,
-    MatIconModule,
+    FormsModule,
+    NzCollapseModule,
+    NzInputModule,
+    NzSelectModule,
+    NzSwitchModule,
+    NzButtonModule,
+    NzIconModule,
   ],
   template: `
-    <mat-expansion-panel [expanded]="isNew()" class="panel">
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <button
-            cdkDragHandle
-            type="button"
-            class="handle"
-            mat-icon-button
-            aria-label="Drag to reorder"
-            (click)="$event.stopPropagation()"
-          >
-            <mat-icon>drag_indicator</mat-icon>
-          </button>
-          <mat-icon class="type-icon">{{ icon(field().type) }}</mat-icon>
-          <span class="name">{{ field().name || "Untitled field" }}</span>
-        </mat-panel-title>
-        <mat-panel-description>
-          {{ label(field().type) }}
-          @if (field().required) {
-            <span class="badge">required</span>
-          }
-          @if (field().isTitle) {
-            <span class="badge">title</span>
-          }
-        </mat-panel-description>
-      </mat-expansion-panel-header>
-
-      <div class="grid">
-        <mat-form-field appearance="outline">
-          <mat-label>Field name</mat-label>
-          <input
-            matInput
-            maxlength="80"
-            [value]="field().name"
-            (input)="patch({ name: text($event) })"
-          />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Type</mat-label>
-          <mat-select
-            [value]="field().type"
-            (selectionChange)="changeType($event.value)"
-          >
-            @for (t of typeChoices(); track t) {
-              <mat-option [value]="t">{{ label(t) }}</mat-option>
-            }
-          </mat-select>
-          @if (!isNew() && typeChoices().length === 1) {
-            <mat-hint
-              >This type cannot be changed safely. Add a new field
-              instead.</mat-hint
+    <nz-collapse class="panel">
+      <nz-collapse-panel
+        [nzActive]="isNew()"
+        [nzHeader]="headerTpl"
+        [nzExtra]="extraTpl"
+      >
+        <ng-template #headerTpl>
+          <div class="panel-header-title">
+            <button
+              cdkDragHandle
+              type="button"
+              class="handle"
+              nz-button
+              nzType="text"
+              nzShape="circle"
+              aria-label="Drag to reorder"
+              (click)="$event.stopPropagation()"
             >
-          }
-        </mat-form-field>
-      </div>
-
-      <mat-form-field appearance="outline" class="full">
-        <mat-label>Help text (optional)</mat-label>
-        <input
-          matInput
-          maxlength="300"
-          [value]="field().description"
-          (input)="patch({ description: text($event) })"
-        />
-      </mat-form-field>
-
-      @switch (field().type) {
-        @case ("select") {
-          <ng-container *ngTemplateOutlet="optionsTpl" />
-        }
-        @case ("multiSelect") {
-          <ng-container *ngTemplateOutlet="optionsTpl" />
-        }
-        @case ("reference") {
-          <ng-container *ngTemplateOutlet="targetTpl" />
-        }
-        @case ("multiReference") {
-          <ng-container *ngTemplateOutlet="targetTpl" />
-        }
-        @case ("currency") {
-          <div class="grid">
-            <mat-form-field appearance="outline">
-              <mat-label>Currency</mat-label>
-              <mat-select
-                [value]="field().config.currency ?? 'INR'"
-                (selectionChange)="patchConfig({ currency: $event.value })"
-              >
-                @for (c of currencies; track c) {
-                  <mat-option [value]="c">{{ c }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
+              <nz-icon nzType="holder" />
+            </button>
+            <nz-icon class="type-icon" [nzType]="icon(field().type)" />
+            <span class="name">{{ field().name || "Untitled field" }}</span>
           </div>
-          <ng-container *ngTemplateOutlet="rangeTpl" />
-        }
-        @case ("number") {
-          <ng-container *ngTemplateOutlet="rangeTpl" />
-        }
-        @case ("rating") {
-          <mat-form-field appearance="outline">
-            <mat-label>Scale</mat-label>
-            <mat-select
-              [value]="field().config.max ?? 5"
-              (selectionChange)="patchConfig({ max: $event.value })"
-            >
-              @for (n of scale; track n) {
-                <mat-option [value]="n">1 – {{ n }}</mat-option>
+        </ng-template>
+
+        <ng-template #extraTpl>
+          <div class="panel-header-desc">
+            <span class="type-name">{{ label(field().type) }}</span>
+            @if (field().required) {
+              <span class="badge">required</span>
+            }
+            @if (field().isTitle) {
+              <span class="badge">title</span>
+            }
+          </div>
+        </ng-template>
+
+        <div class="form-body">
+          <div class="grid">
+            <div class="form-group">
+              <label class="form-label">Field name</label>
+              <input
+                nz-input
+                maxlength="80"
+                [value]="field().name"
+                (input)="patch({ name: text($event) })"
+                placeholder="Field name"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Type</label>
+              <nz-select
+                class="full"
+                [ngModel]="field().type"
+                (ngModelChange)="changeType($event)"
+              >
+                @for (t of typeChoices(); track t) {
+                  <nz-option [nzValue]="t" [nzLabel]="label(t)" />
+                }
+              </nz-select>
+              @if (!isNew() && typeChoices().length === 1) {
+                <span class="hint"
+                  >This type cannot be changed safely. Add a new field
+                  instead.</span
+                >
               }
-            </mat-select>
-          </mat-form-field>
-        }
-      }
+            </div>
+          </div>
 
-      <div class="toggles">
-        @if (field().type !== "boolean") {
-          <mat-slide-toggle
-            [checked]="field().required"
-            (change)="patch({ required: $event.checked })"
-            >Required</mat-slide-toggle
-          >
-        }
-        <mat-slide-toggle
-          [checked]="field().showInList"
-          (change)="patch({ showInList: $event.checked })"
-          >Show as a table column</mat-slide-toggle
-        >
-        <mat-slide-toggle
-          [checked]="field().isTitle"
-          (change)="patch({ isTitle: $event.checked })"
-          >Use as the record title</mat-slide-toggle
-        >
-      </div>
+          <div class="form-group full">
+            <label class="form-label">Help text (optional)</label>
+            <input
+              nz-input
+              maxlength="300"
+              [value]="field().description"
+              (input)="patch({ description: text($event) })"
+              placeholder="Help text"
+            />
+          </div>
 
-      <mat-form-field appearance="outline" class="agg">
-        <mat-label>Summary calculation</mat-label>
-        <mat-select
-          [value]="field().aggregation"
-          (selectionChange)="patch({ aggregation: $event.value })"
-        >
-          <mat-option value="none">None</mat-option>
-          @for (a of aggregations(); track a) {
-            <mat-option [value]="a">{{ aggLabel(a) }}</mat-option>
+          @switch (field().type) {
+            @case ("select") {
+              <ng-container *ngTemplateOutlet="optionsTpl" />
+            }
+            @case ("multiSelect") {
+              <ng-container *ngTemplateOutlet="optionsTpl" />
+            }
+            @case ("reference") {
+              <ng-container *ngTemplateOutlet="targetTpl" />
+            }
+            @case ("multiReference") {
+              <ng-container *ngTemplateOutlet="targetTpl" />
+            }
+            @case ("currency") {
+              <div class="grid">
+                <div class="form-group">
+                  <label class="form-label">Currency</label>
+                  <nz-select
+                    class="full"
+                    [ngModel]="field().config.currency ?? 'INR'"
+                    (ngModelChange)="patchConfig({ currency: $event })"
+                  >
+                    @for (c of currencies; track c) {
+                      <nz-option [nzValue]="c" [nzLabel]="c" />
+                    }
+                  </nz-select>
+                </div>
+              </div>
+              <ng-container *ngTemplateOutlet="rangeTpl" />
+            }
+            @case ("number") {
+              <ng-container *ngTemplateOutlet="rangeTpl" />
+            }
+            @case ("rating") {
+              <div class="form-group" style="max-width: 240px;">
+                <label class="form-label">Scale</label>
+                <nz-select
+                  class="full"
+                  [ngModel]="field().config.max ?? 5"
+                  (ngModelChange)="patchConfig({ max: $event })"
+                >
+                  @for (n of scale; track n) {
+                    <nz-option [nzValue]="n" [nzLabel]="'1 – ' + n" />
+                  }
+                </nz-select>
+              </div>
+            }
           }
-        </mat-select>
-        <mat-hint>Shown in the summary and the table footer.</mat-hint>
-      </mat-form-field>
 
-      <mat-action-row>
-        <button
-          mat-button
-          type="button"
-          [disabled]="index() === 0"
-          (click)="moveUp.emit()"
-        >
-          <mat-icon>arrow_upward</mat-icon> Up
-        </button>
-        <button
-          mat-button
-          type="button"
-          [disabled]="index() === count() - 1"
-          (click)="moveDown.emit()"
-        >
-          <mat-icon>arrow_downward</mat-icon> Down
-        </button>
-        <span class="spacer"></span>
-        <button
-          mat-button
-          type="button"
-          class="danger"
-          (click)="removed.emit()"
-        >
-          <mat-icon>delete</mat-icon> Remove
-        </button>
-      </mat-action-row>
-    </mat-expansion-panel>
+          <div class="toggles">
+            @if (field().type !== "boolean") {
+              <label class="toggle-item">
+                <nz-switch
+                  [ngModel]="field().required"
+                  (ngModelChange)="patch({ required: $event })"
+                />
+                <span>Required</span>
+              </label>
+            }
+            <label class="toggle-item">
+              <nz-switch
+                [ngModel]="field().showInList"
+                (ngModelChange)="patch({ showInList: $event })"
+              />
+              <span>Show as a table column</span>
+            </label>
+            <label class="toggle-item">
+              <nz-switch
+                [ngModel]="field().isTitle"
+                (ngModelChange)="patch({ isTitle: $event })"
+              />
+              <span>Use as the record title</span>
+            </label>
+          </div>
+
+          <div class="form-group agg">
+            <label class="form-label">Summary calculation</label>
+            <nz-select
+              class="full"
+              [ngModel]="field().aggregation"
+              (ngModelChange)="patch({ aggregation: $event })"
+            >
+              <nz-option nzValue="none" nzLabel="None" />
+              @for (a of aggregations(); track a) {
+                <nz-option [nzValue]="a" [nzLabel]="aggLabel(a)" />
+              }
+            </nz-select>
+            <span class="hint">Shown in the summary and the table footer.</span>
+          </div>
+
+          <div class="panel-actions">
+            <button
+              nz-button
+              nzType="default"
+              type="button"
+              [disabled]="index() === 0"
+              (click)="moveUp.emit()"
+            >
+              <nz-icon nzType="arrow-up" /> Up
+            </button>
+            <button
+              nz-button
+              nzType="default"
+              type="button"
+              [disabled]="index() === count() - 1"
+              (click)="moveDown.emit()"
+            >
+              <nz-icon nzType="arrow-down" /> Down
+            </button>
+            <span class="spacer"></span>
+            <button
+              nz-button
+              nzType="default"
+              nzDanger
+              type="button"
+              (click)="removed.emit()"
+            >
+              <nz-icon nzType="delete" /> Remove
+            </button>
+          </div>
+        </div>
+      </nz-collapse-panel>
+    </nz-collapse>
 
     <ng-template #optionsTpl>
-      <mat-form-field appearance="outline" class="full">
-        <mat-label>Options (one per line)</mat-label>
+      <div class="form-group full">
+        <label class="form-label">Options (one per line)</label>
         <textarea
-          matInput
+          nz-input
           rows="4"
           [value]="optionsText()"
           (input)="onOptions($event)"
+          placeholder="Option 1&#10;Option 2&#10;Option 3"
         ></textarea>
-        <mat-hint
+        <span class="hint"
           >Removing an option later keeps it on records that already use
-          it.</mat-hint
+          it.</span
         >
-      </mat-form-field>
+      </div>
     </ng-template>
 
     <ng-template #targetTpl>
-      <mat-form-field appearance="outline" class="full">
-        <mat-label>Points to collection</mat-label>
-        <mat-select
-          [value]="field().config.targetCollectionId ?? null"
-          [disabled]="!isNew()"
-          (selectionChange)="patchConfig({ targetCollectionId: $event.value })"
+      <div class="form-group full">
+        <label class="form-label">Points to collection</label>
+        <nz-select
+          class="full"
+          [ngModel]="field().config.targetCollectionId ?? null"
+          [nzDisabled]="!isNew()"
+          (ngModelChange)="patchConfig({ targetCollectionId: $event })"
+          nzPlaceHolder="Select collection"
         >
           @for (c of collections(); track c.id) {
-            <mat-option [value]="c.id">{{ c.icon }} {{ c.name }}</mat-option>
+            <nz-option [nzValue]="c.id" [nzLabel]="c.icon + ' ' + c.name" />
           }
-        </mat-select>
+        </nz-select>
         @if (!isNew()) {
-          <mat-hint
-            >The target of an existing reference cannot change.</mat-hint
+          <span class="hint"
+            >The target of an existing reference cannot change.</span
           >
         } @else if (collections().length === 0) {
-          <mat-hint
-            >Create the collection you want to reference first.</mat-hint
+          <span class="hint"
+            >Create the collection you want to reference first.</span
           >
         }
-      </mat-form-field>
+      </div>
     </ng-template>
 
     <ng-template #rangeTpl>
       <div class="grid">
-        <mat-form-field appearance="outline">
-          <mat-label>Minimum (optional)</mat-label>
+        <div class="form-group">
+          <label class="form-label">Minimum (optional)</label>
           <input
-            matInput
+            nz-input
             type="number"
             [value]="field().config.min ?? ''"
             (input)="patchConfig({ min: num($event) })"
+            placeholder="Min"
           />
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Maximum (optional)</mat-label>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Maximum (optional)</label>
           <input
-            matInput
+            nz-input
             type="number"
             [value]="field().config.max ?? ''"
             (input)="patchConfig({ max: num($event) })"
+            placeholder="Max"
           />
-        </mat-form-field>
+        </div>
       </div>
     </ng-template>
   `,
   styles: `
     .panel {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--app-outline-variant);
+      background: var(--app-surface);
+    }
+    .panel-header-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
     .handle {
       cursor: grab;
-      margin-left: -8px;
+      margin-left: -4px;
+      color: var(--app-text-muted);
     }
     .type-icon {
-      margin-right: 8px;
-      color: var(--mat-sys-primary);
+      font-size: 16px;
+      color: var(--app-primary);
     }
     .name {
       font-weight: 600;
+      color: var(--app-text);
+    }
+    .panel-header-desc {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .type-name {
+      color: var(--app-text-muted);
+      font-size: 0.85rem;
     }
     .badge {
-      margin-left: 8px;
       padding: 1px 8px;
       border-radius: 999px;
       font-size: 0.75rem;
-      background: var(--mat-sys-tertiary-container);
-      color: var(--mat-sys-on-tertiary-container);
+      background: var(--app-primary-container);
+      color: var(--app-on-primary-container);
+    }
+    .form-body {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding-top: 4px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--app-text);
+    }
+    .hint {
+      font-size: 0.785rem;
+      color: var(--app-text-muted);
+    }
+    .full {
+      width: 100%;
     }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 0 16px;
-      padding-top: 8px;
+      gap: 14px 16px;
     }
     .toggles {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px 24px;
-      margin: 4px 0 16px;
+      gap: 12px 24px;
+      margin: 4px 0 6px;
+    }
+    .toggle-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.875rem;
+      cursor: pointer;
     }
     .agg {
       width: min(320px, 100%);
     }
-    .danger {
-      color: var(--mat-sys-error);
+    .panel-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 14px;
+      border-top: 1px solid var(--app-outline-variant);
     }
     .spacer {
       flex: 1;
@@ -371,8 +456,24 @@ export class FieldEditor {
   }
 
   protected icon(t: FieldType): string {
-    return TYPE_ICONS[t];
+    const map: Record<FieldType, string> = {
+      text: "font-size",
+      longText: "file-text",
+      number: "number",
+      currency: "dollar",
+      date: "calendar",
+      dateTime: "clock-circle",
+      boolean: "check-square",
+      select: "down-circle",
+      multiSelect: "unordered-list",
+      rating: "star",
+      reference: "link",
+      multiReference: "share-alt",
+      url: "global",
+    };
+    return map[t] || "file";
   }
+
   protected label(t: FieldType): string {
     return this.catalog.info(t)?.label ?? TYPE_LABELS[t];
   }

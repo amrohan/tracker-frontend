@@ -1,8 +1,8 @@
 import { httpResource } from "@angular/common/http";
 import { Component, inject } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzSpinModule } from "ng-zorro-antd/spin";
 
 import { CollectionContext } from "../../core/collection-context";
 import { formatDateTime, formatMetric, metricLabel } from "../../core/format";
@@ -10,22 +10,20 @@ import { SummaryReport } from "../../core/models";
 
 @Component({
   selector: "app-summary-view",
-  imports: [MatIconModule, MatProgressBarModule, MatButtonModule],
+  imports: [NzIconModule, NzSpinModule, NzButtonModule],
   template: `
     <div class="page summary-page">
       @if (summary.isLoading()) {
-        <mat-progress-bar
-          class="loading"
-          mode="indeterminate"
-          aria-label="Loading summary"
-        />
+        <div class="loading-wrap">
+          <nz-spin nzSimple />
+        </div>
       }
 
       @if (summary.value(); as s) {
         @if (s.recordCount === 0) {
           <div class="empty-state">
             <div class="empty-icon-box" aria-hidden="true">
-              <mat-icon>insights</mat-icon>
+              <nz-icon nzType="line-chart" />
             </div>
             <h3>Nothing to summarize yet</h3>
             <p>
@@ -39,7 +37,7 @@ import { SummaryReport } from "../../core/models";
               <div class="tile-top">
                 <span class="label">Total records</span>
                 <div class="tile-icon-badge primary-badge" aria-hidden="true">
-                  <mat-icon>storage</mat-icon>
+                  <nz-icon nzType="database" />
                 </div>
               </div>
               <span class="value">{{ s.recordCount }}</span>
@@ -50,7 +48,7 @@ import { SummaryReport } from "../../core/models";
                 <div class="tile-top">
                   <span class="label">Last activity</span>
                   <div class="tile-icon-badge" aria-hidden="true">
-                    <mat-icon>schedule</mat-icon>
+                    <nz-icon nzType="clock-circle" />
                   </div>
                 </div>
                 <span class="value value-date">{{
@@ -64,7 +62,7 @@ import { SummaryReport } from "../../core/models";
                 <div class="tile-top">
                   <span class="label" [title]="label(m)">{{ label(m) }}</span>
                   <div class="tile-icon-badge" aria-hidden="true">
-                    <mat-icon>{{ metricIcon(m.aggregation) }}</mat-icon>
+                    <nz-icon [nzType]="metricIcon(m.aggregation)" />
                   </div>
                 </div>
                 <span class="value">{{ format(m) }}</span>
@@ -75,12 +73,12 @@ import { SummaryReport } from "../../core/models";
           @if (s.metrics.length === 0) {
             <div class="hint-card">
               <div class="hint-icon" aria-hidden="true">
-                <mat-icon>lightbulb</mat-icon>
+                <nz-icon nzType="bulb" />
               </div>
               <div class="hint-body">
                 <strong>Add summary calculations</strong>
                 <p>
-                  Turn on a “Summary calculation” for any number, currency or
+                  Turn on a "Summary calculation" for any number, currency or
                   rating field — like Sum for expenses or Average for ratings —
                   and it will appear here automatically.
                 </p>
@@ -91,12 +89,12 @@ import { SummaryReport } from "../../core/models";
       } @else if (summary.error()) {
         <div class="empty-state">
           <div class="empty-icon-box error-box" aria-hidden="true">
-            <mat-icon>cloud_off</mat-icon>
+            <nz-icon nzType="disconnect" />
           </div>
           <h3>Could not load the summary</h3>
           <p>Something went wrong while calculating the summary metrics.</p>
-          <button mat-stroked-button type="button" (click)="summary.reload()">
-            <mat-icon>refresh</mat-icon> Try again
+          <button nz-button nzType="default" type="button" (click)="summary.reload()">
+            <nz-icon nzType="reload" /> Try again
           </button>
         </div>
       }
@@ -111,10 +109,10 @@ import { SummaryReport } from "../../core/models";
       padding-top: clamp(16px, 3vw, 24px);
     }
 
-    .loading {
-      margin-bottom: 18px;
-      border-radius: 999px;
-      height: 4px;
+    .loading-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 20px 0;
     }
 
     /* ---------------- grid ---------------- */
@@ -131,13 +129,13 @@ import { SummaryReport } from "../../core/models";
       gap: clamp(10px, 2vw, 16px);
       padding: clamp(14px, 2.4vw, 20px);
       border-radius: clamp(14px, 2vw, 18px);
-      background: var(--mat-sys-surface-container-low);
-      border: 1px solid var(--mat-sys-outline-variant);
+      background: var(--app-surface-container-low);
+      border: 1px solid var(--app-outline-variant);
     }
 
     .tile-primary {
-      background: var(--mat-sys-primary-container);
-      color: var(--mat-sys-on-primary-container);
+      background: var(--app-primary-container);
+      color: var(--app-on-primary-container);
       border-color: transparent;
     }
 
@@ -146,7 +144,6 @@ import { SummaryReport } from "../../core/models";
     }
 
     @media (min-width: 560px) {
-      /* on wider screens the two headline tiles sit side by side instead of stacking full-width */
       .tile-wide {
         grid-column: span 2;
       }
@@ -163,7 +160,7 @@ import { SummaryReport } from "../../core/models";
       font-size: 0.85rem;
       font-weight: 600;
       line-height: 1.3;
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--app-text-muted);
       overflow: hidden;
       text-overflow: ellipsis;
       display: -webkit-box;
@@ -171,7 +168,7 @@ import { SummaryReport } from "../../core/models";
       -webkit-box-orient: vertical;
     }
     .tile-primary .label {
-      color: var(--mat-sys-on-primary-container);
+      color: var(--app-on-primary-container);
       opacity: 0.85;
     }
 
@@ -182,17 +179,13 @@ import { SummaryReport } from "../../core/models";
       display: grid;
       place-items: center;
       border-radius: 10px;
-      background: var(--mat-sys-surface-container-high);
-      color: var(--mat-sys-on-surface-variant);
-    }
-    .tile-icon-badge mat-icon {
+      background: var(--app-surface-container-high);
+      color: var(--app-text-muted);
       font-size: 18px;
-      width: 18px;
-      height: 18px;
     }
     .primary-badge {
-      background: var(--mat-sys-primary);
-      color: var(--mat-sys-on-primary);
+      background: var(--app-primary);
+      color: var(--app-on-primary);
     }
 
     .value {
@@ -217,8 +210,8 @@ import { SummaryReport } from "../../core/models";
       margin-top: 18px;
       padding: 16px clamp(14px, 3vw, 20px);
       border-radius: 16px;
-      background: var(--mat-sys-surface-container-low);
-      border: 1px solid var(--mat-sys-outline-variant);
+      background: var(--app-surface-container-low);
+      border: 1px solid var(--app-outline-variant);
     }
     .hint-icon {
       width: 32px;
@@ -227,13 +220,9 @@ import { SummaryReport } from "../../core/models";
       display: grid;
       place-items: center;
       border-radius: 8px;
-      background: var(--mat-sys-tertiary-container);
-      color: var(--mat-sys-on-tertiary-container);
-    }
-    .hint-icon mat-icon {
+      background: var(--app-tertiary-container);
+      color: var(--app-on-tertiary-container);
       font-size: 20px;
-      width: 20px;
-      height: 20px;
     }
     .hint-body strong {
       display: block;
@@ -243,7 +232,7 @@ import { SummaryReport } from "../../core/models";
     .hint-body p {
       margin: 0;
       font-size: 0.85rem;
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--app-text-muted);
       line-height: 1.45;
     }
 
@@ -257,7 +246,7 @@ import { SummaryReport } from "../../core/models";
       text-align: center;
       padding: 40px 20px;
       border-radius: 16px;
-      border: 1.5px dashed var(--mat-sys-outline-variant);
+      border: 1.5px dashed var(--app-outline-variant);
     }
     .empty-icon-box {
       width: 52px;
@@ -266,17 +255,13 @@ import { SummaryReport } from "../../core/models";
       place-items: center;
       border-radius: 14px;
       margin-bottom: 14px;
-      background: var(--mat-sys-surface-container);
-      color: var(--mat-sys-on-surface-variant);
+      background: var(--app-surface-container);
+      color: var(--app-text-muted);
+      font-size: 26px;
     }
     .empty-icon-box.error-box {
-      background: var(--mat-sys-error-container);
-      color: var(--mat-sys-error);
-    }
-    .empty-icon-box mat-icon {
-      font-size: 26px;
-      width: 26px;
-      height: 26px;
+      background: var(--app-error-container);
+      color: var(--app-error);
     }
     .empty-state h3 {
       margin: 0 0 6px;
@@ -286,7 +271,7 @@ import { SummaryReport } from "../../core/models";
       max-width: 380px;
       margin: 0 0 16px;
       font-size: 0.9rem;
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--app-text-muted);
     }
 
     /* ---------------- phones ---------------- */
@@ -320,18 +305,18 @@ export class SummaryView {
   protected metricIcon(aggregation?: string): string {
     switch (aggregation?.toLowerCase()) {
       case "sum":
-        return "functions";
+        return "number";
       case "avg":
       case "average":
-        return "query_stats";
+        return "line-chart";
       case "min":
-        return "arrow_downward";
+        return "arrow-down";
       case "max":
-        return "arrow_upward";
+        return "arrow-up";
       case "count":
-        return "pin";
+        return "filter";
       default:
-        return "analytics";
+        return "bar-chart";
     }
   }
 }

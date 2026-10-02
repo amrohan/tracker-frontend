@@ -1,10 +1,10 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormField, email, form, minLength, required } from '@angular/forms/signals';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { Router, RouterLink } from '@angular/router';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzInputModule } from 'ng-zorro-antd/input';
 import { AuthService } from '../../core/auth.service';
 import { problemMessage } from '../../core/http-errors';
 import { AuthLayout } from '../../shared/auth-layout';
@@ -13,43 +13,55 @@ type ErrorState = { touched(): boolean; errors(): readonly { kind: string }[] };
 
 @Component({
   selector: 'app-register-page',
-  imports: [FormField, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, RouterLink, AuthLayout],
+  imports: [FormField, NzFormModule, NzInputModule, NzButtonModule, NzIconModule, RouterLink, AuthLayout],
   template: `
     <app-auth-layout heading="Create your account" subheading="Your data stays yours. Start tracking in a minute.">
-      <form (submit)="submit($event)" novalidate>
-        <mat-form-field appearance="outline" class="full">
-          <mat-label>Your name</mat-label>
-          <input matInput autocomplete="name" [formField]="f.displayName" />
-        </mat-form-field>
-        @if (nameError(); as msg) { <p class="field-error" role="alert">{{ msg }}</p> }
+      <form (submit)="submit($event)" novalidate class="auth-form">
+        <nz-form-item>
+          <nz-form-label>Your name</nz-form-label>
+          <nz-form-control [nzErrorTip]="nameError() || ''">
+            <input nz-input autocomplete="name" [formField]="f.displayName" placeholder="Your full name" />
+          </nz-form-control>
+        </nz-form-item>
 
-        <mat-form-field appearance="outline" class="full">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" autocomplete="email" [formField]="f.email" />
-        </mat-form-field>
-        @if (emailError(); as msg) { <p class="field-error" role="alert">{{ msg }}</p> }
+        <nz-form-item>
+          <nz-form-label>Email</nz-form-label>
+          <nz-form-control [nzErrorTip]="emailError() || ''">
+            <input nz-input type="email" autocomplete="email" [formField]="f.email" placeholder="you@example.com" />
+          </nz-form-control>
+        </nz-form-item>
 
-        <mat-form-field appearance="outline" class="full">
-          <mat-label>Password</mat-label>
-          <input matInput [type]="showPassword() ? 'text' : 'password'" autocomplete="new-password" [formField]="f.password" />
-          <button mat-icon-button matSuffix type="button" (click)="showPassword.set(!showPassword())"
-                  [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
-            <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
-          </button>
-          <mat-hint>At least 8 characters</mat-hint>
-        </mat-form-field>
-        @if (passwordError(); as msg) { <p class="field-error" role="alert">{{ msg }}</p> }
+        <nz-form-item>
+          <nz-form-label>Password</nz-form-label>
+          <nz-form-control [nzErrorTip]="passwordError() || ''" nzExtra="At least 8 characters">
+            <nz-input-password>
+              <input
+                nz-input
+                type="password"
+                autocomplete="new-password"
+                [formField]="f.password"
+                placeholder="Choose a password"
+              />
+            </nz-input-password>
+          </nz-form-control>
+        </nz-form-item>
 
-        @if (serverError(); as msg) { <p class="field-error" role="alert">{{ msg }}</p> }
+        @if (serverError(); as msg) {
+          <p class="field-error" role="alert">{{ msg }}</p>
+        }
 
-        <button mat-flat-button class="full submit" type="submit" [disabled]="busy()">
+        <button nz-button nzType="primary" nzBlock type="submit" [disabled]="busy()" class="submit-btn">
           {{ busy() ? 'Creating account…' : 'Create account' }}
         </button>
       </form>
       <p class="muted alt">Already have an account? <a routerLink="/login">Sign in</a></p>
     </app-auth-layout>
   `,
-  styles: `.submit { height: 48px; margin-top: 8px; } .alt { margin-top: 20px; text-align: center; }`,
+  styles: `
+    .auth-form { display: flex; flex-direction: column; gap: 4px; }
+    .submit-btn { height: 48px; margin-top: 8px; }
+    .alt { margin-top: 20px; text-align: center; }
+  `,
 })
 export class RegisterPage {
   private readonly auth = inject(AuthService);
@@ -64,7 +76,6 @@ export class RegisterPage {
     minLength(path.password, 8);
   });
 
-  protected readonly showPassword = signal(false);
   protected readonly busy = signal(false);
   protected readonly attempted = signal(false);
   protected readonly serverError = signal<string | null>(null);

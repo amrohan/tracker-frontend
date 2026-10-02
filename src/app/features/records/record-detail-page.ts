@@ -1,11 +1,10 @@
 import { httpResource } from "@angular/common/http";
 import { Component, computed, inject, input } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatDialog } from "@angular/material/dialog";
-import { MatIconModule } from "@angular/material/icon";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { Router, RouterLink } from "@angular/router";
-import { firstValueFrom } from "rxjs";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzModalService } from "ng-zorro-antd/modal";
+import { NzSpinModule } from "ng-zorro-antd/spin";
 
 import { CollectionContext } from "../../core/collection-context";
 import { formatDateTime } from "../../core/format";
@@ -14,7 +13,6 @@ import {
   problemExtension,
   problemMessage,
 } from "../../core/http-errors";
-import { TYPE_ICONS } from "../../core/labels";
 import { RecordDetail } from "../../core/models";
 import { Notify } from "../../core/notify.service";
 import { RecordsApi } from "../../core/records-api.service";
@@ -27,9 +25,9 @@ import { recordLabel } from "../collection/record-list.utils";
   selector: "app-record-detail-page",
   imports: [
     RouterLink,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressBarModule,
+    NzButtonModule,
+    NzIconModule,
+    NzSpinModule,
     FieldValue,
     RecordDrawer,
   ],
@@ -46,9 +44,7 @@ import { recordLabel } from "../collection/record-list.utils";
           @for (f of ctx.fields(); track f.id) {
             <div class="item">
               <dt>
-                <mat-icon class="field-icon" aria-hidden="true">{{
-                  typeIcon(f.type)
-                }}</mat-icon>
+                <nz-icon class="field-icon" [nzType]="typeIcon(f.type)" aria-hidden="true" />
                 <span>{{ f.name }}</span>
               </dt>
               <dd>
@@ -64,38 +60,42 @@ import { recordLabel } from "../collection/record-list.utils";
 
         <div class="meta">
           <span class="meta-chip">
-            <mat-icon aria-hidden="true">history</mat-icon> Created
+            <nz-icon nzType="history" aria-hidden="true" /> Created
             {{ dateTime(d.record.createdAt) }}
           </span>
           <span class="meta-chip">
-            <mat-icon aria-hidden="true">update</mat-icon> Updated
+            <nz-icon nzType="clock-circle" aria-hidden="true" /> Updated
             {{ dateTime(d.record.updatedAt) }}
           </span>
         </div>
       } @else if (record.error()) {
         <div class="state">
-          <mat-icon aria-hidden="true">search_off</mat-icon>
+          <nz-icon nzType="frown" class="state-icon" aria-hidden="true" />
           <p>This record was not found. It may have been deleted.</p>
-          <button mat-stroked-button type="button" (click)="close()">
+          <button nz-button nzType="default" type="button" (click)="close()">
             Close
           </button>
         </div>
       } @else {
-        <mat-progress-bar mode="indeterminate" aria-label="Loading record" />
+        <div class="loading-state">
+          <nz-spin nzSimple />
+        </div>
       }
 
       <div drawerFooter class="foot">
         <button
-          mat-stroked-button
+          nz-button
+          nzType="default"
+          nzDanger
           type="button"
-          class="danger"
           (click)="remove()"
         >
           Delete
         </button>
         <span class="spacer"></span>
         <a
-          mat-flat-button
+          nz-button
+          nzType="primary"
           [routerLink]="['/collections', id(), 'records', recordId(), 'edit']"
         >
           Edit
@@ -107,10 +107,10 @@ import { recordLabel } from "../collection/record-list.utils";
     /* ---------------- field list ---------------- */
     .fields {
       margin: 0;
-      border: 1px solid var(--mat-sys-outline-variant);
+      border: 1px solid var(--app-outline-variant);
       border-radius: 16px;
       overflow: hidden;
-      background: var(--mat-sys-surface-container-low);
+      background: var(--app-surface-container-low);
     }
     .item {
       display: grid;
@@ -118,7 +118,7 @@ import { recordLabel } from "../collection/record-list.utils";
       gap: 16px;
       align-items: start;
       padding: 14px 16px;
-      border-bottom: 1px solid var(--mat-sys-outline-variant);
+      border-bottom: 1px solid var(--app-outline-variant);
     }
     .item:last-child {
       border-bottom: 0;
@@ -126,7 +126,7 @@ import { recordLabel } from "../collection/record-list.utils";
     .item:nth-child(even) {
       background: color-mix(
         in srgb,
-        var(--mat-sys-surface-container) 55%,
+        var(--app-surface-container) 55%,
         transparent
       );
     }
@@ -138,16 +138,14 @@ import { recordLabel } from "../collection/record-list.utils";
       font-size: 0.875rem;
       font-weight: 600;
       line-height: 1.4;
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--app-text-muted);
       padding-top: 2px;
     }
     .field-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      flex: none;
-      color: var(--mat-sys-primary);
+      font-size: 16px;
+      color: var(--app-primary);
       opacity: 0.85;
+      flex: none;
     }
 
     dd {
@@ -170,30 +168,28 @@ import { recordLabel } from "../collection/record-list.utils";
       gap: 6px;
       padding: 6px 12px;
       border-radius: 999px;
-      background: var(--mat-sys-surface-container);
-      color: var(--mat-sys-on-surface-variant);
+      background: var(--app-surface-container);
+      color: var(--app-text-muted);
       font-size: 0.8125rem;
-    }
-    .meta-chip mat-icon {
-      font-size: 16px;
-      width: 16px;
-      height: 16px;
-      opacity: 0.75;
     }
 
     /* ---------------- error state ---------------- */
     .state {
       display: grid;
       justify-items: center;
-      gap: 8px;
+      gap: 12px;
       padding: 32px 0;
       text-align: center;
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--app-text-muted);
     }
-    .state mat-icon {
+    .state-icon {
       font-size: 40px;
-      width: 40px;
-      height: 40px;
+      color: var(--app-error);
+    }
+    .loading-state {
+      display: flex;
+      justify-content: center;
+      padding: 48px 0;
     }
 
     /* ---------------- footer ---------------- */
@@ -205,10 +201,6 @@ import { recordLabel } from "../collection/record-list.utils";
     }
     .spacer {
       flex: 1;
-    }
-    .danger {
-      color: var(--mat-sys-error);
-      border-color: color-mix(in srgb, var(--mat-sys-error) 45%, transparent);
     }
 
     /* ---------------- phones ---------------- */
@@ -225,11 +217,11 @@ import { recordLabel } from "../collection/record-list.utils";
       }
       .field-icon {
         display: none;
-      } /* keep the row compact when stacked */
+      }
       .foot a,
       .foot button {
         flex: 1;
-        min-height: 46px;
+        min-height: 44px;
         justify-content: center;
       }
     }
@@ -241,7 +233,7 @@ export class RecordDetailPage {
 
   protected readonly ctx = inject(CollectionContext);
   private readonly api = inject(RecordsApi);
-  private readonly dialog = inject(MatDialog);
+  private readonly modal = inject(NzModalService);
   private readonly notify = inject(Notify);
   private readonly router = inject(Router);
 
@@ -249,13 +241,30 @@ export class RecordDetailPage {
     () => `/api/records/${this.recordId()}`,
   );
   protected readonly dateTime = formatDateTime;
-  protected readonly typeIcon = (type: keyof typeof TYPE_ICONS) =>
-    TYPE_ICONS[type];
 
   protected readonly title = computed(() => {
     const d = this.record.value();
     return d ? recordLabel(d.record, this.ctx.titleField()?.key) : "Record";
   });
+
+  protected typeIcon(type: string): string {
+    const map: Record<string, string> = {
+      text: "font-size",
+      longText: "file-text",
+      number: "number",
+      currency: "dollar",
+      date: "calendar",
+      dateTime: "clock-circle",
+      boolean: "check-square",
+      select: "down-circle",
+      multiSelect: "unordered-list",
+      rating: "star",
+      reference: "link",
+      multiReference: "share-alt",
+      url: "global",
+    };
+    return map[type] || "file";
+  }
 
   protected close(): void {
     void this.router.navigate(["/collections", this.id()]);
@@ -302,12 +311,14 @@ export class RecordDetailPage {
     message: string,
     confirmLabel: string,
   ): Promise<boolean> {
-    return firstValueFrom(
-      this.dialog
-        .open<ConfirmDialog, unknown, boolean>(ConfirmDialog, {
-          data: { title, message, confirmLabel, destructive: true },
-        })
-        .afterClosed(),
-    ).then((v) => v === true);
+    return new Promise<boolean>((resolve) => {
+      const modalRef = this.modal.create<ConfirmDialog, unknown, boolean>({
+        nzContent: ConfirmDialog,
+        nzData: { title, message, confirmLabel, destructive: true },
+        nzFooter: null,
+        nzWidth: 420,
+      });
+      modalRef.afterClose.subscribe((val) => resolve(val === true));
+    });
   }
 }

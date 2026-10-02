@@ -7,15 +7,12 @@ import {
   signal,
   viewChild,
 } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import {
-  MAT_DIALOG_DATA,
-  MatDialogModule,
-  MatDialogRef,
-} from "@angular/material/dialog";
-import { MatIconModule } from "@angular/material/icon";
-import { MatSliderModule } from "@angular/material/slider";
-import { MatTabsModule } from "@angular/material/tabs";
+import { FormsModule } from "@angular/forms";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NZ_MODAL_DATA, NzModalRef } from "ng-zorro-antd/modal";
+import { NzSliderModule } from "ng-zorro-antd/slider";
+import { NzTabsModule } from "ng-zorro-antd/tabs";
 import { COLORS, GRADIENTS, coverBackground } from "../core/cover-presets";
 import { Cover, CoverSelection } from "../core/models";
 import { Notify } from "../core/notify.service";
@@ -65,17 +62,17 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
 @Component({
   selector: "app-cover-picker-dialog",
   imports: [
-    MatDialogModule,
-    MatButtonModule,
-    MatTabsModule,
-    MatIconModule,
-    MatSliderModule,
+    FormsModule,
+    NzTabsModule,
+    NzButtonModule,
+    NzIconModule,
+    NzSliderModule,
   ],
   template: `
-    <h2 mat-dialog-title class="dialog-title">Choose a cover</h2>
+    <div class="cover-dialog">
+      <h3 class="dialog-title">Choose a cover</h3>
 
-    <mat-dialog-content>
-      <!-- Unified Live Banner Preview -->
+      <!-- Live Banner Preview -->
       <div
         class="preview-container"
         [style.background]="
@@ -87,21 +84,19 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
           <canvas #preview class="canvas-preview"></canvas>
         } @else if (tab() === 2 && !hasImage()) {
           <div class="empty-preview">
-            <mat-icon>add_photo_alternate</mat-icon>
+            <nz-icon nzType="picture" />
             <span>Upload an image below to preview banner</span>
           </div>
         }
       </div>
 
       <!-- Controls Tab Group -->
-      <mat-tab-group
-        [selectedIndex]="tab()"
-        (selectedIndexChange)="tab.set($event)"
-        animationDuration="150ms"
-        mat-stretch-tabs="false"
+      <nz-tabs
+        [nzSelectedIndex]="tab()"
+        (nzSelectedIndexChange)="tab.set($event)"
       >
         <!-- Gradients -->
-        <mat-tab label="Gradients">
+        <nz-tab nzTitle="Gradients">
           <div class="tab-body">
             <div class="swatches-grid">
               @for (g of gradients; track g.key) {
@@ -115,16 +110,16 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
                   (click)="gradient.set(g.key)"
                 >
                   @if (gradient() === g.key) {
-                    <mat-icon class="check-icon">check</mat-icon>
+                    <nz-icon nzType="check" class="check-icon" />
                   }
                 </button>
               }
             </div>
           </div>
-        </mat-tab>
+        </nz-tab>
 
         <!-- Solid Colours -->
-        <mat-tab label="Colours">
+        <nz-tab nzTitle="Colours">
           <div class="tab-body">
             <div class="swatches-grid">
               @for (c of colors; track c) {
@@ -138,7 +133,7 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
                   (click)="color.set(c)"
                 >
                   @if (color() === c) {
-                    <mat-icon class="check-icon">check</mat-icon>
+                    <nz-icon nzType="check" class="check-icon" />
                   }
                 </button>
               }
@@ -148,7 +143,7 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
                 class="swatch custom-swatch"
                 [class.active]="isCustomColor()"
                 [style.background]="
-                  isCustomColor() ? color() : 'var(--mat-sys-surface-container)'
+                  isCustomColor() ? color() : 'var(--app-surface-container)'
                 "
                 title="Choose custom color"
               >
@@ -159,19 +154,18 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
                   (input)="onColor($event)"
                   aria-label="Custom color picker"
                 />
-                <mat-icon
+                <nz-icon
+                  [nzType]="isCustomColor() ? 'check' : 'bg-colors'"
                   class="custom-icon"
                   [class.on-color]="isCustomColor()"
-                >
-                  {{ isCustomColor() ? "check" : "colorize" }}
-                </mat-icon>
+                />
               </label>
             </div>
           </div>
-        </mat-tab>
+        </nz-tab>
 
         <!-- Image Upload & Positioning -->
-        <mat-tab label="Image">
+        <nz-tab nzTitle="Image">
           <div class="tab-body">
             @if (!hasImage()) {
               <label class="dropzone">
@@ -181,7 +175,7 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
                   hidden
                   (change)="onFile($event)"
                 />
-                <mat-icon class="dropzone-icon">cloud_upload</mat-icon>
+                <nz-icon nzType="cloud-upload" class="dropzone-icon" />
                 <span class="dropzone-title">Upload a banner image</span>
                 <span class="dropzone-hint"
                   >Supports JPEG, PNG or WebP (up to 25 MB)</span
@@ -191,7 +185,7 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
               <div class="image-controls">
                 <div class="slider-header">
                   <div class="slider-label">
-                    <mat-icon>swap_vert</mat-icon>
+                    <nz-icon nzType="swap" [nzRotate]="90" />
                     <span>Vertical position</span>
                   </div>
                   <span class="slider-value"
@@ -200,30 +194,27 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
                 </div>
 
                 <div class="slider-wrapper">
-                  <mat-icon class="slider-bound-icon"
-                    >vertical_align_top</mat-icon
-                  >
-                  <mat-slider
-                    min="0"
-                    max="1"
-                    step="0.01"
+                  <nz-icon
+                    nzType="vertical-align-top"
+                    class="slider-bound-icon"
+                  />
+                  <nz-slider
                     class="position-slider"
-                  >
-                    <input
-                      matSliderThumb
-                      [value]="offset()"
-                      (valueChange)="offset.set($event)"
-                      aria-label="Vertical crop position"
-                    />
-                  </mat-slider>
-                  <mat-icon class="slider-bound-icon"
-                    >vertical_align_bottom</mat-icon
-                  >
+                    [nzMin]="0"
+                    [nzMax]="1"
+                    [nzStep]="0.01"
+                    [ngModel]="offset()"
+                    (ngModelChange)="offset.set($event)"
+                  />
+                  <nz-icon
+                    nzType="vertical-align-bottom"
+                    class="slider-bound-icon"
+                  />
                 </div>
 
                 <div class="image-actions">
-                  <label class="replace-btn" mat-stroked-button>
-                    <mat-icon>cached</mat-icon>
+                  <label class="replace-btn" nz-button nzType="default">
+                    <nz-icon nzType="reload" />
                     Change image
                     <input
                       type="file"
@@ -236,49 +227,51 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
               </div>
             }
           </div>
-        </mat-tab>
-      </mat-tab-group>
-    </mat-dialog-content>
+        </nz-tab>
+      </nz-tabs>
 
-    <mat-dialog-actions align="end" class="dialog-actions">
-      @if (data.cover.type !== "none") {
-        <button
-          mat-button
-          color="warn"
-          type="button"
-          class="remove-btn"
-          (click)="remove()"
-        >
-          <mat-icon>delete_outline</mat-icon>
-          Remove cover
+      <div class="dialog-actions">
+        @if (data.cover.type !== "none") {
+          <button
+            nz-button
+            nzDanger
+            type="button"
+            class="remove-btn"
+            (click)="remove()"
+          >
+            <nz-icon nzType="delete" />
+            Remove cover
+          </button>
+        }
+        <span class="spacer"></span>
+        <button nz-button nzType="default" type="button" (click)="cancel()">
+          Cancel
         </button>
-      }
-      <span class="spacer"></span>
-      <button mat-button mat-dialog-close type="button">Cancel</button>
-      <button
-        mat-flat-button
-        color="primary"
-        type="button"
-        [disabled]="busy() || (tab() === 2 && !hasImage())"
-        (click)="apply()"
-      >
-        {{ busy() ? "Processing…" : "Use this cover" }}
-      </button>
-    </mat-dialog-actions>
+        <button
+          nz-button
+          nzType="primary"
+          type="button"
+          [disabled]="busy() || (tab() === 2 && !hasImage())"
+          (click)="apply()"
+        >
+          {{ busy() ? "Processing…" : "Use this cover" }}
+        </button>
+      </div>
+    </div>
   `,
   styles: `
-    :host {
+    .cover-dialog {
       display: block;
       width: 100%;
-      max-width: 580px;
     }
 
     .dialog-title {
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       font-weight: 600;
+      font-size: 1.2rem;
+      color: var(--app-text);
     }
 
-    /* Live Preview Banner */
     .preview-container {
       width: 100%;
       aspect-ratio: 16 / 6;
@@ -287,13 +280,12 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
       margin-bottom: 16px;
       background-size: cover;
       background-position: center;
-      box-shadow: inset 0 0 0 1px
-        var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.1));
+      border: 1px solid var(--app-outline-variant);
       transition: background 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: var(--mat-sys-surface-container-high, #f2f2f2);
+      background-color: var(--app-surface-container-high);
     }
 
     .canvas-preview {
@@ -308,13 +300,11 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
       flex-direction: column;
       align-items: center;
       gap: 6px;
-      color: var(--mat-sys-on-surface-variant, #666);
+      color: var(--app-text-muted);
       font-size: 0.875rem;
 
-      mat-icon {
+      nz-icon {
         font-size: 32px;
-        width: 32px;
-        height: 32px;
         opacity: 0.7;
       }
     }
@@ -324,7 +314,6 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
       min-height: 160px;
     }
 
-    /* Swatches Grid */
     .swatches-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
@@ -352,20 +341,17 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
     }
 
     .swatch.active {
-      outline: 2px solid var(--mat-sys-primary, #005ac1);
+      outline: 2px solid var(--app-primary);
       outline-offset: 2px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
     }
 
     .check-icon {
       color: #fff;
+      font-size: 18px;
       filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
     }
 
-    /* Custom Color Picker Swatch */
     .custom-swatch {
       cursor: pointer;
     }
@@ -380,9 +366,7 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
 
     .custom-icon {
       font-size: 20px;
-      width: 20px;
-      height: 20px;
-      color: var(--mat-sys-on-surface-variant, #444);
+      color: var(--app-text-muted);
     }
 
     .custom-icon.on-color {
@@ -390,46 +374,42 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
       filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
     }
 
-    /* Image Tab Dropzone */
     .dropzone {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      border: 2px dashed var(--mat-sys-outline, rgba(0, 0, 0, 0.2));
+      border: 2px dashed var(--app-outline);
       border-radius: 14px;
       padding: 24px 16px;
       cursor: pointer;
-      background-color: var(--mat-sys-surface-container-low, transparent);
+      background-color: var(--app-surface-container);
       transition:
         border-color 0.2s,
         background-color 0.2s;
     }
 
     .dropzone:hover {
-      border-color: var(--mat-sys-primary, #005ac1);
-      background-color: var(--mat-sys-surface-container, rgba(0, 0, 0, 0.02));
+      border-color: var(--app-primary);
+      background-color: var(--app-surface-container-high);
     }
 
     .dropzone-icon {
       font-size: 32px;
-      width: 32px;
-      height: 32px;
-      color: var(--mat-sys-primary, #005ac1);
+      color: var(--app-primary);
     }
 
     .dropzone-title {
       font-weight: 500;
-      color: var(--mat-sys-on-surface, #1b1b1f);
+      color: var(--app-text);
     }
 
     .dropzone-hint {
       font-size: 0.8125rem;
-      color: var(--mat-sys-on-surface-variant, #74777f);
+      color: var(--app-text-muted);
     }
 
-    /* Image Controls */
     .image-controls {
       display: flex;
       flex-direction: column;
@@ -442,38 +422,29 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
       justify-content: space-between;
       font-size: 0.875rem;
       font-weight: 500;
-      color: var(--mat-sys-on-surface, #1b1b1f);
+      color: var(--app-text);
     }
 
     .slider-label {
       display: flex;
       align-items: center;
       gap: 6px;
-
-      mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        opacity: 0.8;
-      }
     }
 
     .slider-value {
       font-variant-numeric: tabular-nums;
-      color: var(--mat-sys-on-surface-variant, #74777f);
+      color: var(--app-text-muted);
     }
 
     .slider-wrapper {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
     }
 
     .slider-bound-icon {
       font-size: 18px;
-      width: 18px;
-      height: 18px;
-      color: var(--mat-sys-on-surface-variant, #74777f);
+      color: var(--app-text-muted);
     }
 
     .position-slider {
@@ -493,16 +464,11 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
       cursor: pointer;
     }
 
-    /* Actions */
     .dialog-actions {
-      padding: 16px 24px;
-      gap: 8px;
-    }
-
-    .remove-btn {
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      gap: 4px;
+      margin-top: 24px;
+      gap: 10px;
     }
 
     .spacer {
@@ -511,9 +477,8 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   `,
 })
 export class CoverPickerDialog {
-  protected readonly data = inject<CoverPickerData>(MAT_DIALOG_DATA);
-  private readonly ref =
-    inject<MatDialogRef<CoverPickerDialog, CoverSelection>>(MatDialogRef);
+  protected readonly data = inject<CoverPickerData>(NZ_MODAL_DATA);
+  private readonly modalRef = inject(NzModalRef);
   private readonly notify = inject(Notify);
 
   protected readonly gradients = GRADIENTS;
@@ -556,7 +521,7 @@ export class CoverPickerDialog {
     if (this.tab() === 1) {
       return this.color();
     }
-    return "var(--mat-sys-surface-container-high, #eee)";
+    return "var(--app-surface-container-high, #eee)";
   }
 
   constructor() {
@@ -598,22 +563,26 @@ export class CoverPickerDialog {
     }
   }
 
+  protected cancel(): void {
+    this.modalRef.close();
+  }
+
   protected remove(): void {
-    this.ref.close({ type: "none" });
+    this.modalRef.close({ type: "none" });
   }
 
   protected async apply(): Promise<void> {
     if (this.tab() === 0)
-      return this.ref.close({ type: "gradient", value: this.gradient() });
+      return this.modalRef.close({ type: "gradient", value: this.gradient() });
     if (this.tab() === 1)
-      return this.ref.close({ type: "color", value: this.color() });
+      return this.modalRef.close({ type: "color", value: this.color() });
 
     const canvas = this.canvas()?.nativeElement;
     if (!canvas || !this.bitmap) return;
 
     this.busy.set(true);
     try {
-      this.ref.close({ type: "image", blob: await toBlob(canvas) });
+      this.modalRef.close({ type: "image", blob: await toBlob(canvas) });
     } catch {
       this.notify.error("Could not process that image.");
       this.busy.set(false);

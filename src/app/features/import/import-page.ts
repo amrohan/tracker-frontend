@@ -1,35 +1,29 @@
 import { Component, computed, inject, input, signal } from "@angular/core";
-
-import { MatButtonModule } from "@angular/material/button";
-import { MatCheckboxModule } from "@angular/material/checkbox";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatIconModule } from "@angular/material/icon";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
-import { MatSelectModule } from "@angular/material/select";
-
+import { FormsModule } from "@angular/forms";
 import { Router, RouterLink } from "@angular/router";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzCheckboxModule } from "ng-zorro-antd/checkbox";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzSelectModule } from "ng-zorro-antd/select";
+import { NzSpinModule } from "ng-zorro-antd/spin";
 
 import { bindCollectionId } from "../../core/collection-context";
 import { FieldTypeCatalog } from "../../core/field-types.service";
 import { problemMessage } from "../../core/http-errors";
 import { ImportApi } from "../../core/import-api.service";
-
 import {
   Field,
   ImportRequest,
   ImportResult,
   MissingPolicy,
 } from "../../core/models";
-
 import { Notify } from "../../core/notify.service";
-
 import {
   DateOrder,
   guessDateOrder,
   guessDecimalComma,
   suggestMapping,
 } from "./mapping";
-
 import {
   MAX_ROWS,
   Sheet,
@@ -51,21 +45,19 @@ interface ColumnMap {
 
 @Component({
   selector: "app-import-page",
-
   imports: [
+    FormsModule,
     RouterLink,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatProgressBarModule,
-    MatSelectModule,
+    NzButtonModule,
+    NzCheckboxModule,
+    NzIconModule,
+    NzSelectModule,
+    NzSpinModule,
   ],
-
   template: `
     <div class="page-narrow wide">
-      <a mat-button [routerLink]="['/collections', id()]">
-        <mat-icon>arrow_back</mat-icon>
+      <a nz-button nzType="text" class="back" [routerLink]="['/collections', id()]">
+        <nz-icon nzType="arrow-left" />
         {{ ctx.detail.value()?.name ?? "Back" }}
       </a>
 
@@ -83,7 +75,9 @@ interface ColumnMap {
       </ol>
 
       @if (busy()) {
-        <mat-progress-bar mode="indeterminate" />
+        <div class="loading-state">
+          <nz-spin nzSimple />
+        </div>
       }
 
       @if (ctx.detail.hasValue()) {
@@ -105,10 +99,8 @@ interface ColumnMap {
 
             <div class="row">
               <label class="upload">
-                <mat-icon>upload_file</mat-icon>
-
-                Choose file
-
+                <nz-icon nzType="upload" />
+                <span>Choose file</span>
                 <input
                   type="file"
                   accept=".csv,.tsv,.txt,.xlsx"
@@ -117,24 +109,20 @@ interface ColumnMap {
                 />
               </label>
 
-              <mat-form-field
-                appearance="outline"
-                subscriptSizing="dynamic"
-                class="enc"
-              >
-                <mat-label>CSV encoding</mat-label>
-
-                <mat-select
-                  [value]="encoding()"
-                  (selectionChange)="setEncoding($event.value)"
+              <div class="enc-wrap">
+                <label class="field-label">CSV encoding</label>
+                <nz-select
+                  [ngModel]="encoding()"
+                  (ngModelChange)="setEncoding($event)"
+                  class="enc"
                 >
-                  <mat-option value="UTF-8"> UTF-8 </mat-option>
-
-                  <mat-option value="windows-1252">
-                    Windows-1252 (older Excel)
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
+                  <nz-option nzValue="UTF-8" nzLabel="UTF-8" />
+                  <nz-option
+                    nzValue="windows-1252"
+                    nzLabel="Windows-1252 (older Excel)"
+                  />
+                </nz-select>
+              </div>
             </div>
 
             <!-- ================================================ -->
@@ -143,20 +131,16 @@ interface ColumnMap {
 
             @if (showSheetSelector()) {
               <div class="sheet-selector">
-                <mat-form-field appearance="outline" class="sheet-select">
-                  <mat-label> Worksheet </mat-label>
-
-                  <mat-select
-                    [value]="selectedSheet()"
-                    (selectionChange)="selectSheet($event.value)"
-                  >
-                    @for (s of workbook()?.sheets ?? []; track s.name) {
-                      <mat-option [value]="s.name">
-                        {{ s.name }}
-                      </mat-option>
-                    }
-                  </mat-select>
-                </mat-form-field>
+                <label class="field-label">Worksheet</label>
+                <nz-select
+                  [ngModel]="selectedSheet()"
+                  (ngModelChange)="selectSheet($event)"
+                  class="sheet-select"
+                >
+                  @for (s of workbook()?.sheets ?? []; track s.name) {
+                    <nz-option [nzValue]="s.name" [nzLabel]="s.name" />
+                  }
+                </nz-select>
               </div>
             }
 
@@ -176,7 +160,8 @@ interface ColumnMap {
                 <span class="spacer"></span>
 
                 <button
-                  mat-flat-button
+                  nz-button
+                  nzType="primary"
                   [disabled]="busy()"
                   (click)="continueWithSelectedSheet()"
                 >
@@ -228,80 +213,69 @@ interface ColumnMap {
                     </td>
 
                     <td>
-                      <mat-form-field
-                        appearance="outline"
-                        subscriptSizing="dynamic"
+                      <nz-select
+                        [ngModel]="c.fieldId"
+                        (ngModelChange)="
+                          patch(i, {
+                            fieldId: $event,
+                          })
+                        "
                         class="sel"
+                        nzPlaceHolder="— Skip this column —"
                       >
-                        <mat-label> Field </mat-label>
+                        <nz-option
+                          [nzValue]="null"
+                          nzLabel="— Skip this column —"
+                        />
 
-                        <mat-select
-                          [value]="c.fieldId"
-                          (selectionChange)="
-                            patch(i, {
-                              fieldId: $event.value,
-                            })
-                          "
-                        >
-                          <mat-option [value]="null">
-                            — Skip this column —
-                          </mat-option>
-
-                          @for (f of ctx.fields(); track f.id) {
-                            <mat-option
-                              [value]="f.id"
-                              [disabled]="usedElsewhere(f.id, i)"
-                            >
-                              {{ f.name }}
-                            </mat-option>
-                          }
-                        </mat-select>
-                      </mat-form-field>
+                        @for (f of ctx.fields(); track f.id) {
+                          <nz-option
+                            [nzValue]="f.id"
+                            [nzLabel]="f.name"
+                            [nzDisabled]="usedElsewhere(f.id, i)"
+                          />
+                        }
+                      </nz-select>
                     </td>
 
                     <td>
                       @if (isDateLike(c)) {
-                        <mat-form-field
-                          appearance="outline"
-                          subscriptSizing="dynamic"
+                        <nz-select
+                          [ngModel]="c.dateOrder"
+                          (ngModelChange)="
+                            patch(i, {
+                              dateOrder: $event,
+                            })
+                          "
                           class="fmt"
                         >
-                          <mat-label> Date order </mat-label>
-
-                          <mat-select
-                            [value]="c.dateOrder"
-                            (selectionChange)="
-                              patch(i, {
-                                dateOrder: $event.value,
-                              })
-                            "
-                          >
-                            <mat-option value="dmy">
-                              Day / Month / Year
-                            </mat-option>
-
-                            <mat-option value="mdy">
-                              Month / Day / Year
-                            </mat-option>
-
-                            <mat-option value="ymd">
-                              Year / Month / Day
-                            </mat-option>
-                          </mat-select>
-                        </mat-form-field>
+                          <nz-option
+                            nzValue="dmy"
+                            nzLabel="Day / Month / Year"
+                          />
+                          <nz-option
+                            nzValue="mdy"
+                            nzLabel="Month / Day / Year"
+                          />
+                          <nz-option
+                            nzValue="ymd"
+                            nzLabel="Year / Month / Day"
+                          />
+                        </nz-select>
                       }
 
                       @if (isNumeric(c)) {
-                        <mat-checkbox
-                          [checked]="c.decimalComma"
-                          (change)="
+                        <label
+                          nz-checkbox
+                          [ngModel]="c.decimalComma"
+                          (ngModelChange)="
                             patch(i, {
-                              decimalComma: $event.checked,
+                              decimalComma: $event,
                             })
                           "
                         >
-                          Comma is the decimal mark (1.234,56)
-                        </mat-checkbox>
+                          Comma is decimal mark (1.234,56)
+                        </label>
                       }
                     </td>
                   </tr>
@@ -318,15 +292,16 @@ interface ColumnMap {
           }
 
           <div class="row actions">
-            <button mat-button (click)="backToFile()">
-              <mat-icon>arrow_back</mat-icon>
+            <button nz-button nzType="default" (click)="backToFile()">
+              <nz-icon nzType="arrow-left" />
               Choose another file
             </button>
 
             <span class="spacer"></span>
 
             <button
-              mat-flat-button
+              nz-button
+              nzType="primary"
               [disabled]="!canContinue()"
               (click)="toReview()"
             >
@@ -366,57 +341,45 @@ interface ColumnMap {
           }
 
           <div class="surface-card options">
-            <mat-checkbox
-              [checked]="skipInvalid()"
-              (change)="setSkip($event.checked)"
+            <label
+              nz-checkbox
+              [ngModel]="skipInvalid()"
+              (ngModelChange)="setSkip($event)"
             >
               Skip rows with problems and import the rest
-            </mat-checkbox>
+            </label>
 
             @if (hasReference()) {
-              <mat-form-field
-                appearance="outline"
-                subscriptSizing="dynamic"
-                class="sel"
-              >
-                <mat-label> Person / reference not found </mat-label>
-
-                <mat-select
-                  [value]="missingReference()"
-                  (selectionChange)="setPolicy('ref', $event.value)"
+              <div class="policy-group">
+                <label class="field-label">Person / reference not found</label>
+                <nz-select
+                  [ngModel]="missingReference()"
+                  (ngModelChange)="setPolicy('ref', $event)"
+                  class="sel"
                 >
-                  <mat-option value="error"> Report a problem </mat-option>
-
-                  <mat-option value="skip"> Leave that value empty </mat-option>
-
-                  <mat-option value="create">
-                    Create the missing record
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
+                  <nz-option nzValue="error" nzLabel="Report a problem" />
+                  <nz-option nzValue="skip" nzLabel="Leave that value empty" />
+                  <nz-option nzValue="create" nzLabel="Create the missing record" />
+                </nz-select>
+              </div>
             }
 
             @if (hasChoice()) {
-              <mat-form-field
-                appearance="outline"
-                subscriptSizing="dynamic"
-                class="sel"
-              >
-                <mat-label> Unknown select option </mat-label>
-
-                <mat-select
-                  [value]="missingOption()"
-                  (selectionChange)="setPolicy('opt', $event.value)"
+              <div class="policy-group">
+                <label class="field-label">Unknown select option</label>
+                <nz-select
+                  [ngModel]="missingOption()"
+                  (ngModelChange)="setPolicy('opt', $event)"
+                  class="sel"
                 >
-                  <mat-option value="error"> Report a problem </mat-option>
-
-                  <mat-option value="skip"> Leave that value empty </mat-option>
-
-                  <mat-option value="create">
-                    Add it to the field's options
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
+                  <nz-option nzValue="error" nzLabel="Report a problem" />
+                  <nz-option nzValue="skip" nzLabel="Leave that value empty" />
+                  <nz-option
+                    nzValue="create"
+                    nzLabel="Add it to the field's options"
+                  />
+                </nz-select>
+              </div>
             }
           </div>
 
@@ -454,8 +417,8 @@ interface ColumnMap {
                   {{ r.errorCount }}.
                 }
 
-                <button mat-button (click)="downloadErrors(r)">
-                  <mat-icon>download</mat-icon>
+                <button nz-button nzType="text" (click)="downloadErrors(r)">
+                  <nz-icon nzType="download" />
                   Download problem list
                 </button>
               </p>
@@ -469,15 +432,16 @@ interface ColumnMap {
           }
 
           <div class="row actions">
-            <button mat-button (click)="step.set('map')">
-              <mat-icon>arrow_back</mat-icon>
+            <button nz-button nzType="default" (click)="step.set('map')">
+              <nz-icon nzType="arrow-left" />
               Back to mapping
             </button>
 
             <span class="spacer"></span>
 
             <button
-              mat-flat-button
+              nz-button
+              nzType="primary"
               [disabled]="!canImport() || busy()"
               (click)="runImport()"
             >
@@ -494,7 +458,7 @@ interface ColumnMap {
 
         @if (step() === "done") {
           <div class="empty-state">
-            <span class="material-icons"> task_alt </span>
+            <nz-icon nzType="check-circle" class="done-icon" />
 
             <h3>
               Imported
@@ -509,22 +473,28 @@ interface ColumnMap {
               </p>
             }
 
-            <div class="row" style="justify-content:center">
-              <a mat-flat-button [routerLink]="['/collections', id()]">
+            <div class="row done-actions">
+              <a nz-button nzType="primary" [routerLink]="['/collections', id()]">
                 View records
               </a>
 
-              <button mat-button (click)="reset()">Import another file</button>
+              <button nz-button nzType="default" (click)="reset()">
+                Import another file
+              </button>
             </div>
           </div>
         }
       }
     </div>
   `,
-
   styles: `
     .wide {
       max-width: 1000px;
+    }
+
+    .back {
+      margin-left: -8px;
+      margin-bottom: 8px;
     }
 
     h1 {
@@ -544,14 +514,27 @@ interface ColumnMap {
     .steps li {
       padding: 4px 14px;
       border-radius: 999px;
-      background: var(--mat-sys-surface-container);
-      color: var(--mat-sys-on-surface-variant);
+      background: var(--app-surface-container);
+      color: var(--app-text-muted);
       font-size: 0.9rem;
     }
 
     .steps li.on {
-      background: var(--mat-sys-primary);
-      color: var(--mat-sys-on-primary);
+      background: var(--app-primary);
+      color: var(--app-on-primary);
+    }
+
+    .loading-state {
+      display: flex;
+      justify-content: center;
+      padding: 24px 0;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
     .upload {
@@ -559,9 +542,28 @@ interface ColumnMap {
       align-items: center;
       gap: 8px;
       padding: 12px 18px;
-      border: 1px dashed var(--mat-sys-outline);
+      border: 1px dashed var(--app-outline);
       border-radius: 12px;
       cursor: pointer;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .upload:hover {
+      border-color: var(--app-primary);
+      color: var(--app-primary);
+    }
+
+    .field-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--app-text-muted);
+      margin-bottom: 4px;
+    }
+
+    .enc-wrap {
+      display: flex;
+      flex-direction: column;
     }
 
     .enc {
@@ -588,6 +590,9 @@ interface ColumnMap {
       overflow: auto;
       padding: 0;
       margin: 12px 0;
+      border-radius: 14px;
+      border: 1px solid var(--app-outline-variant);
+      background: var(--app-surface);
     }
 
     .errors {
@@ -603,8 +608,17 @@ interface ColumnMap {
     td {
       text-align: left;
       padding: 10px 14px;
-      border-bottom: 1px solid var(--mat-sys-outline-variant);
+      border-bottom: 1px solid var(--app-outline-variant);
       vertical-align: middle;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: var(--app-surface-container);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     .samples {
@@ -624,8 +638,8 @@ interface ColumnMap {
     .tile {
       padding: 14px 20px;
       border-radius: 16px;
-      background: var(--mat-sys-surface-container-low);
-      border: 1px solid var(--mat-sys-outline-variant);
+      background: var(--app-surface-container-low);
+      border: 1px solid var(--app-outline-variant);
     }
 
     .tile .n {
@@ -635,22 +649,57 @@ interface ColumnMap {
     }
 
     .tile.ok {
-      background: var(--mat-sys-primary-container);
+      background: var(--app-primary-container);
+      color: var(--app-on-primary-container);
     }
 
     .tile.bad {
-      background: var(--mat-sys-error-container);
+      background: var(--app-error-container);
+      color: var(--app-on-error-container);
     }
 
     .options {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
+      align-items: flex-end;
       gap: 16px;
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid var(--app-outline-variant);
+      background: var(--app-surface);
+      margin-bottom: 16px;
+    }
+
+    .policy-group {
+      display: flex;
+      flex-direction: column;
     }
 
     .actions {
       margin-top: 16px;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 16px;
+      text-align: center;
+    }
+
+    .done-icon {
+      font-size: 48px;
+      color: var(--app-primary);
+      margin-bottom: 12px;
+    }
+
+    .done-actions {
+      margin-top: 20px;
+      justify-content: center;
     }
   `,
 })
@@ -658,13 +707,9 @@ export class ImportPage {
   readonly id = input.required<string>();
 
   protected readonly ctx = bindCollectionId(this.id);
-
   private readonly api = inject(ImportApi);
-
   private readonly catalog = inject(FieldTypeCatalog);
-
   private readonly notify = inject(Notify);
-
   private readonly router = inject(Router);
 
   protected readonly maxRows = MAX_ROWS;
@@ -673,50 +718,25 @@ export class ImportPage {
     key: Step;
     label: string;
   }[] = [
-    {
-      key: "file",
-      label: "1 · File",
-    },
-    {
-      key: "map",
-      label: "2 · Map columns",
-    },
-    {
-      key: "review",
-      label: "3 · Review",
-    },
-    {
-      key: "done",
-      label: "4 · Done",
-    },
+    { key: "file", label: "1 · File" },
+    { key: "map", label: "2 · Map columns" },
+    { key: "review", label: "3 · Review" },
+    { key: "done", label: "4 · Done" },
   ];
 
   protected readonly step = signal<Step>("file");
-
   protected readonly busy = signal(false);
-
   protected readonly encoding = signal("UTF-8");
-
   protected readonly fileName = signal("");
-
   protected readonly parseError = signal<string | null>(null);
-
   protected readonly workbook = signal<Workbook | null>(null);
-
   protected readonly sheet = signal<Sheet | null>(null);
-
   protected readonly selectedSheet = signal("");
-
   protected readonly columns = signal<ColumnMap[]>([]);
-
   protected readonly skipInvalid = signal(false);
-
   protected readonly missingReference = signal<MissingPolicy>("error");
-
   protected readonly missingOption = signal<MissingPolicy>("error");
-
   protected readonly result = signal<ImportResult | null>(null);
-
   private lastFile: File | null = null;
 
   protected readonly showSheetSelector = computed(
@@ -725,15 +745,8 @@ export class ImportPage {
 
   protected readonly canSelectSheet = computed(() => {
     const workbook = this.workbook();
-
-    if (!workbook) {
-      return false;
-    }
-
-    if (workbook.sheets.length === 1) {
-      return false;
-    }
-
+    if (!workbook) return false;
+    if (workbook.sheets.length === 1) return false;
     return !!this.selectedSheet();
   });
 
@@ -779,7 +792,6 @@ export class ImportPage {
 
   protected readonly canImport = computed(() => {
     const r = this.result();
-
     return !!r && r.valid > 0 && (r.errorCount === 0 || this.skipInvalid());
   });
 
@@ -789,11 +801,8 @@ export class ImportPage {
 
   protected async onFile(e: Event): Promise<void> {
     const input = e.target as HTMLInputElement;
-
     const file = input.files?.[0];
-
     input.value = "";
-
     if (file) {
       await this.load(file);
     }
@@ -801,7 +810,6 @@ export class ImportPage {
 
   protected async setEncoding(value: string): Promise<void> {
     this.encoding.set(value);
-
     if (this.lastFile) {
       await this.load(this.lastFile);
     }
@@ -809,10 +817,8 @@ export class ImportPage {
 
   private async load(file: File): Promise<void> {
     this.lastFile = file;
-
     this.busy.set(true);
     this.parseError.set(null);
-
     this.workbook.set(null);
     this.sheet.set(null);
     this.selectedSheet.set("");
@@ -820,27 +826,20 @@ export class ImportPage {
 
     try {
       const workbook = await parseFile(file, this.encoding());
-
       this.workbook.set(workbook);
       this.fileName.set(file.name);
 
       const sheets = workbook.sheets;
-
       if (!sheets.length) {
         throw new Error("The file does not contain any worksheets.");
       }
 
-      // CSV/TSV/TXT or XLSX with one worksheet.
       if (sheets.length === 1) {
         this.selectedSheet.set(sheets[0].name);
-
         await this.selectSheet(sheets[0].name);
-
         return;
       }
 
-      // Multiple Excel worksheets.
-      // Stay on step 1 and let the user select one.
       this.step.set("file");
     } catch (err) {
       this.parseError.set(
@@ -852,47 +851,33 @@ export class ImportPage {
   }
 
   protected async selectSheet(sheetName: string): Promise<void> {
-    if (!sheetName) {
-      return;
-    }
+    if (!sheetName) return;
 
     const workbook = this.workbook();
-
-    if (!workbook) {
-      return;
-    }
+    if (!workbook) return;
 
     const selected = workbook.sheets.find((s) => s.name === sheetName);
-
-    if (!selected) {
-      return;
-    }
+    if (!selected) return;
 
     this.selectedSheet.set(sheetName);
 
-    // For non-Excel files, the sheet already
-    // contains its parsed rows.
     if (selected.rows.length > 0 || selected.headers.length > 0) {
       this.setSelectedSheet(selected);
       return;
     }
 
-    if (!this.lastFile) {
-      return;
-    }
+    if (!this.lastFile) return;
 
     this.busy.set(true);
     this.parseError.set(null);
 
     try {
       const sheet = await readExcelSheet(this.lastFile, sheetName);
-
       if (sheet.rows.length > MAX_ROWS) {
         throw new Error(
           `This worksheet has ${sheet.rows.length} rows. Split it into files of ${MAX_ROWS} rows or fewer.`,
         );
       }
-
       this.setSelectedSheet(sheet);
     } catch (err) {
       this.parseError.set(
@@ -905,21 +890,14 @@ export class ImportPage {
 
   private setSelectedSheet(sheet: Sheet): void {
     this.sheet.set(sheet);
-
     this.selectedSheet.set(sheet.name);
-
     this.columns.set(this.buildColumns(sheet));
-
     this.step.set("map");
   }
 
   protected async continueWithSelectedSheet(): Promise<void> {
     const name = this.selectedSheet();
-
-    if (!name) {
-      return;
-    }
-
+    if (!name) return;
     await this.selectSheet(name);
   }
 
@@ -969,15 +947,12 @@ export class ImportPage {
 
   protected isDateLike(c: ColumnMap): boolean {
     const f = this.fieldOf(c);
-
     const kind = f ? this.catalog.kind(f.type) : undefined;
-
     return kind === "date" || kind === "dateTime";
   }
 
   protected isNumeric(c: ColumnMap): boolean {
     const t = this.fieldOf(c)?.type;
-
     return t === "number" || t === "currency";
   }
 
@@ -1010,7 +985,6 @@ export class ImportPage {
 
   protected setPolicy(which: "ref" | "opt", v: MissingPolicy): void {
     (which === "ref" ? this.missingReference : this.missingOption).set(v);
-
     void this.check();
   }
 
@@ -1024,31 +998,23 @@ export class ImportPage {
           dateOrder: c.dateOrder,
           decimalComma: c.decimalComma,
         })),
-
       rows: this.sheet()?.rows ?? [],
-
       options: {
         skipInvalidRows: this.skipInvalid(),
-
         missingReference: this.missingReference(),
-
         missingOption: this.missingOption(),
-
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       },
-
       dryRun,
     };
   }
 
   protected async check(): Promise<void> {
     this.busy.set(true);
-
     try {
       this.result.set(await this.api.run(this.id(), this.body(true)));
     } catch (err) {
       this.notify.error(problemMessage(err, "Could not check the file."));
-
       this.step.set("map");
     } finally {
       this.busy.set(false);
@@ -1057,15 +1023,11 @@ export class ImportPage {
 
   protected async runImport(): Promise<void> {
     this.busy.set(true);
-
     try {
       const r = await this.api.run(this.id(), this.body(false));
-
       this.result.set(r);
-
       if (r.committed) {
         this.step.set("done");
-
         this.ctx.detail.reload();
       } else {
         this.notify.error("Nothing was imported. Check the problems listed.");
@@ -1081,22 +1043,16 @@ export class ImportPage {
 
   protected downloadErrors(r: ImportResult): void {
     const q = (s: string) => `"${s.replace(/"/g, '""')}"`;
-
     const csv = [
       "Row,Field,Problem",
-
       ...r.errors.map((e) => `${e.row + 1},${q(e.field)},${q(e.message)}`),
     ].join("\n");
 
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-
     const a = document.createElement("a");
-
     a.href = url;
     a.download = "import-problems.csv";
-
     a.click();
-
     URL.revokeObjectURL(url);
   }
 }

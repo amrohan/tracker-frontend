@@ -1,12 +1,12 @@
 import { httpResource } from "@angular/common/http";
 import { Component, computed, signal } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatButtonToggleModule } from "@angular/material/button-toggle";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatIconModule } from "@angular/material/icon";
-import { MatInputModule } from "@angular/material/input";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { RouterLink } from "@angular/router";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzInputModule } from "ng-zorro-antd/input";
+import { NzRadioModule } from "ng-zorro-antd/radio";
+import { NzSpinModule } from "ng-zorro-antd/spin";
+import { FormsModule } from "@angular/forms";
 
 import { CollectionSummary } from "../../core/models";
 import { CollectionCard } from "./collection-card";
@@ -15,12 +15,12 @@ import { CollectionCard } from "./collection-card";
   selector: "app-dashboard-page",
   imports: [
     RouterLink,
-    MatButtonModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonToggleModule,
-    MatProgressBarModule,
+    FormsModule,
+    NzButtonModule,
+    NzIconModule,
+    NzInputModule,
+    NzRadioModule,
+    NzSpinModule,
     CollectionCard,
   ],
   template: `
@@ -40,22 +40,21 @@ import { CollectionCard } from "./collection-card";
         </div>
 
         <a
-          mat-flat-button
-          color="primary"
+          nz-button
+          nzType="primary"
           class="create-button"
           routerLink="/collections/new"
         >
-          <mat-icon>add</mat-icon>
+          <nz-icon nzType="plus" />
           <span>New tracker</span>
         </a>
       </header>
 
       @if (isRefreshing()) {
-        <mat-progress-bar
-          class="loading-bar"
-          mode="indeterminate"
-          aria-label="Updating trackers"
-        />
+        <div class="refresh-bar">
+          <nz-spin nzSimple nzSize="small" />
+          <span class="refresh-text">Updating…</span>
+        </div>
       }
 
       @if (isInitialLoading()) {
@@ -72,80 +71,71 @@ import { CollectionCard } from "./collection-card";
       } @else if (collections.error()) {
         <div class="state-card error-state" role="alert">
           <div class="state-icon error-icon" aria-hidden="true">
-            <mat-icon>cloud_off</mat-icon>
+            <nz-icon nzType="cloud" />
           </div>
           <h3>Could not load your trackers</h3>
           <p>Something went wrong while communicating with the server.</p>
           <button
-            mat-stroked-button
+            nz-button
+            nzType="default"
             type="button"
             (click)="collections.reload()"
           >
-            <mat-icon>refresh</mat-icon>
+            <nz-icon nzType="reload" />
             Try again
           </button>
         </div>
       } @else if (all().length === 0 && collections.hasValue()) {
         <div class="state-card empty-state">
           <div class="state-icon" aria-hidden="true">
-            <mat-icon>library_add</mat-icon>
+            <nz-icon nzType="inbox" />
           </div>
           <h3>Create your first tracker</h3>
           <p>
             A tracker can hold anything — books, expenses, trips, or projects.
             You choose the fields and structure.
           </p>
-          <a mat-flat-button color="primary" routerLink="/collections/new">
-            <mat-icon>add</mat-icon>
+          <a nz-button nzType="primary" routerLink="/collections/new">
+            <nz-icon nzType="plus" />
             Create a tracker
           </a>
         </div>
       } @else if (all().length > 0) {
         <section class="content" aria-label="Your trackers">
           <div class="tools">
-            <mat-form-field
-              appearance="outline"
-              class="search-field"
-              subscriptSizing="dynamic"
-            >
-              <mat-icon matPrefix class="search-prefix">search</mat-icon>
-              <mat-label>Search trackers</mat-label>
+            <nz-input-wrapper class="search-field">
               <input
-                matInput
+                nz-input
                 [value]="query()"
                 (input)="onQuery($event)"
                 (keydown.escape)="clearQuery()"
                 placeholder="Search by name or description…"
                 autocomplete="off"
               />
+              <span nzInputPrefix><nz-icon nzType="search" /></span>
               @if (query()) {
-                <button
-                  mat-icon-button
-                  matSuffix
-                  type="button"
-                  aria-label="Clear search"
-                  (click)="clearQuery()"
-                >
-                  <mat-icon>close</mat-icon>
-                </button>
+                <span nzInputSuffix>
+                  <nz-icon nzType="close-circle" (click)="clearQuery()" style="cursor:pointer" />
+                </span>
               }
-            </mat-form-field>
+            </nz-input-wrapper>
 
-            <mat-button-toggle-group
+            <nz-radio-group
               class="sort-toggle"
-              [value]="sort()"
-              (change)="sort.set($event.value)"
+              [ngModel]="sort()"
+              (ngModelChange)="sort.set($event)"
+              nzButtonStyle="solid"
               aria-label="Sort trackers"
             >
-              <mat-button-toggle value="recent">
-                <mat-icon>schedule</mat-icon>
+              <label nz-radio-button nzValue="recent">
+                <nz-icon nzType="history" />
                 <span>Recent</span>
-              </mat-button-toggle>
-              <mat-button-toggle value="name">
-                <mat-icon>sort_by_alpha</mat-icon>
+              </label>
+              <label nz-radio-button nzValue="name">
+                <nz-icon nzType="sort-ascending" />
                 <span>Name</span>
-              </mat-button-toggle>
-            </mat-button-toggle-group>
+              </label>
+            </nz-radio-group>
           </div>
 
           <div class="result-info" aria-live="polite">
@@ -153,7 +143,7 @@ import { CollectionCard } from "./collection-card";
               <span>
                 <strong>{{ visible().length }}</strong>
                 {{ visible().length === 1 ? "tracker" : "trackers" }} found for
-                “{{ query() }}”
+                "{{ query() }}"
               </span>
             } @else {
               <span>
@@ -166,12 +156,12 @@ import { CollectionCard } from "./collection-card";
           @if (visible().length === 0) {
             <div class="state-card no-results">
               <div class="state-icon" aria-hidden="true">
-                <mat-icon>search_off</mat-icon>
+                <nz-icon nzType="search" />
               </div>
               <h3>No trackers found</h3>
-              <p>No trackers match “{{ query() }}”. Try a different keyword.</p>
-              <button mat-stroked-button type="button" (click)="clearQuery()">
-                <mat-icon>close</mat-icon>
+              <p>No trackers match "{{ query() }}". Try a different keyword.</p>
+              <button nz-button nzType="default" type="button" (click)="clearQuery()">
+                <nz-icon nzType="close" />
                 Clear search
               </button>
             </div>
@@ -208,7 +198,7 @@ import { CollectionCard } from "./collection-card";
     .eyebrow {
       display: inline-block;
       margin-bottom: 4px;
-      color: var(--mat-sys-primary, #005ac1);
+      color: var(--app-primary, #1890ff);
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.08em;
@@ -227,7 +217,7 @@ import { CollectionCard } from "./collection-card";
       font-weight: 700;
       line-height: 1.15;
       letter-spacing: -0.03em;
-      color: var(--mat-sys-on-surface, #1a1c1e);
+      color: var(--app-text);
     }
 
     .count-badge {
@@ -236,8 +226,8 @@ import { CollectionCard } from "./collection-card";
       justify-content: center;
       padding: 2px 10px;
       border-radius: 999px;
-      background: var(--mat-sys-surface-container-high, #e8e8ec);
-      color: var(--mat-sys-on-surface-variant, #44474e);
+      background: var(--app-surface-container-high);
+      color: var(--app-text-muted);
       font-size: 0.825rem;
       font-weight: 600;
     }
@@ -245,7 +235,7 @@ import { CollectionCard } from "./collection-card";
     .muted {
       margin: 8px 0 0;
       font-size: 0.95rem;
-      color: var(--mat-sys-on-surface-variant, #44474e);
+      color: var(--app-text-muted);
     }
 
     .create-button {
@@ -268,10 +258,17 @@ import { CollectionCard } from "./collection-card";
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
     }
 
-    .loading-bar {
-      margin-bottom: 20px;
-      border-radius: 999px;
-      height: 4px;
+    .refresh-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      color: var(--app-text-muted);
+      font-size: 0.875rem;
+    }
+
+    .refresh-text {
+      font-size: 0.85rem;
     }
 
     .content {
@@ -290,30 +287,14 @@ import { CollectionCard } from "./collection-card";
       width: min(400px, 100%);
     }
 
-    .search-prefix {
-      color: var(--mat-sys-on-surface-variant, #44474e);
-      margin-right: 8px;
-      margin-left: 4px;
-    }
-
     .sort-toggle {
       flex-shrink: 0;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .sort-toggle mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      vertical-align: middle;
-      margin-right: 6px;
     }
 
     .result-info {
       min-height: 24px;
       margin-bottom: 16px;
-      color: var(--mat-sys-on-surface-variant, #44474e);
+      color: var(--app-text-muted);
       font-size: 0.85rem;
     }
 
@@ -327,7 +308,7 @@ import { CollectionCard } from "./collection-card";
       min-height: 160px;
       padding: 20px;
       border-radius: 16px;
-      background: var(--mat-sys-surface-container, #f3edf7);
+      background: var(--app-surface-container);
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -337,13 +318,13 @@ import { CollectionCard } from "./collection-card";
       width: 40px;
       height: 40px;
       border-radius: 10px;
-      background: var(--mat-sys-surface-container-high, #e8e8ec);
+      background: var(--app-surface-container-high);
       animation: pulse 1.4s ease-in-out infinite;
     }
 
     .skeleton-line {
       border-radius: 4px;
-      background: var(--mat-sys-surface-container-high, #e8e8ec);
+      background: var(--app-surface-container-high);
       animation: pulse 1.4s ease-in-out infinite;
     }
 
@@ -382,8 +363,8 @@ import { CollectionCard } from "./collection-card";
       text-align: center;
       padding: 48px 24px;
       border-radius: 16px;
-      border: 1px dashed var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12));
-      background: var(--mat-sys-surface-container-lowest, transparent);
+      border: 1px dashed var(--app-outline-variant);
+      background: var(--app-surface-container-low);
       margin: 16px 0;
     }
 
@@ -394,32 +375,26 @@ import { CollectionCard } from "./collection-card";
       place-items: center;
       margin-bottom: 16px;
       border-radius: 16px;
-      background: var(--mat-sys-surface-container, #eeeeee);
-      color: var(--mat-sys-primary, #005ac1);
-    }
-
-    .state-icon mat-icon {
-      width: 28px;
-      height: 28px;
+      background: var(--app-surface-container);
+      color: var(--app-primary);
       font-size: 28px;
     }
 
     .error-icon {
-      color: var(--mat-sys-error, #ba1a1a);
-      background: var(--mat-sys-error-container, #ffdad6);
+      color: var(--app-error);
+      background: var(--app-error-container);
     }
 
     .state-card h3 {
       margin: 0 0 8px;
       font-size: 1.15rem;
       font-weight: 600;
-      color: var(--mat-sys-on-surface, #1a1c1e);
     }
 
     .state-card p {
       max-width: 400px;
       margin: 0 0 20px;
-      color: var(--mat-sys-on-surface-variant, #44474e);
+      color: var(--app-text-muted);
       font-size: 0.925rem;
       line-height: 1.45;
     }
@@ -442,10 +417,6 @@ import { CollectionCard } from "./collection-card";
       .sort-toggle {
         width: 100%;
         display: flex;
-      }
-
-      .sort-toggle mat-button-toggle {
-        flex: 1;
       }
     }
 

@@ -1,21 +1,21 @@
 export interface ColorTheme {
   key: string;
   label: string;
-  /** approximate colors for the picker's preview dot; the real palette is compiled in styles.scss */
+  /** Primary accent color used for Ant Design / NG-ZORRO buttons, active states, and highlights */
   primary: string;
   tertiary: string;
 }
 
 export const COLOR_THEMES: ColorTheme[] = [
-  { key: "ocean", label: "Ocean", primary: "#00696c", tertiary: "#8a5100" },
-  { key: "sky", label: "Sky", primary: "#00639c", tertiary: "#94003e" },
-  { key: "grape", label: "Grape", primary: "#7649a3", tertiary: "#4b6600" },
-  { key: "berry", label: "Berry", primary: "#93326e", tertiary: "#006e29" },
-  { key: "forest", label: "Forest", primary: "#3b6939", tertiary: "#8b3a7b" },
-  { key: "sunset", label: "Sunset", primary: "#8a5100", tertiary: "#00639c" },
-  { key: "blossom", label: "Blossom", primary: "#b3264d", tertiary: "#3b6939" },
-  { key: "indigo", label: "Indigo", primary: "#375e9a", tertiary: "#6d5e00" },
-  { key: "ember", label: "Ember", primary: "#a3372c", tertiary: "#00696c" },
+  { key: "sky", label: "Daybreak Blue", primary: "#1890ff", tertiary: "#722ed1" },
+  { key: "ocean", label: "Cyan", primary: "#13c2c2", tertiary: "#fa8c16" },
+  { key: "grape", label: "Purple", primary: "#722ed1", tertiary: "#52c41a" },
+  { key: "berry", label: "Magenta", primary: "#eb2f96", tertiary: "#13c2c2" },
+  { key: "forest", label: "Green", primary: "#52c41a", tertiary: "#eb2f96" },
+  { key: "sunset", label: "Orange", primary: "#fa8c16", tertiary: "#1890ff" },
+  { key: "blossom", label: "Red", primary: "#f5222d", tertiary: "#52c41a" },
+  { key: "indigo", label: "Geek Blue", primary: "#2f54eb", tertiary: "#faad14" },
+  { key: "ember", label: "Gold", primary: "#faad14", tertiary: "#1890ff" },
 ];
 
-export const DEFAULT_COLOR_THEME = COLOR_THEMES[0].key;
+export const DEFAULT_COLOR_THEME = "sky";

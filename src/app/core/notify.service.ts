@@ -1,14 +1,23 @@
-import { Service, inject } from "@angular/core";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { Injectable, inject } from "@angular/core";
+import { NzMessageService } from "ng-zorro-antd/message";
 
-@Service()
+@Injectable({ providedIn: "root" })
 export class Notify {
-  private readonly bar = inject(MatSnackBar);
+  private readonly message = inject(NzMessageService);
 
-  info(message: string): void {
-    this.bar.open(message, "OK", { duration: 3500 });
+  info(content: string): void {
+    this.message.info(content, { nzDuration: 3500 });
   }
-  error(message: string): void {
-    this.bar.open(message, "Dismiss", { duration: 7000 });
+
+  success(content: string): void {
+    this.message.success(content, { nzDuration: 3500 });
+  }
+
+  error(content: string): void {
+    this.message.error(content, { nzDuration: 7000 });
+  }
+
+  warning(content: string): void {
+    this.message.warning(content, { nzDuration: 5000 });
   }
 }

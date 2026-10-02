@@ -1,60 +1,55 @@
 import { Component, input, output } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatIconModule } from "@angular/material/icon";
-import { MatInputModule } from "@angular/material/input";
-import { MatMenuModule } from "@angular/material/menu";
 import { RouterLink } from "@angular/router";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzDropdownModule } from "ng-zorro-antd/dropdown";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzInputModule } from "ng-zorro-antd/input";
+import { NzMenuModule } from "ng-zorro-antd/menu";
 import { Field } from "../../core/models";
 
 @Component({
   selector: "app-record-toolbar",
   imports: [
     RouterLink,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatMenuModule,
+    NzButtonModule,
+    NzDropdownModule,
+    NzIconModule,
+    NzInputModule,
+    NzMenuModule,
   ],
   template: `
     <section class="toolbar" aria-label="Record controls">
-      <mat-form-field
-        appearance="outline"
-        subscriptSizing="dynamic"
-        class="search"
-      >
-        <mat-label>Search records</mat-label>
+      <div class="search-wrap search">
         <input
-          matInput
+          nz-input
+          placeholder="Search records"
           [value]="searchValue()"
           (input)="search.emit(text($event))"
           autocomplete="off"
+          class="search-input"
         />
         @if (searchValue()) {
-          <button
-            mat-icon-button
-            matSuffix
-            type="button"
-            aria-label="Clear search"
+          <nz-icon
+            nzType="close-circle"
+            class="search-suffix clear-search"
             (click)="search.emit('')"
-          >
-            <mat-icon>close</mat-icon>
-          </button>
+            aria-label="Clear search"
+          />
         } @else {
-          <mat-icon matSuffix class="search-icon">search</mat-icon>
+          <nz-icon nzType="search" class="search-icon search-suffix" />
         }
-      </mat-form-field>
+      </div>
 
       <div class="tools">
         <button
-          mat-stroked-button
+          nz-button
+          nzType="default"
           type="button"
           [class.on]="filtersOpen() || activeFilterCount() > 0"
           (click)="toggleFilters.emit()"
           [attr.aria-expanded]="filtersOpen()"
         >
-          <mat-icon>tune</mat-icon>
+          <nz-icon nzType="filter" />
           <span class="label">Filters</span>
           @if (activeFilterCount()) {
             <span class="count" aria-label="Active filters">{{
@@ -64,77 +59,88 @@ import { Field } from "../../core/models";
         </button>
 
         @if (compact()) {
-          <!-- phones: sort lives in a menu because cards have no column headers -->
+          <!-- phones: sort lives in a dropdown because cards have no column headers -->
           <button
-            mat-stroked-button
+            nz-button
+            nzType="default"
             type="button"
             [class.on]="!!sortField()"
-            [matMenuTriggerFor]="sortMenu"
+            nz-dropdown
+            [nzDropdownMenu]="sortMenu"
           >
-            <mat-icon>swap_vert</mat-icon>
+            <nz-icon nzType="swap" [nzRotate]="90" />
             <span class="label">{{ sortField()?.name ?? "Sort" }}</span>
           </button>
-          <mat-menu #sortMenu="matMenu">
-            <button mat-menu-item type="button" (click)="sortReset.emit()">
-              <mat-icon>{{ sortField() ? "" : "check" }}</mat-icon
-              ><span>Newest first</span>
-            </button>
-            @for (f of sortableFields(); track f.id) {
-              <button mat-menu-item type="button" (click)="sortPick.emit(f)">
-                <mat-icon>{{
-                  sortField()?.id === f.id
-                    ? sortAscending()
-                      ? "arrow_upward"
-                      : "arrow_downward"
-                    : ""
-                }}</mat-icon>
-                <span>{{ f.name }}</span>
-              </button>
-            }
-          </mat-menu>
+          <nz-dropdown-menu #sortMenu="nzDropdownMenu">
+            <ul nz-menu>
+              <li nz-menu-item (click)="sortReset.emit()">
+                <nz-icon [nzType]="sortField() ? '' : 'check'" />
+                <span>Newest first</span>
+              </li>
+              @for (f of sortableFields(); track f.id) {
+                <li nz-menu-item (click)="sortPick.emit(f)">
+                  <nz-icon
+                    [nzType]="
+                      sortField()?.id === f.id
+                        ? sortAscending()
+                          ? 'arrow-up'
+                          : 'arrow-down'
+                        : ''
+                    "
+                  />
+                  <span>{{ f.name }}</span>
+                </li>
+              }
+            </ul>
+          </nz-dropdown-menu>
 
           <button
-            mat-icon-button
+            nz-button
+            nzType="text"
+            nzShape="circle"
             type="button"
             class="more-btn"
-            [matMenuTriggerFor]="moreMenu"
+            nz-dropdown
+            [nzDropdownMenu]="moreMenu"
             aria-label="More actions"
           >
-            <mat-icon>more_horiz</mat-icon>
+            <nz-icon nzType="more" />
           </button>
-          <mat-menu #moreMenu="matMenu">
-            <a
-              mat-menu-item
-              [routerLink]="['/collections', collectionId(), 'import']"
-            >
-              <mat-icon>upload</mat-icon><span>Import</span>
-            </a>
-            <button
-              mat-menu-item
-              type="button"
-              [disabled]="!canExport()"
-              (click)="export.emit()"
-            >
-              <mat-icon>download</mat-icon><span>Export CSV</span>
-            </button>
-          </mat-menu>
+          <nz-dropdown-menu #moreMenu="nzDropdownMenu">
+            <ul nz-menu>
+              <li nz-menu-item>
+                <a [routerLink]="['/collections', collectionId(), 'import']">
+                  <nz-icon nzType="upload" /><span>Import</span>
+                </a>
+              </li>
+              <li
+                nz-menu-item
+                [nzDisabled]="!canExport()"
+                (click)="canExport() && export.emit()"
+              >
+                <nz-icon nzType="download" /><span>Export CSV</span>
+              </li>
+            </ul>
+          </nz-dropdown-menu>
         } @else {
           <span class="spacer"></span>
           <a
-            mat-stroked-button
+            nz-button
+            nzType="default"
             class="tool-btn"
             [routerLink]="['/collections', collectionId(), 'import']"
           >
-            <mat-icon>upload</mat-icon><span class="label">Import</span>
+            <nz-icon nzType="upload" /><span class="label">Import</span>
           </a>
           <button
-            mat-stroked-button
+            nz-button
+            nzType="default"
             type="button"
             class="tool-btn"
             [disabled]="!canExport()"
             (click)="export.emit()"
           >
-            <mat-icon>download</mat-icon><span class="label">Export CSV</span>
+            <nz-icon nzType="download" /><span class="label">Export CSV</span>
           </button>
         }
       </div>
@@ -155,7 +161,7 @@ import { Field } from "../../core/models";
       min-width: 200px;
     }
     .search-icon {
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--app-text-muted);
       opacity: 0.8;
     }
     .tools {
@@ -173,11 +179,15 @@ import { Field } from "../../core/models";
       margin-left: 6px;
       padding: 0 5px;
       border-radius: 999px;
-      background: var(--mat-sys-primary);
-      color: var(--mat-sys-on-primary);
+      background: var(--app-primary);
+      color: var(--app-on-primary);
       font-size: 0.6875rem;
       font-weight: 700;
       line-height: 1;
+    }
+    .on {
+      border-color: var(--app-primary) !important;
+      color: var(--app-primary) !important;
     }
     @media (max-width: 767px) {
       .toolbar {

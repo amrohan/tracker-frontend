@@ -1,55 +1,161 @@
-@use "@angular/material" as mat;
-
 // ================================================================
-// MATERIAL 3 THEME
+// NG-ZORRO / ANT DESIGN THEME SYSTEM
 // ================================================================
 
-@mixin color-theme($primary, $tertiary) {
-  @include mat.theme(
-    (
-      color: (
-        primary: $primary,
-        tertiary: $tertiary,
-        theme-type: color-scheme,
-      ),
-      typography: (
-        plain-family: "Figtree, system-ui, sans-serif",
-        brand-family: "Bricolage Grotesque, Figtree, system-ui, sans-serif",
-        bold-weight: 700,
-        medium-weight: 600,
-        regular-weight: 400,
-      ),
-      density: -2,
-    )
-  );
+:root {
+  --ant-primary-color: #1890ff;
+  --ant-primary-color-hover: #40a9ff;
+  --ant-primary-color-active: #096dd9;
+  --ant-primary-color-outline: rgba(24, 144, 255, 0.2);
+
+  --app-primary: var(--ant-primary-color, #1890ff);
+  --app-primary-hover: var(--ant-primary-color-hover, #40a9ff);
+  --app-primary-active: var(--ant-primary-color-active, #096dd9);
+  --app-primary-container: rgba(24, 144, 255, 0.1);
+  --app-on-primary-container: #0050b3;
+  --app-on-primary: #ffffff;
+
+  --app-surface: #ffffff;
+  --app-surface-container: #fafafa;
+  --app-surface-container-low: #ffffff;
+  --app-surface-container-high: #f0f2f5;
+  --app-outline: #d9d9d9;
+  --app-outline-variant: #f0f0f0;
+
+  --app-text: rgba(0, 0, 0, 0.88);
+  --app-text-muted: rgba(0, 0, 0, 0.45);
+  --app-text-secondary: rgba(0, 0, 0, 0.65);
+
+  --app-error: #ff4d4f;
+  --app-error-container: #fff2f0;
+  --app-on-error-container: #cf1322;
+  --app-tertiary: #722ed1;
+  --app-tertiary-container: #f9f0ff;
+  --app-on-tertiary-container: #531dab;
+
+  --app-shadow-1: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --app-shadow-2: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --app-shadow-3: 0 6px 24px rgba(0, 0, 0, 0.12);
+
+  // Backward compatibility aliases for existing styling tokens
+  --mat-sys-surface: var(--app-surface);
+  --mat-sys-on-surface: var(--app-text);
+  --mat-sys-surface-container: var(--app-surface-container);
+  --mat-sys-surface-container-low: var(--app-surface-container-low);
+  --mat-sys-surface-container-high: var(--app-surface-container-high);
+  --mat-sys-outline: var(--app-outline);
+  --mat-sys-outline-variant: var(--app-outline-variant);
+  --mat-sys-on-surface-variant: var(--app-text-muted);
+  --mat-sys-primary: var(--app-primary);
+  --mat-sys-on-primary: var(--app-on-primary);
+  --mat-sys-primary-container: var(--app-primary-container);
+  --mat-sys-on-primary-container: var(--app-on-primary-container);
+  --mat-sys-secondary-container: var(--app-surface-container-high);
+  --mat-sys-on-secondary-container: var(--app-text);
+  --mat-sys-error: var(--app-error);
+  --mat-sys-error-container: var(--app-error-container);
+  --mat-sys-on-error-container: var(--app-on-error-container);
+  --mat-sys-tertiary: var(--app-tertiary);
+  --mat-sys-tertiary-container: var(--app-tertiary-container);
+  --mat-sys-on-tertiary-container: var(--app-on-tertiary-container);
+  --mat-sys-scrim: rgba(0, 0, 0, 0.45);
+  --mat-sys-level1: var(--app-shadow-1);
+  --mat-sys-level2: var(--app-shadow-2);
+  --mat-sys-level3: var(--app-shadow-3);
+  --mat-sys-level4: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+// Dark theme variables matching official NG-ZORRO Dark Theme
+html[data-theme="dark"],
+html[data-theme="dark"] body {
+  --app-surface: #141414;
+  --app-surface-container: #1f1f1f;
+  --app-surface-container-low: #191919;
+  --app-surface-container-high: #262626;
+  --app-outline: #434343;
+  --app-outline-variant: #303030;
+
+  --app-text: rgba(255, 255, 255, 0.85);
+  --app-text-muted: rgba(255, 255, 255, 0.45);
+  --app-text-secondary: rgba(255, 255, 255, 0.65);
+
+  --app-primary-container: rgba(24, 144, 255, 0.2);
+  --app-on-primary-container: #69c0ff;
+
+  --app-error: #ff4d4f;
+  --app-error-container: #2a1215;
+  --app-on-error-container: #ff7875;
+  --app-tertiary: #9254de;
+  --app-tertiary-container: #221433;
+  --app-on-tertiary-container: #b37feb;
+
+  --app-shadow-1: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --app-shadow-2: 0 4px 16px rgba(0, 0, 0, 0.55);
+  --app-shadow-3: 0 6px 24px rgba(0, 0, 0, 0.65);
+}
+
+// Color theme presets
+html[data-color-theme="sky"] {
+  --ant-primary-color: #1890ff;
+  --ant-primary-color-hover: #40a9ff;
+  --ant-primary-color-active: #096dd9;
+  --app-primary: #1890ff;
 }
 
 html[data-color-theme="ocean"] {
-  @include color-theme(mat.$cyan-palette, mat.$orange-palette);
+  --ant-primary-color: #13c2c2;
+  --ant-primary-color-hover: #36cfc9;
+  --ant-primary-color-active: #08979c;
+  --app-primary: #13c2c2;
 }
-html[data-color-theme="sky"] {
-  @include color-theme(mat.$azure-palette, mat.$rose-palette);
-}
+
 html[data-color-theme="grape"] {
-  @include color-theme(mat.$violet-palette, mat.$chartreuse-palette);
+  --ant-primary-color: #722ed1;
+  --ant-primary-color-hover: #9254de;
+  --ant-primary-color-active: #531dab;
+  --app-primary: #722ed1;
 }
+
 html[data-color-theme="berry"] {
-  @include color-theme(mat.$magenta-palette, mat.$spring-green-palette);
+  --ant-primary-color: #eb2f96;
+  --ant-primary-color-hover: #f759ab;
+  --ant-primary-color-active: #c41d7f;
+  --app-primary: #eb2f96;
 }
+
 html[data-color-theme="forest"] {
-  @include color-theme(mat.$green-palette, mat.$magenta-palette);
+  --ant-primary-color: #52c41a;
+  --ant-primary-color-hover: #73d13d;
+  --ant-primary-color-active: #389e0d;
+  --app-primary: #52c41a;
 }
+
 html[data-color-theme="sunset"] {
-  @include color-theme(mat.$orange-palette, mat.$azure-palette);
+  --ant-primary-color: #fa8c16;
+  --ant-primary-color-hover: #ffa940;
+  --ant-primary-color-active: #d46b08;
+  --app-primary: #fa8c16;
 }
+
 html[data-color-theme="blossom"] {
-  @include color-theme(mat.$rose-palette, mat.$green-palette);
+  --ant-primary-color: #f5222d;
+  --ant-primary-color-hover: #ff4d4f;
+  --ant-primary-color-active: #cf1322;
+  --app-primary: #f5222d;
 }
+
 html[data-color-theme="indigo"] {
-  @include color-theme(mat.$blue-palette, mat.$yellow-palette);
+  --ant-primary-color: #2f54eb;
+  --ant-primary-color-hover: #597ef7;
+  --ant-primary-color-active: #1d39c4;
+  --app-primary: #2f54eb;
 }
+
 html[data-color-theme="ember"] {
-  @include color-theme(mat.$red-palette, mat.$cyan-palette);
+  --ant-primary-color: #faad14;
+  --ant-primary-color-hover: #ffc53d;
+  --ant-primary-color-active: #d48806;
+  --app-primary: #faad14;
 }
 
 // ================================================================
@@ -73,14 +179,11 @@ html {
 
 body {
   margin: 0;
-
-  background: var(--mat-sys-surface);
-
-  color: var(--mat-sys-on-surface);
-
-  font-family: var(--mat-sys-body-large-font, "Figtree", system-ui, sans-serif);
-
+  background: var(--app-surface);
+  color: var(--app-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Figtree", "Helvetica Neue", Arial, sans-serif;
   line-height: 1.5;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 // ================================================================
@@ -93,17 +196,9 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(
-    --mat-sys-headline-large-font,
-    "Bricolage Grotesque",
-    "Figtree",
-    system-ui,
-    sans-serif
-  );
-
+  font-family: "Bricolage Grotesque", "Figtree", -apple-system, system-ui, sans-serif;
   margin: 0;
-
-  color: var(--mat-sys-on-surface);
+  color: var(--app-text);
 }
 
 h1,
@@ -117,7 +212,13 @@ p {
 }
 
 a {
-  color: var(--mat-sys-primary);
+  color: var(--app-primary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--app-primary-hover);
+  }
 }
 
 // ================================================================
@@ -125,8 +226,7 @@ a {
 // ================================================================
 
 :focus-visible {
-  outline: 2px solid var(--mat-sys-primary);
-
+  outline: 2px solid var(--app-primary);
   outline-offset: 2px;
 }
 
@@ -137,24 +237,16 @@ a {
 .page {
   width: 100%;
   max-width: 1200px;
-
   margin-inline: auto;
-
   padding: 24px 20px 64px;
 }
 
 .page-narrow {
   width: 100%;
   max-width: 760px;
-
   margin-inline: auto;
-
   padding: 24px 20px 64px;
 }
-
-// ================================================================
-// RESPONSIVE PAGE PADDING
-// ================================================================
 
 @media (max-width: 768px) {
   .page,
@@ -171,16 +263,13 @@ a {
 }
 
 // ================================================================
-// FLEX HELPERS
+// FLEX & GRID HELPERS
 // ================================================================
 
 .row {
   display: flex;
-
   align-items: center;
-
   gap: 12px;
-
   flex-wrap: wrap;
 }
 
@@ -188,125 +277,79 @@ a {
   flex: 1 1 auto;
 }
 
-// ================================================================
-// TEXT HELPERS
-// ================================================================
-
 .muted {
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--app-text-muted);
 }
 
 .full {
   width: 100%;
 }
 
-// ================================================================
-// STACK
-// ================================================================
-
 .stack {
   display: grid;
   gap: 4px;
 }
 
-// ================================================================
-// FORM ERROR
-// ================================================================
-
 .field-error {
-  margin: -10px 0 12px 4px;
-
-  color: var(--mat-sys-error);
-
+  margin: -6px 0 12px 4px;
+  color: var(--app-error);
   font-size: 0.85rem;
-
   line-height: 1.4;
 }
 
 // ================================================================
-// SHARED SURFACE CARD
+// SURFACE CARD & EMPTY STATE
 // ================================================================
 
 .surface-card {
-  background: var(--mat-sys-surface-container-low);
-
-  border: 1px solid var(--mat-sys-outline-variant);
-
+  background: var(--app-surface-container-low);
+  border: 1px solid var(--app-outline-variant);
   border-radius: 16px;
-
   padding: 20px;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
-
-// ================================================================
-// EMPTY STATE
-// ================================================================
 
 .empty-state {
   display: flex;
-
   flex-direction: column;
-
   align-items: center;
-
   justify-content: center;
-
   min-height: 220px;
-
   padding: 48px 20px;
-
   text-align: center;
-
-  color: var(--mat-sys-on-surface-variant);
-
-  border: 2px dashed var(--mat-sys-outline-variant);
-
+  color: var(--app-text-muted);
+  border: 2px dashed var(--app-outline-variant);
   border-radius: 20px;
 
-  .material-icons,
-  mat-icon {
-    width: 48px;
-    height: 48px;
-
-    font-size: 48px;
-
-    opacity: 0.6;
-
-    margin-bottom: 8px;
+  nz-icon,
+  .anticon {
+    font-size: 44px;
+    opacity: 0.65;
+    margin-bottom: 12px;
   }
 
   h3 {
     margin: 8px 0;
-
-    color: var(--mat-sys-on-surface);
-
+    color: var(--app-text);
     font-size: 1.2rem;
   }
 
   p {
     max-width: 480px;
-
     margin: 0 0 20px;
-
     line-height: 1.5;
   }
 }
 
-// ================================================================
-// SHARED RESPONSIVE CARD GRID
-// ================================================================
-
 .card-grid {
   display: grid;
-
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-
   gap: 16px;
 }
 
 @media (max-width: 640px) {
   .card-grid {
     grid-template-columns: 1fr;
-
     gap: 12px;
   }
 }
@@ -320,11 +363,8 @@ a {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
-
     animation-iteration-count: 1 !important;
-
     transition-duration: 0.01ms !important;
-
     scroll-behavior: auto !important;
   }
 }
@@ -348,4 +388,43 @@ a {
 /* a record drawer is open: lock the page behind it */
 body:has(app-record-drawer) {
   overflow: hidden;
+}
+
+// ================================================================
+// NG-ZORRO OVERRIDES & HARMONIZATION
+// ================================================================
+
+.ant-btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.ant-btn-primary {
+  background: var(--app-primary);
+  border-color: var(--app-primary);
+
+  &:hover,
+  &:focus {
+    background: var(--app-primary-hover);
+    border-color: var(--app-primary-hover);
+  }
+}
+
+.ant-input,
+.ant-select-selector {
+  border-radius: 8px !important;
+}
+
+.ant-modal-content {
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+
+.ant-card {
+  border-radius: 14px;
+}
+
+.ant-tag {
+  border-radius: 6px;
 }

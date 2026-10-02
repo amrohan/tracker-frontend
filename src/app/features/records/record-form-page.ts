@@ -1,9 +1,9 @@
 import { httpResource } from "@angular/common/http";
 import { Component, computed, inject, input, signal } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { Router } from "@angular/router";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzSpinModule } from "ng-zorro-antd/spin";
 
 import { CollectionContext } from "../../core/collection-context";
 import {
@@ -17,15 +17,16 @@ import { RecordsApi } from "../../core/records-api.service";
 import { RecordDrawer } from "../../shared/record-drawer";
 import { recordLabel } from "../collection/record-list.utils";
 import { DynamicForm } from "./dynamic-form";
+import { NzDateAdapter } from "ng-zorro-antd/core/time";
 
 @Component({
   selector: "app-record-form-page",
   imports: [
     RecordDrawer,
     DynamicForm,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressBarModule,
+    NzButtonModule,
+    NzIconModule,
+    NzSpinModule,
   ],
   template: `
     <app-record-drawer
@@ -37,12 +38,6 @@ import { DynamicForm } from "./dynamic-form";
       (closed)="cancel()"
     >
       @if (ready()) {
-        <!-- @if (!recordId()) {
-          <p class="hint">
-            <mat-icon aria-hidden="true">info</mat-icon>
-            Fields marked with an asterisk (*) are required.
-          </p>
-        } -->
         <app-dynamic-form
           [fields]="ctx.fields()"
           [initial]="record.value()?.record.values ?? null"
@@ -55,49 +50,40 @@ import { DynamicForm } from "./dynamic-form";
         />
       } @else if (record.error()) {
         <div class="state">
-          <mat-icon aria-hidden="true">error_outline</mat-icon>
+          <nz-icon
+            nzType="exclamation-circle"
+            class="state-icon"
+            aria-hidden="true"
+          />
           <p>Could not load this record. It may have been deleted.</p>
-          <button mat-stroked-button type="button" (click)="cancel()">
+          <button nz-button nzType="default" type="button" (click)="cancel()">
             Close
           </button>
         </div>
       } @else {
-        <mat-progress-bar mode="indeterminate" aria-label="Loading form" />
+        <div class="loading-state">
+          <nz-spin nzSimple />
+        </div>
       }
     </app-record-drawer>
   `,
   styles: `
-    .hint {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 0 0 16px;
-      padding: 10px 14px;
-      border-radius: 12px;
-      background: var(--mat-sys-surface-container);
-      color: var(--mat-sys-on-surface-variant);
-      font-size: 0.8125rem;
-    }
-    .hint mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      flex: none;
-      opacity: 0.85;
-    }
-
     .state {
       display: grid;
       justify-items: center;
-      gap: 8px;
+      gap: 12px;
       padding: 32px 0;
       text-align: center;
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--app-text-muted);
     }
-    .state mat-icon {
+    .state-icon {
       font-size: 40px;
-      width: 40px;
-      height: 40px;
+      color: var(--app-error);
+    }
+    .loading-state {
+      display: flex;
+      justify-content: center;
+      padding: 48px 0;
     }
   `,
 })

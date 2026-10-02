@@ -1,14 +1,11 @@
 import { NgTemplateOutlet } from "@angular/common";
 import { Component, computed, input, model } from "@angular/core";
-import {
-  MatDatepickerInputEvent,
-  MatDatepickerModule,
-} from "@angular/material/datepicker";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatIconModule } from "@angular/material/icon";
-import { MatInputModule } from "@angular/material/input";
-import { MatSelectModule } from "@angular/material/select";
-import { MatSlideToggleModule } from "@angular/material/slide-toggle";
+import { FormsModule } from "@angular/forms";
+import { NzDatePickerModule } from "ng-zorro-antd/date-picker";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzInputModule } from "ng-zorro-antd/input";
+import { NzSelectModule } from "ng-zorro-antd/select";
+import { NzSwitchModule } from "ng-zorro-antd/switch";
 import {
   currencySymbol,
   fromLocalInput,
@@ -16,8 +13,7 @@ import {
   toIsoDate,
   toLocalInput,
 } from "../../core/format";
-import { TYPE_ICONS } from "../../core/labels";
-import { Field, RecordReference } from "../../core/models";
+import { Field, FieldType, RecordReference } from "../../core/models";
 import { RatingInput } from "../../shared/rating-input";
 import { ReferenceSelector } from "../../shared/reference-selector";
 
@@ -26,12 +22,12 @@ import { ReferenceSelector } from "../../shared/reference-selector";
   selector: "app-dynamic-field",
   imports: [
     NgTemplateOutlet,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatSelectModule,
-    MatSlideToggleModule,
-    MatDatepickerModule,
+    FormsModule,
+    NzInputModule,
+    NzSelectModule,
+    NzSwitchModule,
+    NzDatePickerModule,
+    NzIconModule,
     RatingInput,
     ReferenceSelector,
   ],
@@ -39,28 +35,31 @@ import { ReferenceSelector } from "../../shared/reference-selector";
     <div class="wrap">
       @switch (field().type) {
         @case ("text") {
-          <mat-form-field appearance="outline" class="full">
-            <mat-label
-              ><ng-container *ngTemplateOutlet="labelWithIcon"
-            /></mat-label>
+          <div class="field-item">
+            <label class="field-label">
+              <nz-icon [nzType]="typeIcon(field().type)" class="type-icon" />
+              <span>{{ label() }}</span>
+            </label>
             <input
-              matInput
+              nz-input
               maxlength="500"
               [value]="str()"
               (input)="setText($event)"
+              [placeholder]="field().name"
             />
             @if (field().description) {
-              <mat-hint>{{ field().description }}</mat-hint>
+              <span class="muted hint">{{ field().description }}</span>
             }
-          </mat-form-field>
+          </div>
         }
         @case ("url") {
-          <mat-form-field appearance="outline" class="full">
-            <mat-label
-              ><ng-container *ngTemplateOutlet="labelWithIcon"
-            /></mat-label>
+          <div class="field-item">
+            <label class="field-label">
+              <nz-icon [nzType]="typeIcon(field().type)" class="type-icon" />
+              <span>{{ label() }}</span>
+            </label>
             <input
-              matInput
+              nz-input
               type="url"
               inputmode="url"
               placeholder="https://"
@@ -68,164 +67,178 @@ import { ReferenceSelector } from "../../shared/reference-selector";
               (input)="setText($event)"
             />
             @if (field().description) {
-              <mat-hint>{{ field().description }}</mat-hint>
+              <span class="muted hint">{{ field().description }}</span>
             }
-          </mat-form-field>
+          </div>
         }
         @case ("longText") {
-          <mat-form-field appearance="outline" class="full">
-            <mat-label
-              ><ng-container *ngTemplateOutlet="labelWithIcon"
-            /></mat-label>
+          <div class="field-item">
+            <label class="field-label">
+              <nz-icon [nzType]="typeIcon(field().type)" class="type-icon" />
+              <span>{{ label() }}</span>
+            </label>
             <textarea
-              matInput
+              nz-input
               rows="4"
               maxlength="20000"
               [value]="str()"
               (input)="setText($event)"
+              [placeholder]="field().name"
             ></textarea>
             @if (field().description) {
-              <mat-hint>{{ field().description }}</mat-hint>
+              <span class="muted hint">{{ field().description }}</span>
             }
-          </mat-form-field>
+          </div>
         }
         @case ("number") {
-          <mat-form-field appearance="outline" class="full">
-            <mat-label
-              ><ng-container *ngTemplateOutlet="labelWithIcon"
-            /></mat-label>
+          <div class="field-item">
+            <label class="field-label">
+              <nz-icon [nzType]="typeIcon(field().type)" class="type-icon" />
+              <span>{{ label() }}</span>
+            </label>
             <input
-              matInput
+              nz-input
               type="number"
               step="any"
               [attr.min]="field().config.min ?? null"
               [attr.max]="field().config.max ?? null"
               [value]="numStr()"
               (input)="setNumber($event)"
+              [placeholder]="field().name"
             />
             @if (field().description) {
-              <mat-hint>{{ field().description }}</mat-hint>
+              <span class="muted hint">{{ field().description }}</span>
             }
-          </mat-form-field>
+          </div>
         }
         @case ("currency") {
-          <mat-form-field appearance="outline" class="full">
-            <mat-label
-              ><ng-container *ngTemplateOutlet="labelWithIcon"
-            /></mat-label>
-            <span matTextPrefix>{{ symbol() }}&nbsp;</span>
-            <input
-              matInput
-              type="number"
-              step="0.01"
-              [attr.min]="field().config.min ?? null"
-              [attr.max]="field().config.max ?? null"
-              [value]="numStr()"
-              (input)="setNumber($event)"
-            />
+          <div class="field-item">
+            <label class="field-label">
+              <nz-icon [nzType]="typeIcon(field().type)" class="type-icon" />
+              <span>{{ label() }}</span>
+            </label>
+            <nz-input-wrapper [nzPrefix]="symbol()">
+              <input
+                nz-input
+                type="number"
+                step="0.01"
+                [attr.min]="field().config.min ?? null"
+                [attr.max]="field().config.max ?? null"
+                [value]="numStr()"
+                (input)="setNumber($event)"
+                [placeholder]="field().name"
+              />
+            </nz-input-wrapper>
             @if (field().description) {
-              <mat-hint>{{ field().description }}</mat-hint>
+              <span class="muted hint">{{ field().description }}</span>
             }
-          </mat-form-field>
+          </div>
         }
         @case ("date") {
-          <mat-form-field appearance="outline" class="full">
-            <mat-label
-              ><ng-container *ngTemplateOutlet="labelWithIcon"
-            /></mat-label>
-            <input
-              matInput
-              [matDatepicker]="dp"
-              [value]="dateValue()"
-              (dateChange)="setDate($event)"
+          <div class="field-item">
+            <label class="field-label">
+              <nz-icon [nzType]="typeIcon(field().type)" class="type-icon" />
+              <span>{{ label() }}</span>
+            </label>
+            <nz-date-picker
+              class="full"
+              [ngModel]="dateValue()"
+              (ngModelChange)="setDate($event)"
+              [nzPlaceHolder]="field().name"
             />
-            <mat-datepicker-toggle matIconSuffix [for]="dp" />
-            <mat-datepicker #dp />
             @if (field().description) {
-              <mat-hint>{{ field().description }}</mat-hint>
+              <span class="muted hint">{{ field().description }}</span>
             }
-          </mat-form-field>
+          </div>
         }
         @case ("dateTime") {
-          <mat-form-field appearance="outline" class="full">
-            <mat-label
-              ><ng-container *ngTemplateOutlet="labelWithIcon"
-            /></mat-label>
+          <div class="field-item">
+            <label class="field-label">
+              <nz-icon [nzType]="typeIcon(field().type)" class="type-icon" />
+              <span>{{ label() }}</span>
+            </label>
             <input
-              matInput
+              nz-input
               type="datetime-local"
+              class="full"
               [value]="localValue()"
               (input)="setLocal($event)"
             />
             @if (field().description) {
-              <mat-hint>{{ field().description }}</mat-hint>
+              <span class="muted hint">{{ field().description }}</span>
             }
-          </mat-form-field>
+          </div>
         }
         @case ("boolean") {
           <div class="toggle">
-            <mat-slide-toggle
-              [checked]="value() === true"
-              (change)="value.set($event.checked)"
-            >
-              <span class="toggle-label"
-                ><ng-container
-                  *ngTemplateOutlet="
-                    labelWithIcon;
-                    context: { plain: field().name }
-                  "
-              /></span>
-            </mat-slide-toggle>
+            <div class="toggle-row">
+              <nz-switch
+                [ngModel]="value() === true"
+                (ngModelChange)="value.set($event)"
+              />
+              <span class="toggle-label">
+                <nz-icon [nzType]="typeIcon(field().type)" class="type-icon" />
+                <span>{{ label() }}</span>
+              </span>
+            </div>
             @if (field().description) {
               <span class="muted hint">{{ field().description }}</span>
             }
           </div>
         }
         @case ("select") {
-          <mat-form-field appearance="outline" class="full">
-            <mat-label
-              ><ng-container *ngTemplateOutlet="labelWithIcon"
-            /></mat-label>
-            <mat-select
-              [value]="value() ?? null"
-              (selectionChange)="value.set($event.value)"
+          <div class="field-item">
+            <label class="field-label">
+              <nz-icon [nzType]="typeIcon(field().type)" class="type-icon" />
+              <span>{{ label() }}</span>
+            </label>
+            <nz-select
+              class="full"
+              [ngModel]="value() ?? null"
+              (ngModelChange)="value.set($event)"
+              [nzAllowClear]="!field().required"
+              [nzPlaceHolder]="field().name"
             >
               @if (!field().required) {
-                <mat-option [value]="null">—</mat-option>
+                <nz-option [nzValue]="null" nzLabel="—" />
               }
               @for (o of options(); track o) {
-                <mat-option [value]="o">{{ o }}</mat-option>
+                <nz-option [nzValue]="o" [nzLabel]="o" />
               }
-            </mat-select>
+            </nz-select>
             @if (field().description) {
-              <mat-hint>{{ field().description }}</mat-hint>
+              <span class="muted hint">{{ field().description }}</span>
             }
-          </mat-form-field>
+          </div>
         }
         @case ("multiSelect") {
-          <mat-form-field appearance="outline" class="full">
-            <mat-label
-              ><ng-container *ngTemplateOutlet="labelWithIcon"
-            /></mat-label>
-            <mat-select
-              multiple
-              [value]="list()"
-              (selectionChange)="value.set($event.value)"
+          <div class="field-item">
+            <label class="field-label">
+              <nz-icon [nzType]="typeIcon(field().type)" class="type-icon" />
+              <span>{{ label() }}</span>
+            </label>
+            <nz-select
+              nzMode="multiple"
+              class="full"
+              [ngModel]="list()"
+              (ngModelChange)="value.set($event)"
+              [nzPlaceHolder]="field().name"
             >
               @for (o of options(); track o) {
-                <mat-option [value]="o">{{ o }}</mat-option>
+                <nz-option [nzValue]="o" [nzLabel]="o" />
               }
-            </mat-select>
+            </nz-select>
             @if (field().description) {
-              <mat-hint>{{ field().description }}</mat-hint>
+              <span class="muted hint">{{ field().description }}</span>
             }
-          </mat-form-field>
+          </div>
         }
         @case ("rating") {
           <div class="rating">
-            <span class="lbl"
-              ><ng-container *ngTemplateOutlet="labelWithIcon"
-            /></span>
+            <span class="field-label">
+              <nz-icon [nzType]="typeIcon(field().type)" class="type-icon" />
+              <span>{{ label() }}</span>
+            </span>
             <app-rating-input
               [max]="field().config.max ?? 5"
               [label]="field().name"
@@ -249,16 +262,6 @@ import { ReferenceSelector } from "../../shared/reference-selector";
       }
     </div>
 
-    <!-- one small icon + text, sized to its own content — no reserved Material prefix slot -->
-    <ng-template #labelWithIcon let-plain="plain">
-      <span class="icon-label">
-        <mat-icon class="type-icon" aria-hidden="true">{{
-          typeIcon()
-        }}</mat-icon
-        >{{ plain ?? label() }}
-      </span>
-    </ng-template>
-
     <ng-template #ref>
       @if (target(); as t) {
         <app-reference-selector
@@ -274,44 +277,62 @@ import { ReferenceSelector } from "../../shared/reference-selector";
   `,
   styles: `
     .wrap {
-      margin-bottom: 4px;
+      margin-bottom: 12px;
     }
-    .toggle,
-    .rating {
-      padding: 4px 4px 16px;
+    .field-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--app-text);
+    }
+    .full {
+      width: 100%;
+    }
+    .toggle {
+      padding: 6px 0 10px;
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
-    .lbl {
-      font-size: 0.85rem;
-      color: var(--mat-sys-on-surface-variant);
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .rating {
+      padding: 4px 0 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
     .hint {
       font-size: 0.8rem;
-    }
-
-    /* icon + label, sized to content only — replaces matIconPrefix, which reserved a fixed extra slot */
-    .icon-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+      color: var(--app-text-muted);
     }
     .type-icon {
-      font-size: 16px;
-      width: 16px;
-      height: 16px;
-      color: var(--mat-sys-primary);
-      opacity: 0.75;
+      font-size: 15px;
+      color: var(--app-primary);
+      opacity: 0.85;
       flex: none;
     }
-
     .toggle-label {
       display: inline-flex;
-      vertical-align: middle;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
     }
-    .toggle-label .type-icon {
-      margin-right: 2px;
+    .field-error {
+      margin: 4px 0 0;
+      font-size: 0.8rem;
+      color: var(--app-error, #ff4d4f);
     }
   `,
 })
@@ -324,7 +345,6 @@ export class DynamicField {
   protected readonly label = computed(
     () => this.field().name + (this.field().required ? " *" : ""),
   );
-  protected readonly typeIcon = computed(() => TYPE_ICONS[this.field().type]);
   protected readonly options = computed(
     () => this.field().config.options ?? [],
   );
@@ -359,6 +379,25 @@ export class DynamicField {
     return typeof v === "string" && v ? toLocalInput(v) : "";
   });
 
+  protected typeIcon(type: FieldType): string {
+    const map: Record<FieldType, string> = {
+      text: "font-size",
+      longText: "file-text",
+      number: "number",
+      currency: "dollar",
+      date: "calendar",
+      dateTime: "clock-circle",
+      boolean: "check-square",
+      select: "down-circle",
+      multiSelect: "unordered-list",
+      rating: "star",
+      reference: "link",
+      multiReference: "share-alt",
+      url: "global",
+    };
+    return map[type] || "file";
+  }
+
   protected setText(e: Event): void {
     this.value.set((e.target as HTMLInputElement).value);
   }
@@ -369,8 +408,8 @@ export class DynamicField {
     this.value.set(raw === "" || isNaN(n) ? null : n);
   }
 
-  protected setDate(e: MatDatepickerInputEvent<Date>): void {
-    this.value.set(e.value ? toIsoDate(e.value) : null);
+  protected setDate(date: Date | null): void {
+    this.value.set(date ? toIsoDate(date) : null);
   }
 
   protected setLocal(e: Event): void {

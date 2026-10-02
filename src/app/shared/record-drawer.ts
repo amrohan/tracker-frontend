@@ -9,14 +9,14 @@ import {
   output,
   viewChild,
 } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzIconModule } from "ng-zorro-antd/icon";
 
 let nextId = 0;
 
 @Component({
   selector: "app-record-drawer",
-  imports: [CdkTrapFocus, MatButtonModule, MatIconModule],
+  imports: [CdkTrapFocus, NzButtonModule, NzIconModule],
   template: `
     <div class="backdrop" (click)="onBackdrop($event)">
       <section
@@ -29,33 +29,49 @@ let nextId = 0;
         [attr.aria-labelledby]="titleId"
         (keydown.escape)="requestClose()"
       >
+        <!-- Header -->
         <header class="header">
           <div class="titles">
             @if (eyebrow()) {
               <p class="eyebrow">
                 @if (eyebrowIcon()) {
-                  <span aria-hidden="true">{{ eyebrowIcon() }}</span>
+                  <span class="eyebrow-icon" aria-hidden="true">
+                    {{ eyebrowIcon() }}
+                  </span>
                 }
-                {{ eyebrow() }}
+                <span>{{ eyebrow() }}</span>
               </p>
             }
-            <h2 [id]="titleId">{{ heading() }}</h2>
+
+            <h2 [id]="titleId">
+              {{ heading() }}
+            </h2>
           </div>
+
           <button
-            mat-icon-button
+            nz-button
+            nzType="text"
+            nzShape="circle"
             type="button"
-            aria-label="Close"
+            aria-label="Close drawer"
+            class="close-button"
             [disabled]="busy()"
             (click)="requestClose()"
           >
-            <mat-icon>close</mat-icon>
+            <nz-icon nzType="close" />
           </button>
         </header>
 
-        <div class="body"><ng-content /></div>
+        <!-- Scrollable content -->
+        <main class="body">
+          <ng-content />
+        </main>
 
+        <!-- Always pinned to bottom -->
         @if (footer()) {
-          <footer class="footer"><ng-content select="[drawerFooter]" /></footer>
+          <footer class="footer">
+            <ng-content select="[drawerFooter]" />
+          </footer>
         }
       </section>
     </div>
@@ -71,99 +87,161 @@ let nextId = 0;
       z-index: 900;
       display: flex;
       justify-content: flex-end;
-      background: color-mix(in srgb, #000 42%, transparent);
-      animation: fade 0.16s ease-out;
+      background: rgba(0, 0, 0, 0.45);
+      animation: fade-in 160ms ease-out;
     }
 
     .panel {
-      --drawer-pad: 24px;
-      --drawer-bg: var(--mat-sys-surface);
-      display: flex;
-      flex-direction: column;
+      --drawer-padding-x: 24px;
+      --drawer-background: var(--app-surface);
+
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
       width: min(560px, 100%);
       height: 100%;
-      background: var(--drawer-bg);
-      border-left: 1px solid var(--mat-sys-outline-variant);
-      box-shadow: var(--mat-sys-level4);
+      min-height: 0;
+      background: var(--drawer-background);
+      border-left: 1px solid var(--app-outline-variant);
+      box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
       outline: none;
-      animation: slide 0.22s cubic-bezier(0.2, 0, 0, 1);
+      overflow: hidden;
+      animation: slide-in 220ms cubic-bezier(0.2, 0, 0, 1);
     }
 
     .header {
-      flex: none;
       display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 16px var(--drawer-pad) 14px;
-      border-bottom: 1px solid var(--mat-sys-outline-variant);
-    }
-    .titles {
-      flex: 1;
+      align-items: center;
+      gap: 16px;
       min-width: 0;
+      min-height: 72px;
+      padding: 16px var(--drawer-padding-x);
+      border-bottom: 1px solid var(--app-outline-variant);
     }
+
+    .titles {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 3px;
+    }
+
     .eyebrow {
-      margin: 0 0 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
       font-size: 0.8125rem;
+      line-height: 1.25;
       font-weight: 600;
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--app-text-muted);
     }
+
+    .eyebrow-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      line-height: 1;
+    }
+
     h2 {
       margin: 0;
       font-size: 1.375rem;
-      line-height: 1.25;
+      line-height: 1.3;
+      font-weight: 600;
       letter-spacing: -0.01em;
+      color: var(--app-text);
       overflow-wrap: anywhere;
     }
 
+    .close-button {
+      flex: 0 0 auto;
+      font-size: 16px;
+      color: var(--app-text-muted);
+    }
+    .close-button:hover {
+      color: var(--app-text);
+    }
+
     .body {
-      flex: 1 1 auto;
+      min-width: 0;
       min-height: 0;
       overflow-y: auto;
+      overflow-x: hidden;
+      padding: 24px var(--drawer-padding-x);
       overscroll-behavior: contain;
-      padding: var(--drawer-pad);
+      scrollbar-gutter: stable;
     }
 
     .footer {
-      flex: none;
       display: flex;
       align-items: center;
+      justify-content: flex-end;
       gap: 8px;
-      padding: 12px var(--drawer-pad) calc(12px + env(safe-area-inset-bottom));
-      border-top: 1px solid var(--mat-sys-outline-variant);
-      background: var(--drawer-bg);
+      min-width: 0;
+      min-height: 68px;
+      padding: 12px var(--drawer-padding-x);
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      border-top: 1px solid var(--app-outline-variant);
+      background: var(--drawer-background);
+      position: relative;
+      z-index: 1;
     }
 
     @media (max-width: 640px) {
       .backdrop {
         align-items: flex-end;
+        justify-content: stretch;
       }
+
       .panel {
-        --drawer-pad: 16px;
+        --drawer-padding-x: 16px;
         width: 100%;
         height: auto;
         max-height: 92dvh;
-        border-left: 0;
-        border-top: 1px solid var(--mat-sys-outline-variant);
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        border: 0;
+        border-top: 1px solid var(--app-outline-variant);
         border-radius: 20px 20px 0 0;
-        animation: rise 0.22s cubic-bezier(0.2, 0, 0, 1);
+        animation: rise-in 220ms cubic-bezier(0.2, 0, 0, 1);
+      }
+
+      .header {
+        min-height: 64px;
+        padding-top: 12px;
+        padding-bottom: 12px;
+      }
+
+      .body {
+        padding-top: 20px;
+        padding-bottom: 20px;
+      }
+
+      .footer {
+        min-height: 64px;
       }
     }
 
-    @keyframes fade {
+    @keyframes fade-in {
       from {
         opacity: 0;
       }
     }
-    @keyframes slide {
+
+    @keyframes slide-in {
       from {
         transform: translateX(100%);
       }
     }
-    @keyframes rise {
+
+    @keyframes rise-in {
       from {
         transform: translateY(100%);
       }
     }
+
     @media (prefers-reduced-motion: reduce) {
       .backdrop,
       .panel {
@@ -176,9 +254,7 @@ export class RecordDrawer {
   readonly heading = input.required<string>();
   readonly eyebrow = input("");
   readonly eyebrowIcon = input("");
-  /** While true (saving) the drawer cannot be closed. */
   readonly busy = input(false);
-  /** Forms turn this off so a stray click never discards typed data. */
   readonly closeOnBackdrop = input(true);
   readonly footer = input(false);
   readonly closed = output<void>();
@@ -187,13 +263,21 @@ export class RecordDrawer {
   private readonly panel = viewChild.required<ElementRef<HTMLElement>>("panel");
 
   constructor() {
-    const previous = document.activeElement as HTMLElement | null;
-    afterNextRender(() => this.panel().nativeElement.focus());
-    inject(DestroyRef).onDestroy(() => previous?.focus?.());
+    const previousActiveElement = document.activeElement as HTMLElement | null;
+
+    afterNextRender(() => {
+      this.panel().nativeElement.focus();
+    });
+
+    inject(DestroyRef).onDestroy(() => {
+      previousActiveElement?.focus();
+    });
   }
 
   protected requestClose(): void {
-    if (!this.busy()) this.closed.emit();
+    if (!this.busy()) {
+      this.closed.emit();
+    }
   }
 
   protected onBackdrop(event: MouseEvent): void {

@@ -5,8 +5,8 @@ import {
   linkedSignal,
   output,
 } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzIconModule } from "ng-zorro-antd/icon";
 import { safeHttpUrl } from "../../core/format";
 import { Field, RecordReference } from "../../core/models";
 import { DynamicField } from "./dynamic-field";
@@ -35,7 +35,7 @@ function buildInitial(
 /** One generic form for every collection: the fields array is the only input that varies. */
 @Component({
   selector: "app-dynamic-form",
-  imports: [DynamicField, MatButtonModule, MatIconModule],
+  imports: [DynamicField, NzButtonModule, NzIconModule],
   template: `
     <form (submit)="onSubmit($event)" novalidate class="form-layout">
       <div class="fields-list">
@@ -54,9 +54,7 @@ function buildInitial(
 
       @if (attempted() && errorCount() > 0) {
         <div class="form-alert" role="alert">
-          <mat-icon class="alert-icon" aria-hidden="true"
-            >error_outline</mat-icon
-          >
+          <nz-icon nzType="exclamation-circle" class="alert-icon" aria-hidden="true" />
           <span>
             Please correct the
             {{
@@ -69,7 +67,8 @@ function buildInitial(
 
       <div class="actions">
         <button
-          mat-button
+          nz-button
+          nzType="default"
           type="button"
           class="cancel-btn"
           [disabled]="saving()"
@@ -78,9 +77,11 @@ function buildInitial(
           Cancel
         </button>
         <button
-          mat-flat-button
+          nz-button
+          nzType="primary"
           type="submit"
           class="submit-btn"
+          [nzLoading]="saving()"
           [disabled]="saving()"
         >
           {{ saving() ? "Saving…" : submitLabel() }}
@@ -113,24 +114,21 @@ function buildInitial(
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-top: 4px;
+      margin-top: 12px;
       padding: 12px 16px;
       border-radius: 12px;
-      background: var(--mat-sys-error-container);
-      color: var(--mat-sys-on-error-container);
+      background: var(--app-error-container, #ffdad6);
+      color: var(--app-on-error-container, #410002);
       font-size: 0.875rem;
       font-weight: 500;
       line-height: 1.4;
     }
     .alert-icon {
       font-size: 20px;
-      width: 20px;
-      height: 20px;
       flex: none;
     }
 
     /* ---------------- actions ---------------- */
-    /* sticky within the record drawer: --drawer-pad / --drawer-bg come from RecordDrawer */
     .actions {
       position: sticky;
       bottom: 0;
@@ -143,27 +141,19 @@ function buildInitial(
         calc(-1 * var(--drawer-pad, 0px));
       padding: 16px var(--drawer-pad, 0px)
         calc(16px + env(safe-area-inset-bottom));
-      background: var(--drawer-bg, var(--mat-sys-surface));
-      border-top: 1px solid var(--mat-sys-outline-variant);
+      background: var(--drawer-bg, var(--app-surface));
+      border-top: 1px solid var(--app-outline-variant);
     }
 
     .cancel-btn {
-      min-height: 42px;
+      min-height: 40px;
       padding: 0 18px;
       border-radius: 10px;
       font-weight: 600;
-      color: var(--mat-sys-on-surface-variant);
-      transition:
-        background-color 140ms ease,
-        color 140ms ease;
-    }
-    .cancel-btn:hover:not([disabled]) {
-      background: var(--mat-sys-surface-container-high);
-      color: var(--mat-sys-on-surface);
     }
 
     .submit-btn {
-      min-height: 42px;
+      min-height: 40px;
       padding: 0 22px;
       border-radius: 10px;
       font-weight: 600;
@@ -184,7 +174,7 @@ function buildInitial(
       .cancel-btn,
       .submit-btn {
         width: 100%;
-        min-height: 46px;
+        min-height: 44px;
         justify-content: center;
       }
     }
@@ -198,7 +188,7 @@ function buildInitial(
       }
       .submit-btn {
         order: 1;
-      } /* primary action reachable first with one thumb */
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {

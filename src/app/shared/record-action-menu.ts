@@ -1,55 +1,72 @@
 import { Component, input, output } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
-import { MatMenuModule } from "@angular/material/menu";
 import { RouterLink } from "@angular/router";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzDropdownModule } from "ng-zorro-antd/dropdown";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzMenuModule } from "ng-zorro-antd/menu";
 
 /** The View / Edit / Delete menu for a record. Reused by the desktop row and the mobile card. */
 @Component({
   selector: "app-record-action-menu",
-  imports: [RouterLink, MatButtonModule, MatIconModule, MatMenuModule],
+  imports: [
+    RouterLink,
+    NzButtonModule,
+    NzIconModule,
+    NzDropdownModule,
+    NzMenuModule,
+  ],
   template: `
     <button
-      mat-icon-button
+      nz-button
+      nzType="text"
+      nzShape="circle"
       type="button"
-      [matMenuTriggerFor]="menu"
+      nz-dropdown
+      [nzDropdownMenu]="menu"
       [attr.aria-label]="'Actions for ' + label()"
+      (click)="$event.stopPropagation()"
     >
-      <mat-icon>more_vert</mat-icon>
+      <nz-icon nzType="more" />
     </button>
-    <mat-menu #menu="matMenu">
-      <a
-        mat-menu-item
-        [routerLink]="['/collections', collectionId(), 'records', recordId()]"
-      >
-        <mat-icon>visibility</mat-icon><span>View</span>
-      </a>
-      <a
-        mat-menu-item
-        [routerLink]="[
-          '/collections',
-          collectionId(),
-          'records',
-          recordId(),
-          'edit',
-        ]"
-      >
-        <mat-icon>edit</mat-icon><span>Edit</span>
-      </a>
-      <button
-        mat-menu-item
-        type="button"
-        class="delete-item"
-        (click)="delete.emit()"
-      >
-        <mat-icon>delete</mat-icon><span>Delete</span>
-      </button>
-    </mat-menu>
+
+    <nz-dropdown-menu #menu="nzDropdownMenu">
+      <ul nz-menu>
+        <li nz-menu-item>
+          <a
+            [routerLink]="['/collections', collectionId(), 'records', recordId()]"
+          >
+            <nz-icon nzType="eye" />
+            <span class="action-text">View</span>
+          </a>
+        </li>
+        <li nz-menu-item>
+          <a
+            [routerLink]="[
+              '/collections',
+              collectionId(),
+              'records',
+              recordId(),
+              'edit',
+            ]"
+          >
+            <nz-icon nzType="edit" />
+            <span class="action-text">Edit</span>
+          </a>
+        </li>
+        <li nz-menu-divider></li>
+        <li nz-menu-item nzDanger (click)="delete.emit()">
+          <nz-icon nzType="delete" />
+          <span class="action-text">Delete</span>
+        </li>
+      </ul>
+    </nz-dropdown-menu>
   `,
   styles: `
-    .delete-item,
-    .delete-item mat-icon {
-      color: var(--mat-sys-error);
+    :host {
+      display: inline-block;
+    }
+    .action-text {
+      margin-left: 8px;
     }
   `,
 })

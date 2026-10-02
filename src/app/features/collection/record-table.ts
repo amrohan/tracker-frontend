@@ -6,7 +6,6 @@ import {
   input,
   output,
   signal,
-  viewChild,
 } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { FieldTypeCatalog } from "../../core/field-types.service";
@@ -20,13 +19,12 @@ import {
 import { FieldValue } from "../../shared/field-value";
 import { RecordActionMenu } from "../../shared/record-action-menu";
 import { aggregationShortLabel } from "./record-list.utils";
-import { MatIcon } from "@angular/material/icon";
-import { MatTable, MatTableModule } from "@angular/material/table";
+import { NzIconModule } from "ng-zorro-antd/icon";
 import { LocalStorageService } from "../../core/local-storage.service";
 
 @Component({
   selector: "app-record-table",
-  imports: [RouterLink, FieldValue, RecordActionMenu, MatIcon, MatTableModule],
+  imports: [RouterLink, FieldValue, RecordActionMenu, NzIconModule],
   template: `
     <div
       class="table-container surface-card"
@@ -34,133 +32,112 @@ import { LocalStorageService } from "../../core/local-storage.service";
       [class.resizing-active]="activeResizingCol() !== null"
     >
       <div class="table-scroll">
-        <table mat-table [dataSource]="items()">
-          @for (f of columns(); track f.id; let first = $first) {
-            <ng-container [matColumnDef]="f.id" [sticky]="first">
-              <th
-                mat-header-cell
-                *matHeaderCellDef
-                scope="col"
-                [attr.aria-sort]="ariaSort(f)"
-                [style.width.px]="colWidth(f.id)"
-                [style.min-width.px]="colWidth(f.id) || 120"
-                [style.max-width.px]="colWidth(f.id)"
-              >
-                <div class="header-cell-content">
-                  @if (catalog.sortable(f.type)) {
-                    <button
-                      type="button"
-                      class="sort"
-                      (click)="toggleSort.emit(f)"
-                    >
+        <table>
+          <thead>
+            <tr>
+              @for (f of columns(); track f.id; let first = $first) {
+                <th
+                  scope="col"
+                  [attr.aria-sort]="ariaSort(f)"
+                  [style.width.px]="colWidth(f.id)"
+                  [style.min-width.px]="colWidth(f.id) || 120"
+                  [class.sticky-col]="first"
+                >
+                  <div class="header-cell-content">
+                    @if (catalog.sortable(f.type)) {
+                      <button
+                        type="button"
+                        class="sort"
+                        (click)="toggleSort.emit(f)"
+                      >
+                        <span>{{ f.name }}</span>
+                        <nz-icon class="arrow" [nzType]="sortIconType(f)" />
+                      </button>
+                    } @else {
                       <span>{{ f.name }}</span>
-                      <mat-icon class="arrow">{{ sortIcon(f) }}</mat-icon>
-                    </button>
-                  } @else {
-                    <span>{{ f.name }}</span>
-                  }
-                </div>
-                <div
-                  class="resize-handle"
-                  [class.active]="activeResizingCol() === f.id"
-                  (pointerdown)="onResizeStart($event, f.id)"
-                  (click)="$event.stopPropagation()"
-                ></div>
-              </th>
-
-              <td
-                mat-cell
-                *matCellDef="let r"
-                [style.width.px]="colWidth(f.id)"
-                [style.min-width.px]="colWidth(f.id) || 120"
-                [style.max-width.px]="colWidth(f.id)"
-              >
-                @if (first) {
-                  <a
-                    class="first"
-                    [routerLink]="[
-                      '/collections',
-                      collectionId(),
-                      'records',
-                      r.id,
-                    ]"
+                    }
+                  </div>
+                  <div
+                    class="resize-handle"
+                    [class.active]="activeResizingCol() === f.id"
+                    (pointerdown)="onResizeStart($event, f.id)"
                     (click)="$event.stopPropagation()"
+                  ></div>
+                </th>
+              }
+              <th scope="col" class="actions-col sticky-end">
+                <span class="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of items(); track r.id) {
+              <tr class="record-row" (click)="open.emit(r)">
+                @for (f of columns(); track f.id; let first = $first) {
+                  <td
+                    [style.width.px]="colWidth(f.id)"
+                    [style.min-width.px]="colWidth(f.id) || 120"
+                    [class.sticky-col]="first"
                   >
-                    <app-field-value
-                      [field]="f"
-                      [value]="r.values[f.key]"
-                      [references]="references()"
-                    />
-                  </a>
-                } @else {
-                  <app-field-value
-                    [field]="f"
-                    [value]="r.values[f.key]"
-                    [references]="references()"
+                    @if (first) {
+                      <a
+                        class="first"
+                        [routerLink]="[
+                          '/collections',
+                          collectionId(),
+                          'records',
+                          r.id,
+                        ]"
+                        (click)="$event.stopPropagation()"
+                      >
+                        <app-field-value
+                          [field]="f"
+                          [value]="r.values[f.key]"
+                          [references]="references()"
+                        />
+                      </a>
+                    } @else {
+                      <app-field-value
+                        [field]="f"
+                        [value]="r.values[f.key]"
+                        [references]="references()"
+                      />
+                    }
+                  </td>
+                }
+                <td class="actions-col sticky-end" (click)="$event.stopPropagation()">
+                  <app-record-action-menu
+                    [collectionId]="collectionId()"
+                    [recordId]="r.id"
+                    [label]="labelOf(r)"
+                    (delete)="delete.emit(r)"
                   />
-                }
-              </td>
-
-              <td
-                mat-footer-cell
-                *matFooterCellDef
-                [style.width.px]="colWidth(f.id)"
-                [style.min-width.px]="colWidth(f.id) || 120"
-                [style.max-width.px]="colWidth(f.id)"
-              >
-                @if (metricOf(f.id); as m) {
-                  <span class="agg">
-                    <span class="agg-label">{{
-                      aggregationShortLabel(m.aggregation)
-                    }}</span>
-                    <span class="agg-value">{{ format(m) }}</span>
-                  </span>
-                }
-              </td>
-            </ng-container>
-          }
-
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions" stickyEnd>
-            <th
-              mat-header-cell
-              *matHeaderCellDef
-              class="actions-col"
-              scope="col"
-            >
-              <span class="sr-only">Actions</span>
-            </th>
-            <td
-              mat-cell
-              *matCellDef="let r"
-              class="actions-col"
-              (click)="$event.stopPropagation()"
-            >
-              <app-record-action-menu
-                [collectionId]="collectionId()"
-                [recordId]="r.id"
-                [label]="labelOf(r)"
-                (delete)="delete.emit(r)"
-              />
-            </td>
-            <td mat-footer-cell *matFooterCellDef class="actions-col"></td>
-          </ng-container>
-
-          <tr
-            mat-header-row
-            *matHeaderRowDef="displayedColumns(); sticky: true"
-          ></tr>
-          <tr
-            mat-row
-            *matRowDef="let r; columns: displayedColumns()"
-            class="record-row"
-            (click)="handleRowClick(r)"
-          ></tr>
+                </td>
+              </tr>
+            }
+          </tbody>
           @if (metrics().length) {
-            <tr
-              mat-footer-row
-              *matFooterRowDef="displayedColumns(); sticky: true"
-            ></tr>
+            <tfoot>
+              <tr>
+                @for (f of columns(); track f.id) {
+                  <td
+                    [style.width.px]="colWidth(f.id)"
+                    [style.min-width.px]="colWidth(f.id) || 120"
+                    class="footer-cell"
+                  >
+                    @if (metricOf(f.id); as m) {
+                      <span class="agg">
+                        <span class="agg-label">{{
+                          aggregationShortLabel(m.aggregation)
+                        }}</span>
+                        <span class="agg-value">{{ format(m) }}</span>
+                      </span>
+                    }
+                  </td>
+                }
+                <td class="actions-col footer-cell sticky-end"></td>
+              </tr>
+            </tfoot>
           }
         </table>
       </div>
@@ -171,8 +148,8 @@ import { LocalStorageService } from "../../core/local-storage.service";
       padding: 0;
       border-radius: 16px;
       overflow: hidden;
-      border: 1px solid var(--mat-sys-outline-variant);
-      background: var(--mat-sys-surface);
+      border: 1px solid var(--app-outline-variant);
+      background: var(--app-surface);
       transition: opacity 0.18s ease;
     }
     .table-container.loading-table {
@@ -189,7 +166,7 @@ import { LocalStorageService } from "../../core/local-storage.service";
       overflow: auto;
       -webkit-overflow-scrolling: touch;
     }
-    table.mat-mdc-table {
+    table {
       width: 100%;
       min-width: 680px;
       border-collapse: separate;
@@ -197,22 +174,20 @@ import { LocalStorageService } from "../../core/local-storage.service";
       background: transparent;
     }
 
-    .mat-mdc-header-cell,
-    .mat-mdc-cell,
-    .mat-mdc-footer-cell {
+    th, td {
       padding: 12px 16px;
       vertical-align: middle;
-      border-bottom: 1px solid var(--mat-sys-outline-variant);
+      border-bottom: 1px solid var(--app-outline-variant);
       font-size: 0.9375rem;
       box-sizing: border-box;
     }
 
-    .mat-mdc-header-cell {
+    th {
       position: relative;
       height: 46px;
       white-space: nowrap;
-      background: var(--mat-sys-surface-container);
-      color: var(--mat-sys-on-surface);
+      background: var(--app-surface-container);
+      color: var(--app-text);
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.04em;
@@ -245,7 +220,7 @@ import { LocalStorageService } from "../../core/local-storage.service";
       bottom: 25%;
       right: 2px;
       width: 2px;
-      background: var(--mat-sys-outline-variant);
+      background: var(--app-outline-variant);
       border-radius: 1px;
       transition:
         background-color 0.15s ease,
@@ -255,31 +230,42 @@ import { LocalStorageService } from "../../core/local-storage.service";
     }
     .resize-handle:hover::after,
     .resize-handle.active::after {
-      background: var(--mat-sys-primary);
+      background: var(--app-primary);
       width: 3px;
       top: 15%;
       bottom: 15%;
     }
 
-    .mat-mdc-cell.mat-mdc-table-sticky {
-      background: var(--mat-sys-surface);
+    .sticky-col {
+      position: sticky;
+      left: 0;
+      z-index: 2;
     }
-    .mat-mdc-header-cell.mat-mdc-table-sticky,
-    .mat-mdc-footer-cell.mat-mdc-table-sticky {
-      background: var(--mat-sys-surface-container);
+    td.sticky-col {
+      background: var(--app-surface);
+    }
+    th.sticky-col {
+      background: var(--app-surface-container);
+      z-index: 3;
+    }
+
+    .sticky-end {
+      position: sticky;
+      right: 0;
+      z-index: 2;
     }
 
     .record-row {
       cursor: pointer;
     }
-    .record-row:hover > .mat-mdc-cell {
+    .record-row:hover > td {
       background: color-mix(
         in srgb,
-        var(--mat-sys-primary) 7%,
-        var(--mat-sys-surface)
+        var(--app-primary) 7%,
+        var(--app-surface)
       );
     }
-    .record-row:last-child .mat-mdc-cell {
+    .record-row:last-child td {
       border-bottom: 0;
     }
 
@@ -299,25 +285,23 @@ import { LocalStorageService } from "../../core/local-storage.service";
       cursor: pointer;
     }
     .sort:hover {
-      background: var(--mat-sys-surface-container-high);
-      color: var(--mat-sys-primary);
+      background: var(--app-surface-container-high);
+      color: var(--app-primary);
     }
     .sort .arrow {
-      width: 18px;
-      height: 18px;
-      font-size: 18px;
       opacity: 0.55;
+      font-size: 16px;
     }
     .sort:hover .arrow,
     th[aria-sort] .arrow {
       opacity: 1;
     }
     th[aria-sort] .arrow {
-      color: var(--mat-sys-primary);
+      color: var(--app-primary);
     }
 
     .first {
-      color: var(--mat-sys-primary);
+      color: var(--app-primary);
       font-weight: 600;
       text-decoration: none;
       overflow-wrap: anywhere;
@@ -332,19 +316,19 @@ import { LocalStorageService } from "../../core/local-storage.service";
       max-width: 52px;
       padding: 6px 8px;
       text-align: right;
-      box-shadow: -1px 0 0 var(--mat-sys-outline-variant);
+      box-shadow: -1px 0 0 var(--app-outline-variant);
     }
-    .mat-mdc-cell.actions-col {
-      background: var(--mat-sys-surface);
+    td.actions-col {
+      background: var(--app-surface);
     }
-    .mat-mdc-header-cell.actions-col,
-    .mat-mdc-footer-cell.actions-col {
-      background: var(--mat-sys-surface-container);
+    th.actions-col,
+    .footer-cell.actions-col {
+      background: var(--app-surface-container);
     }
 
-    .mat-mdc-footer-cell {
-      background: var(--mat-sys-surface-container);
-      border-top: 2px solid var(--mat-sys-outline-variant);
+    .footer-cell {
+      background: var(--app-surface-container);
+      border-top: 2px solid var(--app-outline-variant);
       border-bottom: 0;
       font-weight: 600;
     }
@@ -354,11 +338,11 @@ import { LocalStorageService } from "../../core/local-storage.service";
       gap: 6px;
       padding: 4px 8px;
       border-radius: 6px;
-      background: var(--mat-sys-surface-container-high);
+      background: var(--app-surface-container-high);
       white-space: nowrap;
     }
     .agg-label {
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--app-text-muted);
       font-size: 0.7rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -384,7 +368,6 @@ import { LocalStorageService } from "../../core/local-storage.service";
 export class RecordTable {
   protected readonly catalog = inject(FieldTypeCatalog);
   private readonly storage = inject(LocalStorageService);
-  protected readonly table = viewChild(MatTable);
 
   readonly collectionId = input.required<string>();
   readonly columns = input<Field[]>([]);
@@ -407,18 +390,12 @@ export class RecordTable {
     () => `record_table_widths_${this.collectionId()}`,
   );
 
-  protected readonly displayedColumns = computed(() => [
-    ...this.columns().map((f) => f.id),
-    "actions",
-  ]);
-
   constructor() {
     effect(() => {
       const key = this.storageKey();
       const saved = this.storage.getItem<Record<string, number>>(key);
       if (saved && typeof saved === "object") {
         this.columnWidths.set(saved);
-        setTimeout(() => this.table()?.updateStickyColumnStyles(), 0);
       } else {
         this.columnWidths.set({});
       }
@@ -451,7 +428,6 @@ export class RecordTable {
         ...prev,
         [columnId]: newWidth,
       }));
-      this.table()?.updateStickyColumnStyles();
     };
 
     const onPointerUp = (e: PointerEvent) => {
@@ -460,8 +436,6 @@ export class RecordTable {
       handle.removeEventListener("pointerup", onPointerUp);
       handle.removeEventListener("pointercancel", onPointerUp);
       this.activeResizingCol.set(null);
-      this.table()?.updateStickyColumnStyles();
-
       this.storage.setItem(this.storageKey(), this.columnWidths());
     };
 
@@ -479,9 +453,9 @@ export class RecordTable {
     return this.sortAscending() ? "ascending" : "descending";
   }
 
-  protected sortIcon(f: Field): string {
-    if (this.sortFieldId() !== f.id) return "unfold_more";
-    return this.sortAscending() ? "arrow_upward" : "arrow_downward";
+  protected sortIconType(f: Field): string {
+    if (this.sortFieldId() !== f.id) return "swap";
+    return this.sortAscending() ? "arrow-up" : "arrow-down";
   }
 
   protected metricOf(fieldId: string): SummaryMetric | undefined {
@@ -492,8 +466,5 @@ export class RecordTable {
     const first = this.columns()[0];
     const v = first ? r.values[first.key] : null;
     return typeof v === "string" && v ? v : "this record";
-  }
-  handleRowClick(r: TrackerRecord) {
-    console.log(r);
   }
 }

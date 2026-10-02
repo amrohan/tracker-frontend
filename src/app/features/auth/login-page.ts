@@ -1,10 +1,10 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormField, email, form, required } from '@angular/forms/signals';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzInputModule } from 'ng-zorro-antd/input';
 import { AuthService } from '../../core/auth.service';
 import { safeReturnUrl } from '../../core/guards';
 import { problemMessage } from '../../core/http-errors';
@@ -14,36 +14,48 @@ type ErrorState = { touched(): boolean; errors(): readonly { kind: string }[] };
 
 @Component({
   selector: 'app-login-page',
-  imports: [FormField, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, RouterLink, AuthLayout],
+  imports: [FormField, NzFormModule, NzInputModule, NzButtonModule, NzIconModule, RouterLink, AuthLayout],
   template: `
     <app-auth-layout heading="Welcome back" subheading="Sign in to your trackers.">
-      <form (submit)="submit($event)" novalidate>
-        <mat-form-field appearance="outline" class="full">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" autocomplete="email" [formField]="f.email" />
-        </mat-form-field>
-        @if (emailError(); as msg) { <p class="field-error" role="alert">{{ msg }}</p> }
+      <form (submit)="submit($event)" novalidate class="auth-form">
+        <nz-form-item>
+          <nz-form-label>Email</nz-form-label>
+          <nz-form-control [nzErrorTip]="emailError() || ''">
+            <input nz-input type="email" autocomplete="email" [formField]="f.email" placeholder="you@example.com" />
+          </nz-form-control>
+        </nz-form-item>
 
-        <mat-form-field appearance="outline" class="full">
-          <mat-label>Password</mat-label>
-          <input matInput [type]="showPassword() ? 'text' : 'password'" autocomplete="current-password" [formField]="f.password" />
-          <button mat-icon-button matSuffix type="button" (click)="showPassword.set(!showPassword())"
-                  [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
-            <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
-          </button>
-        </mat-form-field>
-        @if (passwordError(); as msg) { <p class="field-error" role="alert">{{ msg }}</p> }
+        <nz-form-item>
+          <nz-form-label>Password</nz-form-label>
+          <nz-form-control [nzErrorTip]="passwordError() || ''">
+            <nz-input-password>
+              <input
+                nz-input
+                type="password"
+                autocomplete="current-password"
+                [formField]="f.password"
+                placeholder="Your password"
+              />
+            </nz-input-password>
+          </nz-form-control>
+        </nz-form-item>
 
-        @if (serverError(); as msg) { <p class="field-error" role="alert">{{ msg }}</p> }
+        @if (serverError(); as msg) {
+          <p class="field-error" role="alert">{{ msg }}</p>
+        }
 
-        <button mat-flat-button class="full submit" type="submit" [disabled]="busy()">
+        <button nz-button nzType="primary" nzBlock type="submit" [disabled]="busy()" class="submit-btn">
           {{ busy() ? 'Signing in…' : 'Sign in' }}
         </button>
       </form>
       <p class="muted alt">New here? <a routerLink="/register">Create an account</a></p>
     </app-auth-layout>
   `,
-  styles: `.submit { height: 48px; margin-top: 8px; } .alt { margin-top: 20px; text-align: center; }`,
+  styles: `
+    .auth-form { display: flex; flex-direction: column; gap: 4px; }
+    .submit-btn { height: 48px; margin-top: 8px; }
+    .alt { margin-top: 20px; text-align: center; }
+  `,
 })
 export class LoginPage {
   private readonly auth = inject(AuthService);
@@ -57,7 +69,6 @@ export class LoginPage {
     required(path.password);
   });
 
-  protected readonly showPassword = signal(false);
   protected readonly busy = signal(false);
   protected readonly attempted = signal(false);
   protected readonly serverError = signal<string | null>(null);

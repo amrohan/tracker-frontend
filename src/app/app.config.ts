@@ -1,25 +1,152 @@
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideNativeDateAdapter } from '@angular/material/core';
-import { provideRouter, withComponentInputBinding, withRouterConfig } from '@angular/router';
-import { routes } from './app.routes';
-import { authInterceptor } from './core/auth.interceptor';
-import { AuthService } from './core/auth.service';
-import { FieldTypeCatalog } from './core/field-types.service';
+import {
+  ApplicationConfig,
+  importProvidersFrom,
+  inject,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from "@angular/core";
+import {
+  provideRouter,
+  withComponentInputBinding,
+  withRouterConfig,
+} from "@angular/router";
+import { en_US, provideNzI18n } from "ng-zorro-antd/i18n";
+import { provideNzIcons } from "ng-zorro-antd/icon";
+import {
+  ArrowDownOutline,
+  ArrowLeftOutline,
+  ArrowRightOutline,
+  ArrowUpOutline,
+  BulbOutline,
+  CalendarOutline,
+  CheckCircleFill,
+  CheckCircleOutline,
+  CheckOutline,
+  ClockCircleOutline,
+  CloseOutline,
+  CloudOutline,
+  CloudUploadOutline,
+  ControlOutline,
+  DatabaseOutline,
+  DeleteOutline,
+  DisconnectOutline,
+  DownOutline,
+  DownloadOutline,
+  DragOutline,
+  EditOutline,
+  EyeInvisibleOutline,
+  EyeOutline,
+  FileTextOutline,
+  FilterOutline,
+  FolderOutline,
+  HistoryOutline,
+  HolderOutline,
+  InboxOutline,
+  InfoCircleOutline,
+  LeftOutline,
+  LineChartOutline,
+  LockOutline,
+  LogoutOutline,
+  MailOutline,
+  MenuOutline,
+  MoreOutline,
+  NumberOutline,
+  PlusOutline,
+  ReloadOutline,
+  RightOutline,
+  SearchOutline,
+  SettingOutline,
+  StarFill,
+  StarOutline,
+  SwapOutline,
+  TableOutline,
+  UpOutline,
+  UploadOutline,
+  UserOutline,
+  VerticalAlignBottomOutline,
+  VerticalAlignTopOutline,
+} from "@ant-design/icons-angular/icons";
+import { routes } from "./app.routes";
+import { authInterceptor } from "./core/auth.interceptor";
+import { AuthService } from "./core/auth.service";
+import { FieldTypeCatalog } from "./core/field-types.service";
+import { provideHttpClient, withInterceptors } from "@angular/common/http";
+import { NzModalModule } from "ng-zorro-antd/modal";
+import { provideNzNativeDateAdapter } from "ng-zorro-antd/core/time";
+
+const icons = [
+  ArrowDownOutline,
+  ArrowLeftOutline,
+  ArrowRightOutline,
+  ArrowUpOutline,
+  BulbOutline,
+  CalendarOutline,
+  CheckCircleFill,
+  CheckCircleOutline,
+  CheckOutline,
+  ClockCircleOutline,
+  CloseOutline,
+  CloudOutline,
+  CloudUploadOutline,
+  ControlOutline,
+  DatabaseOutline,
+  DeleteOutline,
+  DisconnectOutline,
+  DownOutline,
+  DownloadOutline,
+  DragOutline,
+  EditOutline,
+  EyeInvisibleOutline,
+  EyeOutline,
+  FileTextOutline,
+  FilterOutline,
+  FolderOutline,
+  HistoryOutline,
+  HolderOutline,
+  InboxOutline,
+  InfoCircleOutline,
+  LeftOutline,
+  LineChartOutline,
+  LockOutline,
+  LogoutOutline,
+  MailOutline,
+  MenuOutline,
+  MoreOutline,
+  NumberOutline,
+  PlusOutline,
+  ReloadOutline,
+  RightOutline,
+  SearchOutline,
+  SettingOutline,
+  StarFill,
+  StarOutline,
+  SwapOutline,
+  TableOutline,
+  UpOutline,
+  UploadOutline,
+  UserOutline,
+  VerticalAlignBottomOutline,
+  VerticalAlignTopOutline,
+];
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    importProvidersFrom(NzModalModule),
     provideBrowserGlobalErrorListeners(),
+    provideNzI18n(en_US),
+    provideNzIcons(icons),
+    provideNzNativeDateAdapter(),
     provideRouter(
       routes,
       withComponentInputBinding(), // route params arrive as signal inputs
-      withRouterConfig({ paramsInheritanceStrategy: 'always' }),
+      withRouterConfig({ paramsInheritanceStrategy: "always" }),
     ),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideNativeDateAdapter(),
     provideAppInitializer(async () => {
-      // Restore the session from the refresh cookie and load the field-type catalog before the first render.
-      await Promise.all([inject(AuthService).restoreSession(), inject(FieldTypeCatalog).load()]);
+      await Promise.all([
+        inject(AuthService).restoreSession(),
+        inject(FieldTypeCatalog).load(),
+      ]);
     }),
   ],
 };

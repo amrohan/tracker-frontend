@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { Component, inject } from "@angular/core";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NZ_MODAL_DATA, NzModalModule, NzModalRef } from "ng-zorro-antd/modal";
 
 export interface ConfirmData {
   title: string;
@@ -10,20 +10,57 @@ export interface ConfirmData {
 }
 
 @Component({
-  selector: 'app-confirm-dialog',
-  imports: [MatDialogModule, MatButtonModule],
+  selector: "app-confirm-dialog",
+  imports: [NzModalModule, NzButtonModule],
   template: `
-    <h2 mat-dialog-title>{{ data.title }}</h2>
-    <mat-dialog-content>{{ data.message }}</mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button [mat-dialog-close]="false">Cancel</button>
-      <button mat-flat-button [mat-dialog-close]="true" [class.danger]="data.destructive">
-        {{ data.confirmLabel ?? 'Confirm' }}
-      </button>
-    </mat-dialog-actions>
+    <div class="dialog-wrap">
+      <h3 class="modal-title">{{ data.title }}</h3>
+      <div class="modal-content">{{ data.message }}</div>
+      <div class="modal-actions">
+        <button nz-button nzType="default" (click)="cancel()">Cancel</button>
+        <button
+          nz-button
+          [nzType]="data.destructive ? 'primary' : 'primary'"
+          [nzDanger]="data.destructive"
+          (click)="confirm()"
+        >
+          {{ data.confirmLabel ?? "Confirm" }}
+        </button>
+      </div>
+    </div>
   `,
-  styles: `.danger { --mat-button-filled-container-color: var(--mat-sys-error); --mat-button-filled-label-text-color: var(--mat-sys-on-error); }`,
+  styles: `
+    .dialog-wrap {
+      padding: 12px 4px 4px;
+    }
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 0 0 12px;
+      color: var(--app-text);
+    }
+    .modal-content {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--app-text-secondary);
+      margin-bottom: 24px;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+  `,
 })
 export class ConfirmDialog {
-  protected readonly data = inject<ConfirmData>(MAT_DIALOG_DATA);
+  protected readonly data = inject<ConfirmData>(NZ_MODAL_DATA);
+  private readonly modalRef = inject(NzModalRef);
+
+  protected cancel(): void {
+    this.modalRef.close(false);
+  }
+
+  protected confirm(): void {
+    this.modalRef.close(true);
+  }
 }

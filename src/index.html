@@ -16,26 +16,27 @@
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
     />
+    <link id="ng-zorro-theme" rel="stylesheet" href="assets/themes/default.css" />
     <script>
-      // Apply the saved theme before first paint to avoid a light/dark flash.
+      // Apply the official ng-zorro theme and color scheme before first paint to avoid flashing.
       try {
-        var m = localStorage.getItem("pt-theme");
-        document.documentElement.style.colorScheme =
-          m === "light" || m === "dark" ? m : "light dark";
+        var t = localStorage.getItem("pt-nz-theme") || "default";
+        var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var effectiveTheme = t === "system" ? (prefersDark ? "dark" : "default") : t;
+        var themeLink = document.getElementById("ng-zorro-theme");
+        if (themeLink) {
+          themeLink.setAttribute("href", "assets/themes/" + effectiveTheme + ".css");
+        }
+        document.documentElement.setAttribute("data-theme", effectiveTheme);
+        document.documentElement.style.colorScheme = effectiveTheme === "dark" ? "dark" : "light";
+        var c = localStorage.getItem("pt-color-theme");
+        if (c) {
+          document.documentElement.setAttribute("data-color-theme", c);
+        }
       } catch (e) {}
     </script>
   </head>
   <body>
     <app-root></app-root>
-    <script>
-      // Apply the saved theme and color theme before first paint to avoid a flash.
-      try {
-        var m = localStorage.getItem("pt-theme");
-        document.documentElement.style.colorScheme =
-          m === "light" || m === "dark" ? m : "light dark";
-        var c = localStorage.getItem("pt-color-theme");
-        document.documentElement.setAttribute("data-color-theme", c || "ocean");
-      } catch (e) {}
-    </script>
   </body>
 </html>
