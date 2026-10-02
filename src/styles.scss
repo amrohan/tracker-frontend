@@ -1,7 +1,3 @@
-// ================================================================
-// NG-ZORRO / ANT DESIGN THEME SYSTEM
-// ================================================================
-
 :root {
   --ant-primary-color: #1890ff;
   --ant-primary-color-hover: #40a9ff;
@@ -11,8 +7,16 @@
   --app-primary: var(--ant-primary-color, #1890ff);
   --app-primary-hover: var(--ant-primary-color-hover, #40a9ff);
   --app-primary-active: var(--ant-primary-color-active, #096dd9);
-  --app-primary-container: rgba(24, 144, 255, 0.1);
-  --app-on-primary-container: #0050b3;
+  --app-primary-container: color-mix(
+    in srgb,
+    var(--app-primary) 16%,
+    var(--app-surface)
+  );
+  --app-on-primary-container: color-mix(
+    in srgb,
+    var(--app-primary) 60%,
+    var(--app-text)
+  );
   --app-on-primary: #ffffff;
 
   --app-surface: #ffffff;
@@ -78,9 +82,6 @@ html[data-theme="dark"] body {
   --app-text: rgba(255, 255, 255, 0.85);
   --app-text-muted: rgba(255, 255, 255, 0.45);
   --app-text-secondary: rgba(255, 255, 255, 0.65);
-
-  --app-primary-container: rgba(24, 144, 255, 0.2);
-  --app-on-primary-container: #69c0ff;
 
   --app-error: #ff4d4f;
   --app-error-container: #2a1215;
@@ -181,9 +182,13 @@ body {
   margin: 0;
   background: var(--app-surface);
   color: var(--app-text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Figtree", "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Figtree",
+    "Helvetica Neue", Arial, sans-serif;
   line-height: 1.5;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 // ================================================================
@@ -196,7 +201,12 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Bricolage Grotesque", "Figtree", -apple-system, system-ui, sans-serif;
+  font-family:
+    "Bricolage Grotesque",
+    "Figtree",
+    -apple-system,
+    system-ui,
+    sans-serif;
   margin: 0;
   color: var(--app-text);
 }
@@ -306,7 +316,9 @@ a {
   border: 1px solid var(--app-outline-variant);
   border-radius: 16px;
   padding: 20px;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .empty-state {
@@ -385,14 +397,12 @@ a {
   }
 }
 
-/* a record drawer is open: lock the page behind it */
+/* Drawer is open – lock the page scroll.
+   app-record-drawer lives in the regular Angular component tree (router outlet)
+   even though nz-drawer portals its panel into the CDK overlay. */
 body:has(app-record-drawer) {
   overflow: hidden;
 }
-
-// ================================================================
-// NG-ZORRO OVERRIDES & HARMONIZATION
-// ================================================================
 
 .ant-btn {
   border-radius: 8px;
@@ -406,14 +416,51 @@ body:has(app-record-drawer) {
 
   &:hover,
   &:focus {
-    background: var(--app-primary-hover);
-    border-color: var(--app-primary-hover);
+    background: color-mix(in srgb, var(--app-primary) 85%, white);
+    border-color: color-mix(in srgb, var(--app-primary) 85%, white);
+  }
+
+  &:active {
+    background: color-mix(in srgb, var(--app-primary) 85%, black);
+    border-color: color-mix(in srgb, var(--app-primary) 85%, black);
   }
 }
 
 .ant-input,
 .ant-select-selector {
   border-radius: 8px !important;
+
+  &:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--app-primary) 70%,
+      var(--app-outline)
+    ) !important;
+  }
+}
+
+.ant-input:focus,
+.ant-input-focused,
+.ant-select-focused .ant-select-selector {
+  border-color: var(--app-primary) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--app-primary) 20%, transparent) !important;
+}
+
+.ant-radio-button-wrapper-checked {
+  border-color: var(--app-primary) !important;
+  background: var(--app-primary) !important;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--app-primary) 85%, white) !important;
+    background: color-mix(in srgb, var(--app-primary) 85%, white) !important;
+  }
+}
+
+.ant-dropdown-menu-item:hover,
+.ant-menu-item:hover,
+.ant-menu-item-selected {
+  background: var(--app-primary-container) !important;
+  color: var(--app-on-primary-container) !important;
 }
 
 .ant-modal-content {

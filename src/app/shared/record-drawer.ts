@@ -1,4 +1,7 @@
-import { Component, input, output } from "@angular/core";
+import { Component, inject, input, output } from "@angular/core";
+import { BreakpointObserver } from "@angular/cdk/layout";
+import { toSignal } from "@angular/core/rxjs-interop";
+import { map } from "rxjs";
 import { NzDrawerModule } from "ng-zorro-antd/drawer";
 import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzIconModule } from "ng-zorro-antd/icon";
@@ -35,8 +38,9 @@ import { NzIconModule } from "ng-zorro-antd/icon";
 
     <nz-drawer
       [nzVisible]="true"
-      nzPlacement="right"
-      [nzWidth]="560"
+      [nzPlacement]="isMobile() ? 'bottom' : 'right'"
+      [nzWidth]="isMobile() ? '100%' : 560"
+      [nzHeight]="isMobile() ? '92dvh' : '100%'"
       [nzTitle]="titleTpl"
       [nzFooter]="footer() ? footerTpl : undefined"
       [nzClosable]="!busy()"
@@ -61,20 +65,16 @@ import { NzIconModule } from "ng-zorro-antd/icon";
       display: flex;
       align-items: center;
       gap: 6px;
-
       margin: 0;
-
       font-size: 0.8125rem;
       font-weight: 600;
       line-height: 1.2;
-
       color: var(--app-text-muted);
     }
 
     .drawer-eyebrow-icon {
       display: inline-flex;
       align-items: center;
-
       font-size: 0.9rem;
       line-height: 1;
     }
@@ -83,7 +83,6 @@ import { NzIconModule } from "ng-zorro-antd/icon";
       font-size: 1rem;
       font-weight: 600;
       line-height: 1.3;
-
       color: var(--app-text);
     }
   `,
@@ -97,6 +96,13 @@ export class RecordDrawer {
   readonly footer = input(false);
 
   readonly closed = output<void>();
+
+  protected readonly isMobile = toSignal(
+    inject(BreakpointObserver)
+      .observe("(max-width: 640px)")
+      .pipe(map((s) => s.matches)),
+    { initialValue: false },
+  );
 
   protected onClose(): void {
     if (!this.busy()) {

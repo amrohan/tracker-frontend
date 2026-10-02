@@ -20,24 +20,26 @@ import { Field } from "../../core/models";
   template: `
     <section class="toolbar" aria-label="Record controls">
       <div class="search-wrap search">
-        <input
-          nz-input
-          placeholder="Search records"
-          [value]="searchValue()"
-          (input)="search.emit(text($event))"
-          autocomplete="off"
-          class="search-input"
-        />
-        @if (searchValue()) {
-          <nz-icon
-            nzType="close-circle"
-            class="search-suffix clear-search"
-            (click)="search.emit('')"
-            aria-label="Clear search"
+        <nz-input-wrapper>
+          <input
+            nz-input
+            placeholder="Search records"
+            [value]="searchValue()"
+            (input)="search.emit(text($event))"
+            autocomplete="off"
+            class="search-input"
           />
-        } @else {
-          <nz-icon nzType="search" class="search-icon search-suffix" />
-        }
+          @if (searchValue()) {
+            <nz-icon
+              nzType="close-circle"
+              class="search-suffix clear-search"
+              (click)="search.emit('')"
+              aria-label="Clear search"
+            />
+          } @else {
+            <nz-icon nzType="search" class="search-icon search-suffix" />
+          }
+        </nz-input-wrapper>
       </div>
 
       <div class="tools">
@@ -159,6 +161,7 @@ import { Field } from "../../core/models";
     .search {
       flex: 0 1 380px;
       min-width: 200px;
+      align-items: center;
     }
     .search-icon {
       color: var(--app-text-muted);
