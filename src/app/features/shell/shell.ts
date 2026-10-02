@@ -29,76 +29,77 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
 
         <span class="spacer"></span>
 
-        <!-- Theme Menu -->
-        <button
-          nz-button
-          nzType="text"
-          nzShape="circle"
-          class="toolbar-button"
-          nz-dropdown
-          [nzDropdownMenu]="themeMenu"
-          aria-label="Change theme"
-        >
-          <nz-icon [nzType]="icon()" />
-        </button>
+        <div class="flex gap-3 items-center justify-end">
+          <!-- Theme Menu -->
+          <button
+            class="mt-2!"
+            nz-button
+            nzType="text"
+            nzShape="circle"
+            nz-dropdown
+            [nzDropdownMenu]="themeMenu"
+            aria-label="Change theme"
+          >
+            <nz-icon [nzType]="icon()" />
+          </button>
 
-        <nz-dropdown-menu #themeMenu="nzDropdownMenu">
-          <ul nz-menu class="theme-menu">
-            <li nz-menu-group nzTitle="Official Themes">
-              <ul>
-                @for (opt of themes; track opt.type) {
-                  <li
-                    nz-menu-item
-                    [nzSelected]="theme.nzTheme() === opt.type"
-                    (click)="theme.nzTheme.set(opt.type)"
-                  >
-                    <nz-icon [nzType]="opt.icon" />
-                    <span class="menu-label">{{ opt.label }}</span>
-                  </li>
-                }
-              </ul>
-            </li>
-          </ul>
-        </nz-dropdown-menu>
+          <nz-dropdown-menu #themeMenu="nzDropdownMenu">
+            <ul nz-menu>
+              <li nz-menu-group nzTitle="Official Themes">
+                <ul>
+                  @for (opt of themes; track opt.type) {
+                    <li
+                      nz-menu-item
+                      [nzSelected]="theme.nzTheme() === opt.type"
+                      (click)="theme.nzTheme.set(opt.type)"
+                    >
+                      <nz-icon [nzType]="opt.icon" />
+                      <span class="menu-label">{{ opt.label }}</span>
+                    </li>
+                  }
+                </ul>
+              </li>
+            </ul>
+          </nz-dropdown-menu>
 
-        <!-- User Menu -->
-        <button
-          nz-button
-          nzType="text"
-          nzShape="circle"
-          class="avatar-button"
-          nz-dropdown
-          [nzDropdownMenu]="userMenu"
-          aria-label="Account menu"
-        >
-          <nz-avatar nzSize="small" class="avatar" [nzText]="initials()" />
-        </button>
+          <!-- User Menu -->
+          <button
+            nz-button
+            nzType="text"
+            nzShape="circle"
+            nz-dropdown
+            [nzDropdownMenu]="userMenu"
+            aria-label="Account menu"
+          >
+            <nz-avatar class="avatar" [nzText]="initials()" />
+          </button>
 
-        <nz-dropdown-menu #userMenu="nzDropdownMenu">
-          <ul nz-menu class="user-menu-list">
-            <li nz-menu-item class="user-card-item" [nzDisabled]="true">
-              <div class="user-card">
-                <nz-avatar class="avatar-large" [nzText]="initials()" />
-                <div class="user-info">
-                  <strong>{{ auth.user()?.displayName || "User" }}</strong>
-                  <span class="user-email">{{ auth.user()?.email }}</span>
+          <nz-dropdown-menu #userMenu="nzDropdownMenu">
+            <ul nz-menu>
+              <li nz-menu-item class="user-card-item" [nzDisabled]="true">
+                <div class="user-card">
+                  <nz-avatar class="avatar-large" [nzText]="initials()" />
+                  <div class="user-info">
+                    <strong>{{ auth.user()?.displayName || "User" }}</strong>
+                    <span class="user-email">{{ auth.user()?.email }}</span>
+                  </div>
                 </div>
-              </div>
-            </li>
-            <li nz-menu-divider></li>
-            <li nz-menu-item>
-              <a routerLink="/settings">
-                <nz-icon nzType="setting" />
-                <span class="menu-label">Settings</span>
-              </a>
-            </li>
-            <li nz-menu-divider></li>
-            <li nz-menu-item nzDanger (click)="auth.logout()">
-              <nz-icon nzType="logout" />
-              <span class="menu-label">Sign out</span>
-            </li>
-          </ul>
-        </nz-dropdown-menu>
+              </li>
+              <li nz-menu-divider></li>
+              <li nz-menu-item>
+                <a routerLink="/settings">
+                  <nz-icon nzType="setting" />
+                  <span class="menu-label">Settings</span>
+                </a>
+              </li>
+              <li nz-menu-divider></li>
+              <li nz-menu-item nzDanger (click)="auth.logout()">
+                <nz-icon nzType="logout" />
+                <span class="menu-label">Sign out</span>
+              </li>
+            </ul>
+          </nz-dropdown-menu>
+        </div>
       </div>
     </header>
 

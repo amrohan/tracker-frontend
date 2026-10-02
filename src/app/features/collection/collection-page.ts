@@ -1,8 +1,13 @@
 import { BreakpointObserver } from "@angular/cdk/layout";
 import { Component, inject, input } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from "@angular/router";
-import { firstValueFrom, map } from "rxjs";
+import {
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from "@angular/router";
+import { map } from "rxjs";
 import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzDropdownModule } from "ng-zorro-antd/dropdown";
 import { NzIconModule } from "ng-zorro-antd/icon";
@@ -38,12 +43,10 @@ import { CoverView } from "../../shared/cover-view";
   template: `
     @if (ctx.detail.value(); as c) {
       <header>
-        <!-- ================= COVER ================= -->
         <div class="hero">
           <app-cover-view [cover]="c.cover" [collectionId]="c.id" />
         </div>
 
-        <!-- ================= HEADER ================= -->
         <div class="page head">
           <!-- Icon -->
           <div class="icon" aria-hidden="true">
@@ -62,7 +65,11 @@ import { CoverView } from "../../shared/cover-view";
 
             <div class="meta">
               <span class="meta-item">
-                <nz-icon nzType="database" class="meta-icon" aria-hidden="true" />
+                <nz-icon
+                  nzType="database"
+                  class="meta-icon"
+                  aria-hidden="true"
+                />
                 <span>
                   {{ c.recordCount }}
                   {{ c.recordCount === 1 ? "record" : "records" }}
@@ -83,7 +90,11 @@ import { CoverView } from "../../shared/cover-view";
                 <span class="dot" aria-hidden="true">·</span>
 
                 <span class="meta-item last">
-                  <nz-icon nzType="clock-circle" class="meta-icon" aria-hidden="true" />
+                  <nz-icon
+                    nzType="clock-circle"
+                    class="meta-icon"
+                    aria-hidden="true"
+                  />
                   <span>Updated {{ dateTime(c.lastActivityAt) }}</span>
                 </span>
               }
@@ -93,13 +104,12 @@ import { CoverView } from "../../shared/cover-view";
           <!-- Actions -->
           <div class="actions">
             <a
-              nz-button
-              nzType="primary"
-              class="add-desktop"
               [routerLink]="['/collections', c.id, 'records', 'new']"
               [attr.disabled]="c.fields.length === 0 ? '' : null"
             >
-              Add record
+              <button nz-button nzType="primary" class="add-desktop">
+                Add record
+              </button>
             </a>
 
             <button
@@ -117,23 +127,35 @@ import { CoverView } from "../../shared/cover-view";
             <nz-dropdown-menu #optionsMenu="nzDropdownMenu">
               <ul nz-menu>
                 <li nz-menu-item (click)="changeCover()">
-                  <nz-icon nzType="picture" />
-                  <span>Change cover</span>
+                  <div class="flex gap-2">
+                    <nz-icon nzType="picture" />
+                    <span>Change cover</span>
+                  </div>
                 </li>
                 <li nz-menu-item>
-                  <a [routerLink]="['/collections', c.id, 'edit']">
-                    <nz-icon nzType="setting" /><span>Edit fields &amp; details</span>
+                  <a
+                    class="flex gap-2"
+                    [routerLink]="['/collections', c.id, 'edit']"
+                  >
+                    <nz-icon nzType="setting" /><span
+                      >Edit fields &amp; details</span
+                    >
                   </a>
                 </li>
                 <li nz-menu-item>
-                  <a [routerLink]="['/collections', c.id, 'import']">
+                  <a
+                    class="flex gap-2"
+                    [routerLink]="['/collections', c.id, 'import']"
+                  >
                     <nz-icon nzType="upload" /><span>Import records</span>
                   </a>
                 </li>
                 <li nz-menu-divider></li>
                 <li nz-menu-item nzDanger (click)="removeColl()">
-                  <nz-icon nzType="delete" />
-                  <span>Delete tracker</span>
+                  <div class="flex gap-2">
+                    <nz-icon nzType="delete" />
+                    <span>Delete tracker</span>
+                  </div>
                 </li>
               </ul>
             </nz-dropdown-menu>
@@ -188,7 +210,11 @@ import { CoverView } from "../../shared/cover-view";
 
             <p>Fields define what you record — a name, a date, a rating…</p>
 
-            <a nz-button nzType="primary" [routerLink]="['/collections', c.id, 'edit']">
+            <a
+              nz-button
+              nzType="primary"
+              [routerLink]="['/collections', c.id, 'edit']"
+            >
               <nz-icon nzType="plus" />
               Add fields
             </a>
@@ -421,7 +447,9 @@ import { CoverView } from "../../shared/cover-view";
       text-decoration: none;
       border-bottom: 2px solid transparent;
       margin-bottom: -2px;
-      transition: color 0.15s ease, border-color 0.15s ease;
+      transition:
+        color 0.15s ease,
+        border-color 0.15s ease;
     }
 
     .tab-link.active {
@@ -599,16 +627,22 @@ export class CollectionPage {
     const c = this.ctx.detail.value();
     if (!c) return;
 
-    const selection = await new Promise<CoverSelection | undefined>((resolve) => {
-      const modalRef = this.modal.create<CoverPickerDialog, { cover: Cover; collectionId: string | null }, CoverSelection>({
-        nzContent: CoverPickerDialog,
-        nzData: { cover: c.cover, collectionId: c.id },
-        nzFooter: null,
-        nzWidth: 560,
-        nzStyle: { maxWidth: '95vw' },
-      });
-      modalRef.afterClose.subscribe((value) => resolve(value));
-    });
+    const selection = await new Promise<CoverSelection | undefined>(
+      (resolve) => {
+        const modalRef = this.modal.create<
+          CoverPickerDialog,
+          { cover: Cover; collectionId: string | null },
+          CoverSelection
+        >({
+          nzContent: CoverPickerDialog,
+          nzData: { cover: c.cover, collectionId: c.id },
+          nzFooter: null,
+          nzWidth: 560,
+          nzStyle: { maxWidth: "95vw" },
+        });
+        modalRef.afterClose.subscribe((value) => resolve(value));
+      },
+    );
 
     if (!selection) return;
 
