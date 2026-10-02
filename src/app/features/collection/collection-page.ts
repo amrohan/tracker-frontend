@@ -215,7 +215,6 @@ import { CoverView } from "../../shared/cover-view";
               nzType="primary"
               [routerLink]="['/collections', c.id, 'edit']"
             >
-              <nz-icon nzType="plus" />
               Add fields
             </a>
           </div>
@@ -226,16 +225,16 @@ import { CoverView } from "../../shared/cover-view";
 
       <!-- ================= MOBILE FAB ================= -->
       @if (c.fields.length > 0) {
-        <a
+        <button
           nz-button
           nzType="primary"
-          nzShape="round"
-          class="fab"
+          nzShape="circle"
+          nzSize="large"
+          class="fab grid! place-content-center!"
           [routerLink]="['/collections', c.id, 'records', 'new']"
         >
           <nz-icon nzType="plus" />
-          Add record
-        </a>
+        </button>
       }
     } @else if (ctx.detail.error()) {
       <!-- ================= ERROR ================= -->

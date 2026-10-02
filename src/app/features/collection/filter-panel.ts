@@ -1,7 +1,9 @@
 import { NgTemplateOutlet } from "@angular/common";
 import { Component, inject, input, model } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+
 import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzDatePickerModule } from "ng-zorro-antd/date-picker";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzInputModule } from "ng-zorro-antd/input";
 import { NzSelectModule } from "ng-zorro-antd/select";
@@ -12,10 +14,6 @@ import { Field, FilterOperator, ValueKind } from "../../core/models";
 import { ReferenceSelector } from "../../shared/reference-selector";
 import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
 
-/**
- * Filter builder generated from field metadata:
- * operators and value editors depend only on the field's kind.
- */
 @Component({
   selector: "app-filter-panel",
   imports: [
@@ -25,49 +23,194 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
     NzIconModule,
     NzInputModule,
     NzSelectModule,
+    NzDatePickerModule,
     ReferenceSelector,
   ],
   template: `
-    <section class="panel surface-card" aria-label="Filters">
+    <section
+      class="
+        my-3 mb-4
+        rounded-2xl
+        border border-[var(--app-outline-variant,#e0e2ec)]
+        bg-[var(--app-surface,#fff)]
+        p-3.5 sm:p-5
+        shadow-sm
+      "
+      aria-label="Filters"
+    >
       <!-- Header -->
-      <div class="panel-header">
-        <div class="panel-title">
-          <span class="panel-icon" aria-hidden="true">
+      <div
+        class="
+          flex items-start justify-between gap-3
+          border-b border-[var(--app-outline-variant,#e0e2ec)]
+          pb-3.5 sm:pb-4
+        "
+      >
+        <div class="flex min-w-0 items-center gap-2.5 sm:gap-3.5">
+          <!-- Icon -->
+          <span
+            class="
+              grid size-9 shrink-0 place-items-center
+              rounded-xl
+              bg-[var(--app-primary-container,#eaddff)]
+              text-[var(--app-on-primary-container,#21005d)]
+              text-lg sm:size-[42px] sm:text-xl
+            "
+            aria-hidden="true"
+          >
             <nz-icon nzType="control" />
           </span>
 
-          <div class="panel-headings">
-            <h3>Filters</h3>
-            <p class="muted">Narrow down the records you want to see.</p>
+          <!-- Title -->
+          <div class="min-w-0">
+            <h3
+              class="
+                m-0
+                text-[0.95rem] font-bold leading-tight
+                text-[var(--app-text,#1d1b20)]
+                sm:text-[1.05rem]
+              "
+            >
+              Filters
+            </h3>
+
+            <p
+              class="
+                mt-1 hidden
+                text-xs leading-snug
+                text-[var(--app-text-muted,#49454f)]
+                sm:block sm:text-[0.8125rem]
+              "
+            >
+              Narrow down the records you want to see.
+            </p>
           </div>
         </div>
 
+        <!-- Filter count -->
         @if (filters().length) {
-          <span class="filter-count">
+          <span
+            class="
+              inline-flex min-h-7 shrink-0 items-center
+              rounded-full
+              bg-[var(--app-surface-container-high,#e8def8)]
+              px-2.5 sm:px-3
+              text-[0.6875rem] sm:text-xs
+              font-bold tracking-wide
+              text-[var(--app-text,#1d192b)]
+            "
+          >
             {{ filters().length }}
             {{ filters().length === 1 ? "filter" : "filters" }}
           </span>
         }
       </div>
 
-      <!-- Filter List or Empty State -->
+      <!-- Filter List -->
       @if (filters().length) {
-        <div class="filters">
+        <div class="flex flex-col gap-2.5 py-4 pb-1.5">
           @for (row of filters(); track row.id; let i = $index) {
-            <div class="filter-row">
-              <!-- Logic condition badge -->
-              <div class="filter-number" aria-hidden="true">
-                <span class="clause-tag">{{ i === 0 ? "Where" : "And" }}</span>
-                <span class="index-tag">#{{ i + 1 }}</span>
+            <div
+              class="
+                group
+                grid min-w-0
+                grid-cols-[1fr_auto]
+                gap-2.5
+                rounded-xl
+                border border-[var(--app-outline-variant,#e0e2ec)]
+                bg-[var(--app-surface,#fff)]
+                p-3
+                transition-all duration-150
+
+                hover:border-[color-mix(in_srgb,var(--app-primary,#6750a4)_40%,var(--app-outline-variant,#e0e2ec))]
+                hover:bg-[var(--app-surface-container-lowest,#fdfbff)]
+
+                focus-within:border-[var(--app-primary,#6750a4)]
+                focus-within:shadow-[0_0_0_1px_var(--app-primary,#6750a4),0_2px_8px_rgba(0,0,0,0.05)]
+
+                sm:flex sm:flex-wrap sm:items-center
+                sm:gap-2.5
+                sm:p-2.5 sm:px-3.5
+              "
+            >
+              <!-- Logic condition -->
+              <div
+                class="
+                  flex h-7 w-fit
+                  items-center gap-1.5
+                  rounded-lg
+                  bg-[var(--app-surface-container-high,#ece6f0)]
+                  px-2.5
+                  select-none
+                  sm:h-8
+                "
+                aria-hidden="true"
+              >
+                <span
+                  class="
+                    text-[0.625rem] font-bold uppercase tracking-wider
+                    text-[var(--app-primary,#6750a4)]
+                    sm:text-[0.6875rem]
+                  "
+                >
+                  {{ i === 0 ? "Where" : "And" }}
+                </span>
+
+                <span
+                  class="
+                    inline-flex size-[18px]
+                    items-center justify-center
+                    rounded-full
+                    text-[0.625rem] font-semibold
+                    opacity-75
+                  "
+                >
+                  #{{ i + 1 }}
+                </span>
               </div>
 
-              <!-- Field Selector -->
-              <div class="c-field">
+              <!-- Remove -->
+              <button
+                nz-button
+                nzType="text"
+                nzShape="circle"
+                type="button"
+                class="
+                  !m-0
+                  !flex !size-8
+                  shrink-0
+                  items-center justify-center
+                  self-start
+                  text-[var(--app-text-muted,#49454f)]
+                  hover:!bg-[var(--app-error-container,#ffdad6)]
+                  hover:!text-[var(--app-error,#ba1a1a)]
+                  sm:order-last
+                  sm:ml-auto
+                "
+                (click)="remove(i)"
+                [attr.aria-label]="'Remove filter ' + (i + 1)"
+                [title]="'Remove filter ' + (i + 1)"
+              >
+                <nz-icon nzType="close" />
+              </button>
+
+              <!-- Field -->
+              <div
+                class="
+                  col-span-2
+                  min-w-0 w-full
+
+                  sm:order-none
+                  sm:flex-[1_1_200px]
+                  sm:min-w-[180px]
+                  sm:w-auto
+                "
+              >
                 <nz-select
                   [ngModel]="row.fieldId"
                   (ngModelChange)="setField(i, $event)"
                   nzPlaceHolder="Field"
-                  class="full-width"
+                  class="w-full"
                 >
                   @for (f of fields(); track f.id) {
                     <nz-option [nzValue]="f.id" [nzLabel]="f.name" />
@@ -75,13 +218,23 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                 </nz-select>
               </div>
 
-              <!-- Condition / Operator Selector -->
-              <div class="c-op">
+              <!-- Operator -->
+              <div
+                class="
+                  col-span-2
+                  min-w-0 w-full
+
+                  sm:order-none
+                  sm:flex-[0.9_1_180px]
+                  sm:min-w-[160px]
+                  sm:w-auto
+                "
+              >
                 <nz-select
                   [ngModel]="row.op"
                   (ngModelChange)="patch(i, { op: $event })"
                   nzPlaceHolder="Condition"
-                  class="full-width"
+                  class="w-full"
                 >
                   @for (op of operators(row); track op) {
                     <nz-option [nzValue]="op" [nzLabel]="opLabel(op)" />
@@ -89,26 +242,47 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                 </nz-select>
               </div>
 
-              <!-- Dynamic Value Input based on Field Kind -->
+              <!-- Dynamic Value -->
               @if (row.op && !noOperand(row.op)) {
                 @switch (kind(row)) {
+                  <!-- Number -->
                   @case ("number") {
-                    <div class="c-val">
+                    <div
+                      class="
+                        col-span-2
+                        min-w-0 w-full
+
+                        sm:flex-[1.1_1_200px]
+                        sm:min-w-[170px]
+                        sm:w-auto
+                      "
+                    >
                       <input
                         nz-input
                         type="number"
                         placeholder="Value"
+                        class="!w-full"
                         [value]="row.value ?? ''"
                         (input)="patch(i, { value: text($event) })"
                       />
                     </div>
 
                     @if (row.op === "between") {
-                      <div class="c-val">
+                      <div
+                        class="
+                          col-span-2
+                          min-w-0 w-full
+
+                          sm:flex-[1.1_1_200px]
+                          sm:min-w-[170px]
+                          sm:w-auto
+                        "
+                      >
                         <input
                           nz-input
                           type="number"
                           placeholder="And"
+                          class="!w-full"
                           [value]="row.value2 ?? ''"
                           (input)="patch(i, { value2: text($event) })"
                         />
@@ -116,6 +290,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                     }
                   }
 
+                  <!-- Date -->
                   @case ("date") {
                     <ng-container
                       [ngTemplateOutlet]="dates"
@@ -123,6 +298,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                     />
                   }
 
+                  <!-- DateTime -->
                   @case ("dateTime") {
                     <ng-container
                       [ngTemplateOutlet]="dates"
@@ -130,13 +306,23 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                     />
                   }
 
+                  <!-- Boolean -->
                   @case ("boolean") {
-                    <div class="c-val">
+                    <div
+                      class="
+                        col-span-2
+                        min-w-0 w-full
+
+                        sm:flex-[1.1_1_200px]
+                        sm:min-w-[170px]
+                        sm:w-auto
+                      "
+                    >
                       <nz-select
                         [ngModel]="row.value"
                         (ngModelChange)="patch(i, { value: $event })"
                         nzPlaceHolder="Value"
-                        class="full-width"
+                        class="w-full"
                       >
                         <nz-option nzValue="true" nzLabel="Yes" />
                         <nz-option nzValue="false" nzLabel="No" />
@@ -144,6 +330,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                     </div>
                   }
 
+                  <!-- Choice -->
                   @case ("choice") {
                     <ng-container
                       [ngTemplateOutlet]="choice"
@@ -151,6 +338,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                     />
                   }
 
+                  <!-- Multi choice -->
                   @case ("multiChoice") {
                     <ng-container
                       [ngTemplateOutlet]="choice"
@@ -158,11 +346,22 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                     />
                   }
 
+                  <!-- Default -->
                   @default {
-                    <div class="c-val">
+                    <div
+                      class="
+                        col-span-2
+                        min-w-0 w-full
+
+                        sm:flex-[1.1_1_200px]
+                        sm:min-w-[170px]
+                        sm:w-auto
+                      "
+                    >
                       <input
                         nz-input
                         placeholder="Value"
+                        class="!w-full"
                         [value]="row.value ?? ''"
                         (input)="patch(i, { value: text($event) })"
                       />
@@ -170,57 +369,116 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                   }
                 }
               }
-
-              <!-- Remove Action -->
-              <button
-                nz-button
-                nzType="text"
-                nzShape="circle"
-                type="button"
-                class="remove-button"
-                (click)="remove(i)"
-                [attr.aria-label]="'Remove filter ' + (i + 1)"
-                [title]="'Remove filter ' + (i + 1)"
-              >
-                <nz-icon nzType="close" />
-              </button>
             </div>
           }
         </div>
       } @else {
-        <div class="empty-filters">
-          <span class="empty-icon" aria-hidden="true">
+        <!-- Empty state -->
+        <div
+          class="
+            my-4 mb-1
+            flex flex-col items-center
+            gap-3
+            rounded-xl
+            border-[1.5px] border-dashed
+            border-[var(--app-outline-variant,#cac4d0)]
+            bg-[var(--app-surface,#fff)]
+            p-4
+            text-center
+
+            sm:flex-row sm:items-center
+            sm:gap-3.5
+            sm:p-[18px]
+            sm:text-left
+          "
+        >
+          <span
+            class="
+              grid size-11 shrink-0
+              place-items-center
+              rounded-xl
+              bg-[var(--app-surface-container,#f3edf7)]
+              text-[22px]
+              text-[var(--app-text-muted,#49454f)]
+            "
+            aria-hidden="true"
+          >
             <nz-icon nzType="filter" />
           </span>
 
-          <div class="empty-text">
-            <strong>No filters applied</strong>
-            <span class="muted">
+          <div class="grid min-w-0 gap-0.5">
+            <strong
+              class="
+                text-[0.875rem] font-semibold
+                text-[var(--app-text,#1d1b20)]
+                sm:text-[0.925rem]
+              "
+            >
+              No filters applied
+            </strong>
+
+            <span
+              class="
+                text-xs
+                text-[var(--app-text-muted,#49454f)]
+                sm:text-[0.8125rem]
+              "
+            >
               Add a filter to narrow down your records.
             </span>
           </div>
         </div>
       }
 
-      <!-- Footer Actions -->
-      <div class="panel-footer">
+      <!-- Footer -->
+      <div
+        class="
+          flex flex-col gap-2.5
+          border-t border-[var(--app-outline-variant,#e0e2ec)]
+          pt-3.5
+
+          sm:flex-row sm:items-center
+          sm:pt-4
+        "
+      >
+        <!-- Add -->
         <button
           nz-button
           nzType="primary"
           type="button"
-          class="add-button"
+          class="
+            !m-0
+            !inline-flex
+            !h-10
+            w-full
+            items-center justify-center
+            gap-1.5
+            rounded-[10px]
+            sm:w-auto
+          "
           (click)="add()"
         >
           <nz-icon nzType="plus" />
           Add filter
         </button>
 
+        <!-- Clear -->
         @if (filters().length) {
           <button
             nz-button
             nzType="default"
             type="button"
-            class="clear-button"
+            class="
+              !m-0
+              !inline-flex
+              !h-10
+              w-full
+              items-center justify-center
+              gap-1.5
+              rounded-[10px]
+              text-[var(--app-text-muted,#49454f)]
+              sm:w-auto
+            "
             (click)="filters.set([])"
           >
             <nz-icon nzType="clear" />
@@ -230,31 +488,46 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       </div>
     </section>
 
-    <!-- Template: Date / DateTime inputs -->
+    <!-- Date / DateTime -->
     <ng-template #dates let-row="row" let-i="i">
-      <div class="c-val">
-        <input
-          nz-input
-          type="date"
-          [value]="row.value ?? ''"
-          (input)="patch(i, { value: text($event) })"
+      <div
+        class="
+          col-span-2
+          min-w-0 w-full
+
+          sm:flex-[1.1_1_200px]
+          sm:min-w-[170px]
+          sm:w-auto
+        "
+      >
+        <nz-date-picker
+          class="!w-full"
+          [ngModel]="row.value"
+          (ngModelChange)="patch(i, { value: dateValue($event) })"
         />
       </div>
 
       @if (row.op === "between") {
-        <div class="c-val">
-          <input
-            nz-input
-            type="date"
-            placeholder="And"
-            [value]="row.value2 ?? ''"
-            (input)="patch(i, { value2: text($event) })"
+        <div
+          class="
+            col-span-2
+            min-w-0 w-full
+
+            sm:flex-[1.1_1_200px]
+            sm:min-w-[170px]
+            sm:w-auto
+          "
+        >
+          <nz-date-picker
+            class="!w-full"
+            [ngModel]="row.value2"
+            (ngModelChange)="patch(i, { value2: dateValue($event) })"
           />
         </div>
       }
     </ng-template>
 
-    <!-- Template: Choice / MultiChoice / Reference inputs -->
+    <!-- Choice / MultiChoice / Reference -->
     <ng-template #choice let-row="row" let-i="i">
       @let f = fieldOf(row);
 
@@ -263,8 +536,18 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
         (f.type === "reference" || f.type === "multiReference") &&
         f.config.targetCollectionId
       ) {
-        <div class="c-val ref">
+        <div
+          class="
+            col-span-2
+            min-w-0 w-full
+
+            sm:flex-[1.4_1_240px]
+            sm:min-w-[200px]
+            sm:w-auto
+          "
+        >
           <app-reference-selector
+            class="block w-full"
             [collectionId]="f.config.targetCollectionId"
             label="Record"
             [value]="$any(row.value ?? null)"
@@ -272,12 +555,21 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
           />
         </div>
       } @else if (f) {
-        <div class="c-val">
+        <div
+          class="
+            col-span-2
+            min-w-0 w-full
+
+            sm:flex-[1.1_1_200px]
+            sm:min-w-[170px]
+            sm:w-auto
+          "
+        >
           <nz-select
             [ngModel]="row.value"
             (ngModelChange)="patch(i, { value: $event })"
             nzPlaceHolder="Option"
-            class="full-width"
+            class="w-full"
           >
             @for (o of f.config.options ?? []; track o) {
               <nz-option [nzValue]="o" [nzLabel]="o" />
@@ -286,364 +578,6 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
         </div>
       }
     </ng-template>
-  `,
-  styles: `
-    :host {
-      display: block;
-    }
-
-    .panel {
-      margin: 12px 0 16px;
-      padding: 20px;
-      border-radius: 16px;
-      border: 1px solid var(--app-outline-variant, #e0e2ec);
-      background: var(--app-surface, #ffffff);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    }
-
-    .panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--app-outline-variant, #e0e2ec);
-    }
-
-    .panel-title {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      min-width: 0;
-    }
-
-    .panel-icon {
-      width: 42px;
-      height: 42px;
-      flex: 0 0 42px;
-      display: grid;
-      place-items: center;
-      border-radius: 12px;
-      background: var(--app-primary-container, #eaddff);
-      color: var(--app-on-primary-container, #21005d);
-      font-size: 20px;
-    }
-
-    .panel-headings h3 {
-      font-size: 1.05rem;
-      line-height: 1.25;
-      font-weight: 700;
-      margin: 0;
-      color: var(--app-text, #1d1b20);
-    }
-
-    .panel-headings p.muted {
-      margin: 3px 0 0;
-      font-size: 0.8125rem;
-      line-height: 1.35;
-      color: var(--app-text-muted, #49454f);
-    }
-
-    .filter-count {
-      flex: 0 0 auto;
-      display: inline-flex;
-      align-items: center;
-      min-height: 28px;
-      padding: 0 12px;
-      border-radius: 999px;
-      background: var(--app-surface-container-high, #e8def8);
-      color: var(--app-text, #1d192b);
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-    }
-
-    .filters {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 16px 0 6px;
-    }
-
-    .filter-row {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      min-width: 0;
-      padding: 10px 14px;
-      border: 1px solid var(--app-outline-variant, #e0e2ec);
-      border-radius: 14px;
-      background: var(--app-surface, #ffffff);
-      transition:
-        border-color 160ms cubic-bezier(0.4, 0, 0.2, 1),
-        background-color 160ms cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 160ms cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .filter-row:hover {
-      border-color: color-mix(
-        in srgb,
-        var(--app-primary, #6750a4) 40%,
-        var(--app-outline-variant, #e0e2ec)
-      );
-      background: var(--app-surface-container-lowest, #fdfbff);
-    }
-
-    .filter-row:focus-within {
-      border-color: var(--app-primary, #6750a4);
-      box-shadow:
-        0 0 0 1px var(--app-primary, #6750a4),
-        0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .filter-number {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      height: 32px;
-      padding: 0 10px;
-      border-radius: 8px;
-      background: var(--app-surface-container-high, #ece6f0);
-      color: var(--app-text-muted, #49454f);
-      font-size: 0.75rem;
-      font-weight: 600;
-      white-space: nowrap;
-      user-select: none;
-      flex: 0 0 auto;
-    }
-
-    .clause-tag {
-      color: var(--app-primary, #6750a4);
-      font-weight: 700;
-      text-transform: uppercase;
-      font-size: 0.6875rem;
-      letter-spacing: 0.04em;
-    }
-
-    .index-tag {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 18px;
-      height: 18px;
-      border-radius: 999px;
-      font-size: 0.6875rem;
-      font-weight: 600;
-      opacity: 0.75;
-    }
-
-    .full-width {
-      width: 100%;
-    }
-
-    .c-field {
-      flex: 1 1 200px;
-      min-width: 180px;
-    }
-
-    .c-op {
-      flex: 0.9 1 180px;
-      min-width: 160px;
-    }
-
-    .c-val {
-      flex: 1.1 1 200px;
-      min-width: 170px;
-    }
-
-    .ref {
-      flex: 1.4 1 240px;
-      min-width: 200px;
-    }
-
-    .ref app-reference-selector {
-      display: block;
-      width: 100%;
-    }
-
-    .remove-button {
-      flex: 0 0 36px;
-      color: var(--app-text-muted, #49454f);
-    }
-
-    .remove-button:hover {
-      color: var(--app-error, #ba1a1a);
-      background: var(--app-error-container, #ffdad6);
-    }
-
-    .empty-filters {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin: 16px 0 6px;
-      padding: 18px;
-      border: 1.5px dashed var(--app-outline-variant, #cac4d0);
-      border-radius: 14px;
-      background: var(--app-surface, #ffffff);
-    }
-
-    .empty-icon {
-      width: 44px;
-      height: 44px;
-      flex: 0 0 44px;
-      display: grid;
-      place-items: center;
-      border-radius: 12px;
-      background: var(--app-surface-container, #f3edf7);
-      color: var(--app-text-muted, #49454f);
-      font-size: 22px;
-    }
-
-    .empty-text {
-      display: grid;
-      gap: 3px;
-    }
-
-    .empty-text strong {
-      font-size: 0.925rem;
-      font-weight: 600;
-      color: var(--app-text, #1d1b20);
-    }
-
-    .empty-text .muted {
-      font-size: 0.8125rem;
-      color: var(--app-text-muted, #49454f);
-    }
-
-    .panel-footer {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding-top: 16px;
-    }
-
-    .panel-footer button {
-      min-height: 40px;
-      border-radius: 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .clear-button {
-      color: var(--app-text-muted, #49454f);
-    }
-
-    /* Tablet and Medium screens */
-    @media (max-width: 900px) and (min-width: 681px) {
-      .filter-row {
-        gap: 8px;
-        padding: 10px 12px;
-      }
-
-      .c-field,
-      .c-op {
-        flex: 1 1 40%;
-      }
-
-      .c-val,
-      .ref {
-        flex: 1 1 calc(100% - 60px);
-      }
-    }
-
-    /* Mobile screens */
-    @media (max-width: 680px) {
-      .panel {
-        margin: 8px 0 14px;
-        padding: 14px;
-        border-radius: 14px;
-      }
-
-      .panel-header {
-        align-items: flex-start;
-        padding-bottom: 12px;
-      }
-
-      .panel-icon {
-        width: 38px;
-        height: 38px;
-        flex: 0 0 38px;
-        border-radius: 10px;
-        font-size: 18px;
-      }
-
-      .panel-headings p.muted {
-        display: none;
-      }
-
-      .filter-row {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 10px;
-        padding: 12px;
-      }
-
-      .filter-number {
-        grid-column: 1;
-        grid-row: 1;
-        justify-self: start;
-        height: 28px;
-      }
-
-      .remove-button {
-        grid-column: 2;
-        grid-row: 1;
-        justify-self: end;
-      }
-
-      .c-field,
-      .c-op,
-      .c-val,
-      .ref {
-        grid-column: 1 / -1;
-        width: 100%;
-        min-width: 0;
-      }
-
-      .panel-footer {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .panel-footer button {
-        width: 100%;
-        justify-content: center;
-      }
-    }
-
-    /* Extra compact mobile screens */
-    @media (max-width: 380px) {
-      .panel {
-        padding: 12px;
-      }
-
-      .panel-title {
-        gap: 10px;
-      }
-
-      .panel-headings h3 {
-        font-size: 0.95rem;
-      }
-
-      .filter-count {
-        padding: 0 8px;
-      }
-
-      .empty-filters {
-        flex-direction: column;
-        text-align: center;
-        padding: 14px;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .filter-row,
-      .remove-button {
-        transition: none;
-      }
-    }
   `,
 })
 export class FilterPanel {
@@ -680,6 +614,7 @@ export class FilterPanel {
 
   protected add(): void {
     const first = this.fields()[0];
+
     const op = first ? (this.catalog.operators(first.type)[0] ?? null) : null;
 
     this.filters.update((l) => [...l, newFilter(first?.id ?? null, op)]);
@@ -704,5 +639,16 @@ export class FilterPanel {
       value: null,
       value2: null,
     });
+  }
+
+  protected dateValue(value: Date | null): string | null {
+    if (!value) return null;
+
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, "0");
+
+    const day = String(value.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
   }
 }
