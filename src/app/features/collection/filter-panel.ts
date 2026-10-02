@@ -28,11 +28,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
   ],
   template: `
     <section
-      class="
-        my-3 mb-4
-        rounded-2xl
-        border border-[var(--app-outline-variant,#e0e2ec)]
-        bg-[var(--app-surface,#fff)]
+      class=" my-3 mb-4 rounded-2xl border border-(--app-outline-variant,#e0e2ec) bg-(--app-surface,#fff)
         p-3.5 sm:p-5
         shadow-sm
       "
@@ -42,7 +38,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       <div
         class="
           flex items-start justify-between gap-3
-          border-b border-[var(--app-outline-variant,#e0e2ec)]
+          border-b border-(--app-outline-variant,#e0e2ec)
           pb-3.5 sm:pb-4
         "
       >
@@ -52,9 +48,9 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
             class="
               grid size-9 shrink-0 place-items-center
               rounded-xl
-              bg-[var(--app-primary-container,#eaddff)]
-              text-[var(--app-on-primary-container,#21005d)]
-              text-lg sm:size-[42px] sm:text-xl
+              bg-(--app-primary-container,#eaddff)
+              text-(--app-on-primary-container,#21005d)
+              text-lg sm:size-10.5 sm:text-xl
             "
             aria-hidden="true"
           >
@@ -67,7 +63,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
               class="
                 m-0
                 text-[0.95rem] font-bold leading-tight
-                text-[var(--app-text,#1d1b20)]
+                text-(--app-text,#1d1b20)
                 sm:text-[1.05rem]
               "
             >
@@ -78,7 +74,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
               class="
                 mt-1 hidden
                 text-xs leading-snug
-                text-[var(--app-text-muted,#49454f)]
+                text-(--app-text-muted,#49454f)
                 sm:block sm:text-[0.8125rem]
               "
             >
@@ -93,11 +89,11 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
             class="
               inline-flex min-h-7 shrink-0 items-center
               rounded-full
-              bg-[var(--app-surface-container-high,#e8def8)]
+              bg-(--app-surface-container-high,#e8def8)
               px-2.5 sm:px-3
               text-[0.6875rem] sm:text-xs
               font-bold tracking-wide
-              text-[var(--app-text,#1d192b)]
+              text-(--app-text,#1d192b)
             "
           >
             {{ filters().length }}
@@ -117,15 +113,15 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                 grid-cols-[1fr_auto]
                 gap-2.5
                 rounded-xl
-                border border-[var(--app-outline-variant,#e0e2ec)]
-                bg-[var(--app-surface,#fff)]
+                border border-(--app-outline-variant,#e0e2ec)
+                bg-(--app-surface,#fff)
                 p-3
                 transition-all duration-150
 
                 hover:border-[color-mix(in_srgb,var(--app-primary,#6750a4)_40%,var(--app-outline-variant,#e0e2ec))]
-                hover:bg-[var(--app-surface-container-lowest,#fdfbff)]
+                hover:bg-(--app-surface-container-lowest,#fdfbff)
 
-                focus-within:border-[var(--app-primary,#6750a4)]
+                focus-within:border-(--app-primary,#6750a4)
                 focus-within:shadow-[0_0_0_1px_var(--app-primary,#6750a4),0_2px_8px_rgba(0,0,0,0.05)]
 
                 sm:flex sm:flex-wrap sm:items-center
@@ -139,7 +135,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                   flex h-7 w-fit
                   items-center gap-1.5
                   rounded-lg
-                  bg-[var(--app-surface-container-high,#ece6f0)]
+                  bg-(--app-surface-container-high,#ece6f0)
                   px-2.5
                   select-none
                   sm:h-8
@@ -149,7 +145,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                 <span
                   class="
                     text-[0.625rem] font-bold uppercase tracking-wider
-                    text-[var(--app-primary,#6750a4)]
+                    text-(--app-primary,#6750a4)
                     sm:text-[0.6875rem]
                   "
                 >
@@ -158,7 +154,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
 
                 <span
                   class="
-                    inline-flex size-[18px]
+                    inline-flex size-4.5
                     items-center justify-center
                     rounded-full
                     text-[0.625rem] font-semibold
@@ -176,14 +172,14 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                 nzShape="circle"
                 type="button"
                 class="
-                  !m-0
-                  !flex !size-8
+                  m-0!
+                  flex! size-8!
                   shrink-0
                   items-center justify-center
                   self-start
-                  text-[var(--app-text-muted,#49454f)]
-                  hover:!bg-[var(--app-error-container,#ffdad6)]
-                  hover:!text-[var(--app-error,#ba1a1a)]
+                  text-(--app-text-muted,#49454f)
+                  hover:bg-(--app-error-container,#ffdad6)!
+                  hover:text-(--app-error,#ba1a1a)!
                   sm:order-last
                   sm:ml-auto
                 "
@@ -199,10 +195,9 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                 class="
                   col-span-2
                   min-w-0 w-full
-
-                  sm:order-none
+                  sm:order-0
                   sm:flex-[1_1_200px]
-                  sm:min-w-[180px]
+                  sm:min-w-45
                   sm:w-auto
                 "
               >
@@ -223,10 +218,9 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                 class="
                   col-span-2
                   min-w-0 w-full
-
-                  sm:order-none
+                  sm:order-0
                   sm:flex-[0.9_1_180px]
-                  sm:min-w-[160px]
+                  sm:min-w-40
                   sm:w-auto
                 "
               >
@@ -253,7 +247,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                         min-w-0 w-full
 
                         sm:flex-[1.1_1_200px]
-                        sm:min-w-[170px]
+                        sm:min-w-42.5
                         sm:w-auto
                       "
                     >
@@ -261,7 +255,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                         nz-input
                         type="number"
                         placeholder="Value"
-                        class="!w-full"
+                        class="w-full!"
                         [value]="row.value ?? ''"
                         (input)="patch(i, { value: text($event) })"
                       />
@@ -274,7 +268,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                           min-w-0 w-full
 
                           sm:flex-[1.1_1_200px]
-                          sm:min-w-[170px]
+                          sm:min-w-42.5
                           sm:w-auto
                         "
                       >
@@ -282,7 +276,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                           nz-input
                           type="number"
                           placeholder="And"
-                          class="!w-full"
+                          class="w-full!"
                           [value]="row.value2 ?? ''"
                           (input)="patch(i, { value2: text($event) })"
                         />
@@ -314,7 +308,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                         min-w-0 w-full
 
                         sm:flex-[1.1_1_200px]
-                        sm:min-w-[170px]
+                        sm:min-w-42.5
                         sm:w-auto
                       "
                     >
@@ -352,16 +346,15 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                       class="
                         col-span-2
                         min-w-0 w-full
-
                         sm:flex-[1.1_1_200px]
-                        sm:min-w-[170px]
+                        sm:min-w-42.5
                         sm:w-auto
                       "
                     >
                       <input
                         nz-input
                         placeholder="Value"
-                        class="!w-full"
+                        class="w-full!"
                         [value]="row.value ?? ''"
                         (input)="patch(i, { value: text($event) })"
                       />
@@ -381,14 +374,14 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
             gap-3
             rounded-xl
             border-[1.5px] border-dashed
-            border-[var(--app-outline-variant,#cac4d0)]
-            bg-[var(--app-surface,#fff)]
+            border-(--app-outline-variant,#cac4d0)
+            bg-(--app-surface,#fff)
             p-4
             text-center
 
             sm:flex-row sm:items-center
             sm:gap-3.5
-            sm:p-[18px]
+            sm:p-4.5
             sm:text-left
           "
         >
@@ -397,9 +390,9 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
               grid size-11 shrink-0
               place-items-center
               rounded-xl
-              bg-[var(--app-surface-container,#f3edf7)]
+              bg-(--app-surface-container,#f3edf7)
               text-[22px]
-              text-[var(--app-text-muted,#49454f)]
+              text-(--app-text-muted,#49454f)
             "
             aria-hidden="true"
           >
@@ -410,7 +403,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
             <strong
               class="
                 text-[0.875rem] font-semibold
-                text-[var(--app-text,#1d1b20)]
+                text-(--app-text,#1d1b20)
                 sm:text-[0.925rem]
               "
             >
@@ -420,7 +413,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
             <span
               class="
                 text-xs
-                text-[var(--app-text-muted,#49454f)]
+                text-(--app-text-muted,#49454f)
                 sm:text-[0.8125rem]
               "
             >
@@ -434,7 +427,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
       <div
         class="
           flex flex-col gap-2.5
-          border-t border-[var(--app-outline-variant,#e0e2ec)]
+          border-t border-(--app-outline-variant,#e0e2ec)
           pt-3.5
 
           sm:flex-row sm:items-center
@@ -447,9 +440,9 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
           nzType="primary"
           type="button"
           class="
-            !m-0
-            !inline-flex
-            !h-10
+            m-0!
+            inline-flex!
+            h-10!
             w-full
             items-center justify-center
             gap-1.5
@@ -469,14 +462,14 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
             nzType="default"
             type="button"
             class="
-              !m-0
-              !inline-flex
-              !h-10
+              m-0!
+              inline-flex!
+              h-10!
               w-full
               items-center justify-center
               gap-1.5
               rounded-[10px]
-              text-[var(--app-text-muted,#49454f)]
+              text-(--app-text-muted,#49454f)
               sm:w-auto
             "
             (click)="filters.set([])"
@@ -494,14 +487,13 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
         class="
           col-span-2
           min-w-0 w-full
-
           sm:flex-[1.1_1_200px]
-          sm:min-w-[170px]
+          sm:min-w-42.5
           sm:w-auto
         "
       >
         <nz-date-picker
-          class="!w-full"
+          class="w-full!"
           [ngModel]="row.value"
           (ngModelChange)="patch(i, { value: dateValue($event) })"
         />
@@ -514,12 +506,12 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
             min-w-0 w-full
 
             sm:flex-[1.1_1_200px]
-            sm:min-w-[170px]
+            sm:min-w-42.5
             sm:w-auto
           "
         >
           <nz-date-picker
-            class="!w-full"
+            class="w-full!"
             [ngModel]="row.value2"
             (ngModelChange)="patch(i, { value2: dateValue($event) })"
           />
@@ -542,7 +534,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
             min-w-0 w-full
 
             sm:flex-[1.4_1_240px]
-            sm:min-w-[200px]
+            sm:min-w-50
             sm:w-auto
           "
         >
@@ -559,9 +551,8 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
           class="
             col-span-2
             min-w-0 w-full
-
             sm:flex-[1.1_1_200px]
-            sm:min-w-[170px]
+            sm:min-w-42.5
             sm:w-auto
           "
         >
