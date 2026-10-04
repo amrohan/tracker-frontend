@@ -29,7 +29,7 @@
           "configurations": {
             "production": {
               "outputPath": {
-                "base": "../backend/src/PersonalTracker.Api/wwwroot",
+                "base": "dist",
                 "browser": ""
               },
               "budgets": [
