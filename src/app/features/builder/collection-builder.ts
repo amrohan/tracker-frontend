@@ -572,7 +572,7 @@ import { FieldEditor } from "./field-editor";
     .savebar {
       position: sticky;
       bottom: 0;
-      z-index: 5;
+      z-index: 15;
       display: flex;
       align-items: center;
       gap: 8px;
