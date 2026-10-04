@@ -56,7 +56,12 @@ interface ColumnMap {
   ],
   template: `
     <div class="page-narrow wide">
-      <a nz-button nzType="text" class="back" [routerLink]="['/collections', id()]">
+      <a
+        nz-button
+        nzType="text"
+        class="back"
+        [routerLink]="['/collections', id()]"
+      >
         <nz-icon nzType="arrow-left" />
         {{ ctx.detail.value()?.name ?? "Back" }}
       </a>
@@ -81,10 +86,6 @@ interface ColumnMap {
       }
 
       @if (ctx.detail.hasValue()) {
-        <!-- ===================================================== -->
-        <!-- 1. FILE                                               -->
-        <!-- ===================================================== -->
-
         @if (step() === "file") {
           <div class="surface-card">
             <p>
@@ -97,7 +98,7 @@ interface ColumnMap {
               {{ maxRows }} rows per import.
             </p>
 
-            <div class="row">
+            <div class="flex items-center gap-4">
               <label class="upload">
                 <nz-icon nzType="upload" />
                 <span>Choose file</span>
@@ -109,8 +110,8 @@ interface ColumnMap {
                 />
               </label>
 
-              <div class="enc-wrap">
-                <label class="field-label">CSV encoding</label>
+              <div>
+                <!-- <label class="field-label">CSV encoding</label> -->
                 <nz-select
                   [ngModel]="encoding()"
                   (ngModelChange)="setEncoding($event)"
@@ -124,10 +125,6 @@ interface ColumnMap {
                 </nz-select>
               </div>
             </div>
-
-            <!-- ================================================ -->
-            <!-- WORKSHEET SELECTOR                                -->
-            <!-- ================================================ -->
 
             @if (showSheetSelector()) {
               <div class="sheet-selector">
@@ -359,7 +356,10 @@ interface ColumnMap {
                 >
                   <nz-option nzValue="error" nzLabel="Report a problem" />
                   <nz-option nzValue="skip" nzLabel="Leave that value empty" />
-                  <nz-option nzValue="create" nzLabel="Create the missing record" />
+                  <nz-option
+                    nzValue="create"
+                    nzLabel="Create the missing record"
+                  />
                 </nz-select>
               </div>
             }
@@ -474,7 +474,11 @@ interface ColumnMap {
             }
 
             <div class="row done-actions">
-              <a nz-button nzType="primary" [routerLink]="['/collections', id()]">
+              <a
+                nz-button
+                nzType="primary"
+                [routerLink]="['/collections', id()]"
+              >
                 View records
               </a>
 

@@ -17,7 +17,6 @@ import { Field, FieldType, RecordReference } from "../../core/models";
 import { RatingInput } from "../../shared/rating-input";
 import { ReferenceSelector } from "../../shared/reference-selector";
 
-/** Renders the right control for ONE field. The whole form engine is this component plus DynamicForm. */
 @Component({
   selector: "app-dynamic-field",
   imports: [
@@ -143,6 +142,7 @@ import { ReferenceSelector } from "../../shared/reference-selector";
             <nz-date-picker
               class="full"
               [ngModel]="dateValue()"
+              [ngModelOptions]="{ standalone: true }"
               (ngModelChange)="setDate($event)"
               [nzPlaceHolder]="field().name"
             />
@@ -174,6 +174,7 @@ import { ReferenceSelector } from "../../shared/reference-selector";
             <div class="toggle-row">
               <nz-switch
                 [ngModel]="value() === true"
+                [ngModelOptions]="{ standalone: true }"
                 (ngModelChange)="value.set($event)"
               />
               <span class="toggle-label">
@@ -195,6 +196,7 @@ import { ReferenceSelector } from "../../shared/reference-selector";
             <nz-select
               class="full"
               [ngModel]="value() ?? null"
+              [ngModelOptions]="{ standalone: true }"
               (ngModelChange)="value.set($event)"
               [nzAllowClear]="!field().required"
               [nzPlaceHolder]="field().name"
@@ -221,6 +223,7 @@ import { ReferenceSelector } from "../../shared/reference-selector";
               nzMode="multiple"
               class="full"
               [ngModel]="list()"
+              [ngModelOptions]="{ standalone: true }"
               (ngModelChange)="value.set($event)"
               [nzPlaceHolder]="field().name"
             >
