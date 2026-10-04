@@ -39,12 +39,7 @@ import { CollectionCard } from "./collection-card";
           </p>
         </div>
 
-        <a
-          nz-button
-          nzType="primary"
-          class="create-button"
-          routerLink="/collections/new"
-        >
+        <a nz-button nzType="primary" routerLink="/collections/new">
           <span>New tracker</span>
         </a>
       </header>
@@ -248,26 +243,6 @@ import { CollectionCard } from "./collection-card";
       margin: 8px 0 0;
       font-size: 0.95rem;
       color: var(--app-text-muted);
-    }
-
-    .create-button {
-      flex-shrink: 0;
-      border-radius: 12px;
-      font-weight: 500;
-      padding: 0 20px;
-      height: 44px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      transition:
-        transform 0.15s ease,
-        box-shadow 0.15s ease;
-    }
-
-    .create-button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
     }
 
     .refresh-bar {

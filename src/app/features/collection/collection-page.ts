@@ -107,9 +107,7 @@ import { CoverView } from "../../shared/cover-view";
               [routerLink]="['/collections', c.id, 'records', 'new']"
               [attr.disabled]="c.fields.length === 0 ? '' : null"
             >
-              <button nz-button nzType="primary" class="add-desktop">
-                Add record
-              </button>
+              <button nz-button nzType="primary">Add record</button>
             </a>
 
             <button
@@ -405,18 +403,6 @@ import { CoverView } from "../../shared/cover-view";
       gap: 6px;
       align-self: start;
       padding-top: calc(clamp(60px, 8vw, 84px) / 2 + 6px);
-    }
-
-    .add-desktop {
-      min-height: 40px;
-      padding: 0 16px;
-      border-radius: 10px;
-      font-weight: 600;
-    }
-
-    .options-btn {
-      color: var(--app-text-muted, #49454f);
-      border-radius: 10px;
     }
 
     /* =========================================================

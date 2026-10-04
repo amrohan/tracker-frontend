@@ -52,13 +52,13 @@ import { FieldDraft } from "./field-draft";
         [nzActive]="isNew()"
         [nzHeader]="headerTpl"
         [nzExtra]="extraTpl"
+        [nzShowArrow]="false"
       >
         <ng-template #headerTpl>
           <div class="panel-header-title">
             <button
               cdkDragHandle
               type="button"
-              class="handle"
               nz-button
               nzType="text"
               nzShape="circle"
@@ -325,18 +325,11 @@ import { FieldDraft } from "./field-draft";
       margin-bottom: 12px;
       border-radius: 14px;
       overflow: hidden;
-      border: 1px solid var(--app-outline-variant);
-      background: var(--app-surface);
     }
     .panel-header-title {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-    }
-    .handle {
-      cursor: grab;
-      margin-left: -4px;
-      color: var(--app-text-muted);
     }
     .type-icon {
       font-size: 16px;
