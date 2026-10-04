@@ -105,7 +105,10 @@ import { LocalStorageService } from "../../core/local-storage.service";
                     }
                   </td>
                 }
-                <td class="actions-col sticky-end" (click)="$event.stopPropagation()">
+                <td
+                  class="actions-col sticky-end"
+                  (click)="$event.stopPropagation()"
+                >
                   <app-record-action-menu
                     [collectionId]="collectionId()"
                     [recordId]="r.id"
@@ -174,7 +177,8 @@ import { LocalStorageService } from "../../core/local-storage.service";
       background: transparent;
     }
 
-    th, td {
+    th,
+    td {
       padding: 12px 16px;
       vertical-align: middle;
       border-bottom: 1px solid var(--app-outline-variant);
@@ -259,11 +263,7 @@ import { LocalStorageService } from "../../core/local-storage.service";
       cursor: pointer;
     }
     .record-row:hover > td {
-      background: color-mix(
-        in srgb,
-        var(--app-primary) 7%,
-        var(--app-surface)
-      );
+      background: color-mix(in srgb, var(--app-primary) 7%, var(--app-surface));
     }
     .record-row:last-child td {
       border-bottom: 0;

@@ -76,21 +76,25 @@ import { Field } from "../../core/models";
           <nz-dropdown-menu #sortMenu="nzDropdownMenu">
             <ul nz-menu>
               <li nz-menu-item (click)="sortReset.emit()">
-                <nz-icon [nzType]="sortField() ? '' : 'check'" />
-                <span>Newest first</span>
+                <div class="flex gap-2">
+                  <nz-icon [nzType]="sortField() ? '' : 'check'" />
+                  <span>Newest first</span>
+                </div>
               </li>
               @for (f of sortableFields(); track f.id) {
                 <li nz-menu-item (click)="sortPick.emit(f)">
-                  <nz-icon
-                    [nzType]="
-                      sortField()?.id === f.id
-                        ? sortAscending()
-                          ? 'arrow-up'
-                          : 'arrow-down'
-                        : ''
-                    "
-                  />
-                  <span>{{ f.name }}</span>
+                  <div class="flex gap-2">
+                    <nz-icon
+                      [nzType]="
+                        sortField()?.id === f.id
+                          ? sortAscending()
+                            ? 'arrow-up'
+                            : 'arrow-down'
+                          : ''
+                      "
+                    />
+                    <span>{{ f.name }}</span>
+                  </div>
                 </li>
               }
             </ul>
