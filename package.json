@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node --env-file=.env node_modules/@angular/cli/bin/ng.js serve",
     "build": "ng build --configuration development",
-    "build:prod": "ng build --configuration production"
+    "build:prod": "node set-env.js && ng build --configuration production"
   },
   "dependencies": {
     "@angular/cdk": "^22.0.0",

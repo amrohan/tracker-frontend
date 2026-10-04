@@ -3,3 +3,4 @@ dist/
 .angular/
 out-tsc/
 .env
+src/environments/environment.production.ts
