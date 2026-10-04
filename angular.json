@@ -18,19 +18,31 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               { "glob": "**/*", "input": "public" },
-              { "glob": "**/*", "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/", "output": "assets/" }
+              {
+                "glob": "**/*",
+                "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
+                "output": "assets/"
+              }
             ],
-            "styles": [
-              "src/tailwind.css",
-              "src/styles.scss"
-            ]
+            "styles": ["src/tailwind.css", "src/styles.scss"]
           },
           "configurations": {
             "production": {
-              "outputPath": { "base": "../backend/src/PersonalTracker.Api/wwwroot", "browser": "" },
+              "outputPath": {
+                "base": "../backend/src/PersonalTracker.Api/wwwroot",
+                "browser": ""
+              },
               "budgets": [
-                { "type": "initial", "maximumWarning": "1.5MB", "maximumError": "3MB" },
-                { "type": "anyComponentStyle", "maximumWarning": "16kB", "maximumError": "32kB" }
+                {
+                  "type": "initial",
+                  "maximumWarning": "1.5MB",
+                  "maximumError": "3MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "16kB",
+                  "maximumError": "32kB"
+                }
               ],
               "outputHashing": "all"
             },
@@ -44,10 +56,14 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
-          "options": { "proxyConfig": "proxy.conf.json" },
+          "options": { "proxyConfig": "proxy.conf.js" },
           "configurations": {
-            "production": { "buildTarget": "personal-tracker:build:production" },
-            "development": { "buildTarget": "personal-tracker:build:development" }
+            "production": {
+              "buildTarget": "personal-tracker:build:production"
+            },
+            "development": {
+              "buildTarget": "personal-tracker:build:development"
+            }
           },
           "defaultConfiguration": "development"
         }

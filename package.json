@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "ng serve",
+    "start": "node --env-file=.env node_modules/@angular/cli/bin/ng.js serve",
     "build": "ng build --configuration development",
     "build:prod": "ng build --configuration production"
   },

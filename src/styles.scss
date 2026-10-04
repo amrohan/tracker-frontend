@@ -428,8 +428,6 @@ body:has(app-record-drawer) {
 
 .ant-input,
 .ant-select-selector {
-  border-radius: 8px !important;
-
   &:hover {
     border-color: color-mix(
       in srgb,

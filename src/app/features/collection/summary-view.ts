@@ -93,7 +93,12 @@ import { SummaryReport } from "../../core/models";
           </div>
           <h3>Could not load the summary</h3>
           <p>Something went wrong while calculating the summary metrics.</p>
-          <button nz-button nzType="default" type="button" (click)="summary.reload()">
+          <button
+            nz-button
+            nzType="default"
+            type="button"
+            (click)="summary.reload()"
+          >
             <nz-icon nzType="reload" /> Try again
           </button>
         </div>
