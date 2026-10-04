@@ -69,7 +69,7 @@ function buildInitial(
         </div>
       }
 
-      <div drawerFooter class="actions">
+      <div class="flex justify-between">
         <button
           nz-button
           nzType="default"
