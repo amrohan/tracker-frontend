@@ -6,7 +6,7 @@ import {
 import { inject } from "@angular/core";
 import { catchError, from, switchMap, throwError } from "rxjs";
 import { AuthService } from "./auth.service";
-import { environment } from "../../environments/environment";
+import { environment } from "../../environments/environment.production";
 
 const ANONYMOUS = /^\/api\/(auth\/(login|register|refresh|logout)|meta\/)/;
 
