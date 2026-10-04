@@ -69,12 +69,11 @@ function buildInitial(
         </div>
       }
 
-      <div class="actions">
+      <div drawerFooter class="actions">
         <button
           nz-button
           nzType="default"
           type="button"
-          class="cancel-btn"
           [disabled]="saving()"
           (click)="cancelled.emit()"
         >
@@ -84,7 +83,6 @@ function buildInitial(
           nz-button
           nzType="primary"
           type="submit"
-          class="submit-btn"
           [nzLoading]="saving()"
           [disabled]="saving()"
         >
@@ -132,39 +130,6 @@ function buildInitial(
       flex: none;
     }
 
-    /* ---------------- actions ---------------- */
-    .actions {
-      position: sticky;
-      bottom: 0;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 12px;
-      margin: 20px calc(-1 * var(--drawer-pad, 0px))
-        calc(-1 * var(--drawer-pad, 0px));
-      padding: 16px var(--drawer-pad, 0px)
-        calc(16px + env(safe-area-inset-bottom));
-      background: var(--drawer-bg, var(--app-surface-container));
-      border-top: 1px solid var(--app-outline-variant);
-    }
-
-    .cancel-btn {
-      min-height: 40px;
-      padding: 0 18px;
-      border-radius: 10px;
-      font-weight: 600;
-    }
-
-    .submit-btn {
-      min-height: 40px;
-      padding: 0 22px;
-      border-radius: 10px;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-    }
-
-    /* ---------------- phones ---------------- */
     @media (max-width: 600px) {
       .fields-list {
         gap: 14px;

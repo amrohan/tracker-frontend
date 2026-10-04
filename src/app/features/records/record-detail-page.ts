@@ -44,7 +44,11 @@ import { recordLabel } from "../collection/record-list.utils";
           @for (f of ctx.fields(); track f.id) {
             <div class="item">
               <dt>
-                <nz-icon class="field-icon" [nzType]="typeIcon(f.type)" aria-hidden="true" />
+                <nz-icon
+                  class="field-icon"
+                  [nzType]="typeIcon(f.type)"
+                  aria-hidden="true"
+                />
                 <span>{{ f.name }}</span>
               </dt>
               <dd>
@@ -82,7 +86,7 @@ import { recordLabel } from "../collection/record-list.utils";
         </div>
       }
 
-      <div drawerFooter class="foot">
+      <div drawerFooter class="flex justify-between">
         <button
           nz-button
           nzType="default"
@@ -93,12 +97,8 @@ import { recordLabel } from "../collection/record-list.utils";
           Delete
         </button>
         <span class="spacer"></span>
-        <a
-          nz-button
-          nzType="primary"
-          [routerLink]="['/collections', id(), 'records', recordId(), 'edit']"
-        >
-          Edit
+        <a [routerLink]="['/collections', id(), 'records', recordId(), 'edit']">
+          <button nz-button nzType="primary">Edit</button>
         </a>
       </div>
     </app-record-drawer>
@@ -190,17 +190,6 @@ import { recordLabel } from "../collection/record-list.utils";
       display: flex;
       justify-content: center;
       padding: 48px 0;
-    }
-
-    /* ---------------- footer ---------------- */
-    .foot {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      gap: 8px;
-    }
-    .spacer {
-      flex: 1;
     }
 
     /* ---------------- phones ---------------- */

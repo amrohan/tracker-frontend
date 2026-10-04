@@ -27,11 +27,7 @@ import {
 } from "../../core/collections-api.service";
 import { coverBackground, fallbackBackground } from "../../core/cover-presets";
 import { fieldErrors, problemMessage } from "../../core/http-errors";
-import {
-  EMOJIS,
-  TYPE_LABELS,
-  defaultConfig,
-} from "../../core/labels";
+import { EMOJIS, TYPE_LABELS, defaultConfig } from "../../core/labels";
 import {
   CollectionDetail,
   CollectionSummary,
@@ -184,7 +180,9 @@ import { FieldEditor } from "./field-editor";
 
         <!-- ============ FIELDS ============ -->
         <section class="card" aria-labelledby="fields-h">
-          <div class="fields-head">
+          <div
+            class="flex justify-between bg-(--app-surface) border-b border-(--app-outline-variant) sticky top-0 z-10 h-20"
+          >
             <div>
               <h2 id="fields-h">
                 Fields <span class="count">{{ fields().length }}</span>
@@ -201,7 +199,7 @@ import { FieldEditor } from "./field-editor";
               class="add-top"
               (click)="addField()"
             >
-              <nz-icon nzType="plus" /> Add field
+              Add field
             </button>
           </div>
 
@@ -284,7 +282,10 @@ import { FieldEditor } from "./field-editor";
             {{ fields().length === 1 ? "field" : "fields" }}</span
           >
           <span class="spacer"></span>
-          <a nz-button nzType="default" [routerLink]="isEdit() ? ['/collections', id()] : ['/']"
+          <a
+            nz-button
+            nzType="default"
+            [routerLink]="isEdit() ? ['/collections', id()] : ['/']"
             >Cancel</a
           >
           <button
@@ -351,7 +352,6 @@ import { FieldEditor } from "./field-editor";
       border-radius: 20px;
       padding: clamp(14px, 3vw, 24px);
       margin-bottom: 16px;
-      background: var(--app-surface);
     }
     .looks {
       padding: 0;
@@ -416,7 +416,7 @@ import { FieldEditor } from "./field-editor";
       place-items: center;
       background: var(--app-surface);
       border: 1px solid var(--app-outline-variant);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
     .edit-badge {
       position: absolute;
@@ -747,28 +747,28 @@ export class CollectionBuilder {
   }
 
   protected async pickCover(): Promise<void> {
-    const selection = await new Promise<CoverSelection | undefined>((resolve) => {
-      const modalRef = this.modal.create<
-        CoverPickerDialog,
-        { cover: Cover; collectionId: string | null },
-        CoverSelection
-      >({
-        nzContent: CoverPickerDialog,
-        nzData: { cover: this.cover(), collectionId: this.id() ?? null },
-        nzFooter: null,
-        nzWidth: 560,
-        nzStyle: { maxWidth: "95vw" },
-      });
-      modalRef.afterClose.subscribe((val) => resolve(val));
-    });
+    const selection = await new Promise<CoverSelection | undefined>(
+      (resolve) => {
+        const modalRef = this.modal.create<
+          CoverPickerDialog,
+          { cover: Cover; collectionId: string | null },
+          CoverSelection
+        >({
+          nzContent: CoverPickerDialog,
+          nzData: { cover: this.cover(), collectionId: this.id() ?? null },
+          nzFooter: null,
+          nzWidth: 560,
+          nzStyle: { maxWidth: "95vw" },
+        });
+        modalRef.afterClose.subscribe((val) => resolve(val));
+      },
+    );
 
     if (!selection) return;
     const previous = this.pendingImageUrl();
     if (previous) URL.revokeObjectURL(previous);
     this.pendingImageUrl.set(
-      selection.type === "image"
-        ? URL.createObjectURL(selection.blob)
-        : null,
+      selection.type === "image" ? URL.createObjectURL(selection.blob) : null,
     );
     this.pendingCover.set(selection);
   }
