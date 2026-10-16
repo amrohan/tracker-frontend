@@ -1,5 +1,5 @@
 import { httpResource } from "@angular/common/http";
-import { Component, inject } from "@angular/core";
+import { Component, effect, inject, untracked } from "@angular/core";
 import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzSpinModule } from "ng-zorro-antd/spin";
@@ -13,7 +13,7 @@ import { SummaryReport } from "../../core/models";
   imports: [NzIconModule, NzSpinModule, NzButtonModule],
   template: `
     <div class="page summary-page">
-      @if (summary.isLoading()) {
+      @if (summary.isLoading() && !summary.value()) {
         <div class="loading-wrap">
           <nz-spin nzSimple />
         </div>
@@ -297,11 +297,23 @@ import { SummaryReport } from "../../core/models";
 })
 export class SummaryView {
   private readonly ctx = inject(CollectionContext);
+  private seenVersion = 0;
 
   protected readonly summary = httpResource<SummaryReport>(() => {
     const id = this.ctx.id();
     return id ? `/api/collections/${id}/summary` : undefined;
   });
+
+  constructor() {
+    effect(() => {
+      const version = this.ctx.recordsVersion();
+      untracked(() => {
+        if (version === this.seenVersion) return;
+        this.seenVersion = version;
+        this.summary.reload();
+      });
+    });
+  }
 
   protected readonly format = formatMetric;
   protected readonly label = metricLabel;

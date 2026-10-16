@@ -15,6 +15,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const apiReq = req.clone({
     url: `${environment.apiUrl}${req.url}`,
+    withCredentials: true,
   });
 
   if (ANONYMOUS.test(req.url)) {

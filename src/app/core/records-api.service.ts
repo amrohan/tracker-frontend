@@ -2,20 +2,37 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { LookupItem, RecordDetail } from './models';
+import { HttpCacheService } from './http-cache.service';
 
 @Service()
 export class RecordsApi {
   private readonly http = inject(HttpClient);
+  private readonly cache = inject(HttpCacheService);
 
-  create(collectionId: string, values: Record<string, unknown>) {
-    return firstValueFrom(this.http.post<RecordDetail>(`/api/collections/${collectionId}/records`, { values }));
+  async create(collectionId: string, values: Record<string, unknown>) {
+    const res = await firstValueFrom(this.http.post<RecordDetail>(`/api/collections/${collectionId}/records`, { values }));
+    this.cache.invalidateCollection(collectionId);
+    return res;
   }
-  update(recordId: string, values: Record<string, unknown>, version: number) {
-    return firstValueFrom(this.http.patch<RecordDetail>(`/api/records/${recordId}`, { values, version }));
+
+  async update(recordId: string, values: Record<string, unknown>, version: number) {
+    const res = await firstValueFrom(this.http.patch<RecordDetail>(`/api/records/${recordId}`, { values, version }));
+    if (res?.record?.collectionId) {
+      this.cache.invalidateCollection(res.record.collectionId);
+    }
+    this.cache.invalidate(`/api/records/${recordId}`);
+    return res;
   }
-  remove(recordId: string, force: boolean) {
-    return firstValueFrom(this.http.delete<void>(`/api/records/${recordId}`, { params: force ? { force: 'true' } : {} }));
+
+  async remove(recordId: string, force: boolean) {
+    const res = await firstValueFrom(this.http.delete<void>(`/api/records/${recordId}`, { params: force ? { force: 'true' } : {} }));
+    this.cache.invalidate(`/api/records/${recordId}`);
+    this.cache.invalidate('/records');
+    this.cache.invalidate('/summary');
+    this.cache.invalidate('/api/collections');
+    return res;
   }
+
   lookup(collectionId: string, q: string) {
     return firstValueFrom(this.http.get<LookupItem[]>(`/api/collections/${collectionId}/records/lookup`, { params: { q, limit: 20 } }));
   }

@@ -3,15 +3,18 @@ import { Service, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthResponse, User } from './models';
+import { HttpCacheService } from './http-cache.service';
+import { LocalStorageService } from './local-storage.service';
 
 @Service()
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly cache = inject(HttpCacheService);
+  private readonly storage = inject(LocalStorageService);
 
-  /** Kept in memory only. The refresh token lives in an HttpOnly cookie the page cannot read. */
-  readonly accessToken = signal<string | null>(null);
-  readonly user = signal<User | null>(null);
+  readonly accessToken = signal<string | null>(this.storage.getItem<string>('auth_token'));
+  readonly user = signal<User | null>(this.storage.getItem<User>('auth_user'));
   readonly isAuthenticated = computed(() => this.accessToken() !== null && this.user() !== null);
 
   private inFlight: Promise<boolean> | null = null;
@@ -66,10 +69,15 @@ export class AuthService {
   private apply(r: AuthResponse): void {
     this.accessToken.set(r.accessToken);
     this.user.set(r.user);
+    this.storage.setItem('auth_token', r.accessToken);
+    this.storage.setItem('auth_user', r.user);
   }
 
   private clear(): void {
     this.accessToken.set(null);
     this.user.set(null);
+    this.storage.removeItem('auth_token');
+    this.storage.removeItem('auth_user');
+    this.cache.clear();
   }
 }

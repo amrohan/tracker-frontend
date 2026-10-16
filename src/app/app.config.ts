@@ -68,6 +68,7 @@ import {
 } from "@ant-design/icons-angular/icons";
 import { routes } from "./app.routes";
 import { authInterceptor } from "./core/auth.interceptor";
+import { httpCacheInterceptor } from "./core/http-cache.interceptor";
 import { AuthService } from "./core/auth.service";
 import { FieldTypeCatalog } from "./core/field-types.service";
 import { provideHttpClient, withInterceptors } from "@angular/common/http";
@@ -141,7 +142,7 @@ export const appConfig: ApplicationConfig = {
       withComponentInputBinding(), // route params arrive as signal inputs
       withRouterConfig({ paramsInheritanceStrategy: "always" }),
     ),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, httpCacheInterceptor])),
     provideAppInitializer(async () => {
       await Promise.all([
         inject(AuthService).restoreSession(),

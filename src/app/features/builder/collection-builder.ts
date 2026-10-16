@@ -25,6 +25,7 @@ import {
   CollectionsApi,
   CreateCollectionBody,
 } from "../../core/collections-api.service";
+import { HttpCacheService } from "../../core/http-cache.service";
 import { coverBackground, fallbackBackground } from "../../core/cover-presets";
 import { fieldErrors, problemMessage } from "../../core/http-errors";
 import { EMOJIS, TYPE_LABELS, defaultConfig } from "../../core/labels";
@@ -617,6 +618,7 @@ export class CollectionBuilder {
   readonly id = input<string>();
 
   private readonly api = inject(CollectionsApi);
+  private readonly cache = inject(HttpCacheService);
   private readonly notify = inject(Notify);
   private readonly router = inject(Router);
   private readonly modal = inject(NzModalService);
@@ -784,6 +786,8 @@ export class CollectionBuilder {
     try {
       const id = this.id();
       const target = id ? await this.saveExisting(id) : await this.saveNew();
+      this.cache.invalidateCollection(target);
+      this.cache.invalidate('/api/collections');
       this.notify.info(id ? "Changes saved." : "Tracker created.");
       await this.router.navigate(["/collections", target]);
     } catch (err) {

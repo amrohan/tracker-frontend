@@ -9,6 +9,7 @@ import {
   untracked,
 } from "@angular/core";
 import { CollectionDetail, Field } from "./models";
+import { HttpCacheService } from "./http-cache.service";
 
 /**
  * Per-route state for one collection. `autoProvided: false` means it is created by the route's
@@ -16,6 +17,7 @@ import { CollectionDetail, Field } from "./models";
  */
 @Service({ autoProvided: false })
 export class CollectionContext {
+  private readonly cache = inject(HttpCacheService);
   readonly id = signal<string | null>(null);
 
   readonly detail = httpResource<CollectionDetail>(() => {
@@ -37,6 +39,10 @@ export class CollectionContext {
   readonly recordsVersion = signal(0);
 
   recordsChanged(): void {
+    const id = this.id();
+    if (id) {
+      this.cache.invalidateCollection(id);
+    }
     this.recordsVersion.update((v) => v + 1);
     this.detail.reload(); // keeps the record count fresh
   }
@@ -49,8 +55,9 @@ export function bindCollectionId(id: Signal<string>): CollectionContext {
   effect(() => {
     const value = id();
     untracked(() => {
-      if (ctx.id() !== value) ctx.id.set(value);
-      if (first) ctx.detail.reload();
+      const changed = ctx.id() !== value;
+      if (changed) ctx.id.set(value);
+      if (first || changed) ctx.detail.reload();
     });
     first = false;
   });
