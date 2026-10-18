@@ -8,6 +8,7 @@ import {
   linkedSignal,
   signal,
   untracked,
+  viewChild,
 } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
 
@@ -42,6 +43,7 @@ import { FilterPanel } from "./filter-panel";
 import { FilterDraft, toApiFilters } from "./filters";
 import { RecordTable } from "./record-table";
 import { RecordToolbar } from "./record-toolbar";
+import { SavedFilterDrawer } from "./saved-filter-drawer";
 
 @Component({
   selector: "app-table-view",
@@ -54,6 +56,7 @@ import { RecordToolbar } from "./record-toolbar";
     RecordToolbar,
     RecordCardList,
     RecordTable,
+    SavedFilterDrawer,
   ],
   template: `
     <div class="page table-page">
@@ -65,6 +68,9 @@ import { RecordToolbar } from "./record-toolbar";
         [filtersOpen]="showFilters()"
         (toggleFilters)="showFilters.set(!showFilters())"
         [activeFilterCount]="activeFilters().length"
+        [savedFiltersOpen]="showSavedFilters()"
+        [savedFiltersCount]="savedFilterCount()"
+        (toggleSavedFilters)="toggleSavedFilters()"
         [sortableFields]="sortableColumns()"
         [sortField]="sortField()"
         [sortAscending]="sortDir() === 'asc'"
@@ -187,11 +193,23 @@ import { RecordToolbar } from "./record-toolbar";
               (nzPageSizeChange)="pageSize.set($event)"
               [nzShowTotal]="totalTpl"
             />
-            <ng-template #totalTpl let-total>Total {{ total }} items</ng-template>
+            <ng-template #totalTpl let-total
+              >Total {{ total }} items</ng-template
+            >
           </div>
         }
       }
     </div>
+
+    <!-- Saved Filter Drawer -->
+    <app-saved-filter-drawer
+      #savedFilterDrawer
+      [collectionId]="collectionId()"
+      [fields]="ctx.fields()"
+      [currentFilters]="filters()"
+      [(open)]="showSavedFilters"
+      (applyFilter)="applyFromSaved($event)"
+    />
   `,
   styles: `
     :host {
@@ -298,6 +316,11 @@ export class TableView {
   protected readonly pageSize = signal(25);
   protected readonly filters = signal<FilterDraft[]>([]);
   protected readonly showFilters = signal(false);
+  protected readonly showSavedFilters = signal(false);
+  private readonly savedFilterDrawerRef = viewChild(SavedFilterDrawer);
+  protected readonly savedFilterCount = computed(
+    () => this.savedFilterDrawerRef()?.savedFilters().length ?? 0,
+  );
 
   /* -------------------------- derived from fields --------------------------- */
   protected readonly columns = computed<Field[]>(() =>
@@ -533,5 +556,15 @@ export class TableView {
       });
       modalRef.afterClose.subscribe((value) => resolve(value === true));
     });
+  }
+
+  protected applyFromSaved(drafts: FilterDraft[]): void {
+    this.filters.set(drafts);
+    // this.showFilters.set(drafts.length > 0);
+    this.showSavedFilters.set(false);
+  }
+
+  protected toggleSavedFilters(): void {
+    this.showSavedFilters.update((v) => !v);
   }
 }

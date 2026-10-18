@@ -1,11 +1,12 @@
-import { Component, input, output } from "@angular/core";
+import { Component, computed, input, output } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzDropdownModule } from "ng-zorro-antd/dropdown";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzInputModule } from "ng-zorro-antd/input";
 import { NzMenuModule } from "ng-zorro-antd/menu";
-import { Field } from "../../core/models";
+import { NzTooltipModule } from "ng-zorro-antd/tooltip";
+import { Field, SavedFilter } from "../../core/models";
 
 @Component({
   selector: "app-record-toolbar",
@@ -16,6 +17,7 @@ import { Field } from "../../core/models";
     NzIconModule,
     NzInputModule,
     NzMenuModule,
+    NzTooltipModule,
   ],
   template: `
     <section class="toolbar" aria-label="Record controls">
@@ -59,6 +61,68 @@ import { Field } from "../../core/models";
             }}</span>
           }
         </button>
+
+        <!-- Saved Filters (Select or Drawer) -->
+        <button
+          nz-button
+          nzType="default"
+          type="button"
+          [class.on]="savedFiltersOpen() || !!activeSavedFilterId()"
+          nz-dropdown
+          [nzDropdownMenu]="savedMenu"
+          [nzTrigger]="'click'"
+          nz-tooltip
+          nzTooltipTitle="Saved filter presets"
+        >
+          <nz-icon
+            nzType="star"
+            [nzTheme]="activeSavedFilterId() ? 'fill' : 'outline'"
+          />
+          <span class="label">
+            {{ activeSavedFilterName() ?? "Saved" }}
+          </span>
+          @if (savedFiltersCount() > 0 && !activeSavedFilterId()) {
+            <span class="count">{{ savedFiltersCount() }}</span>
+          }
+          <nz-icon nzType="down" class="dropdown-arrow" />
+        </button>
+
+        <nz-dropdown-menu #savedMenu="nzDropdownMenu">
+          <ul nz-menu>
+            <li nz-menu-item (click)="toggleSavedFilters.emit()">
+              <div class="flex items-center gap-2">
+                <nz-icon nzType="folder-open" />
+                <span>Open saved filters drawer</span>
+              </div>
+            </li>
+            @if (activeSavedFilterId()) {
+              <li nz-menu-item (click)="clearSavedFilter.emit()">
+                <div class="flex items-center gap-2 text-red-500">
+                  <nz-icon nzType="close-circle" />
+                  <span>Clear applied filter</span>
+                </div>
+              </li>
+            }
+            @if (savedFilters().length > 0) {
+              <li nz-menu-divider></li>
+              @for (sf of savedFilters(); track sf.id) {
+                <li nz-menu-item (click)="selectSavedFilter.emit(sf)">
+                  <div class="flex items-center gap-2">
+                    <nz-icon
+                      [nzType]="
+                        activeSavedFilterId() === sf.id ? 'check' : 'filter'
+                      "
+                    />
+                    <span
+                      [class.font-semibold]="activeSavedFilterId() === sf.id"
+                      >{{ sf.name }}</span
+                    >
+                  </div>
+                </li>
+              }
+            }
+          </ul>
+        </nz-dropdown-menu>
 
         @if (compact()) {
           <!-- phones: sort lives in a dropdown because cards have no column headers -->
@@ -203,6 +267,11 @@ import { Field } from "../../core/models";
       border-color: var(--app-primary) !important;
       color: var(--app-primary) !important;
     }
+    .dropdown-arrow {
+      font-size: 10px;
+      margin-left: 4px;
+      opacity: 0.7;
+    }
     @media (max-width: 767px) {
       .toolbar {
         flex-direction: column;
@@ -240,6 +309,17 @@ export class RecordToolbar {
   readonly searchValue = input("");
   readonly filtersOpen = input(false);
   readonly activeFilterCount = input(0);
+  readonly savedFiltersOpen = input(false);
+  readonly savedFiltersCount = input(0);
+  readonly savedFilters = input<SavedFilter[]>([]);
+  readonly activeSavedFilterId = input<string | null>(null);
+
+  readonly activeSavedFilterName = computed(() => {
+    const id = this.activeSavedFilterId();
+    if (!id) return null;
+    return this.savedFilters().find((f) => f.id === id)?.name ?? null;
+  });
+
   readonly sortableFields = input<Field[]>([]);
   readonly sortField = input<Field | null>(null);
   readonly sortAscending = input(false);
@@ -247,6 +327,9 @@ export class RecordToolbar {
 
   readonly search = output<string>();
   readonly toggleFilters = output<void>();
+  readonly toggleSavedFilters = output<void>();
+  readonly selectSavedFilter = output<SavedFilter>();
+  readonly clearSavedFilter = output<void>();
   readonly sortReset = output<void>();
   readonly sortPick = output<Field>();
   readonly export = output<void>();

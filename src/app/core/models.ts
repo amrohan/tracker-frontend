@@ -218,3 +218,17 @@ export interface ImportResult {
   errors: ImportRowError[];
   committed: boolean;
 }
+
+export interface SavedFilter {
+  id: string;
+  collectionId: string;
+  name: string;
+  filtersJson: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SavedFilterRequest {
+  name: string;
+  filtersJson: string;
+}

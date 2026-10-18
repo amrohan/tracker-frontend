@@ -107,8 +107,7 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
         <div class="flex flex-col gap-2.5 py-4 pb-1.5">
           @for (row of filters(); track row.id; let i = $index) {
             <div
-              class="
-                group
+              class=" group
                 grid min-w-0
                 grid-cols-[1fr_auto]
                 gap-2.5
@@ -117,9 +116,6 @@ import { FilterDraft, NO_OPERAND, newFilter } from "./filters";
                 bg-(--app-surface,#fff)
                 p-3
                 transition-all duration-150
-
-                hover:border-[color-mix(in_srgb,var(--app-primary,#6750a4)_40%,var(--app-outline-variant,#e0e2ec))]
-                hover:bg-(--app-surface-container-lowest,#fdfbff)
 
                 focus-within:border-(--app-primary,#6750a4)
                 focus-within:shadow-[0_0_0_1px_var(--app-primary,#6750a4),0_2px_8px_rgba(0,0,0,0.05)]
