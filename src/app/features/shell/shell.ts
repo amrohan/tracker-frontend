@@ -32,14 +32,14 @@ import { HeaderService } from "../../core/header.service";
               nzShape="circle"
               [routerLink]="d.backLink"
               aria-label="Back to trackers"
+              class="flex! gap-2!"
             >
               <nz-icon nzType="arrow-left" />
+              <div class="detail-title">
+                <span class="detail-icon" aria-hidden="true">{{ d.icon }}</span>
+                <span class="detail-name">{{ d.title }}</span>
+              </div>
             </button>
-
-            <div class="detail-title">
-              <span class="detail-icon" aria-hidden="true">{{ d.icon }}</span>
-              <span class="detail-name">{{ d.title }}</span>
-            </div>
           </div>
         } @else {
           <!-- Default mode: app brand -->

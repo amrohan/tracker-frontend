@@ -27,38 +27,6 @@ import { CollectionCard } from "./collection-card";
     <div
       class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 sm:pb-12"
     >
-      <!-- ================= APP HEADER ================= -->
-      <header
-        class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-(--app-outline-variant)"
-      >
-        <div>
-          <div class="flex items-center gap-2.5">
-            <h1
-              class="text-xl sm:text-2xl font-extrabold tracking-tight text-(--app-text) m-0"
-            >
-              Trackers
-            </h1>
-            @if (all().length > 0) {
-              <span
-                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-(--app-surface-container-high) text-(--app-text-muted)"
-              >
-                {{ all().length }}
-              </span>
-            }
-          </div>
-          <p class="text-xs sm:text-sm text-(--app-text-muted) m-0 mt-0.5">
-            Your personal databases, organized in one place.
-          </p>
-        </div>
-
-        <div class="hidden sm:flex items-center gap-2">
-          <a nz-button nzType="primary" routerLink="/collections/new">
-            <nz-icon nzType="plus" />
-            <span>New tracker</span>
-          </a>
-        </div>
-      </header>
-
       <!-- ================= APP QUICK STATS STRIP ================= -->
       @if (all().length > 0) {
         <section
@@ -309,17 +277,18 @@ import { CollectionCard } from "./collection-card";
       }
 
       <!-- Mobile Floating Action Button (Native NG-ZORRO circular button) -->
-      <button
-        nz-button
-        nzType="primary"
-        nzShape="circle"
-        nzSize="large"
-        class="fab grid! place-content-center!"
-        routerLink="/collections/new"
-        aria-label="Create tracker"
-      >
-        <nz-icon nzType="plus" />
-      </button>
+      <div class="fixed right-8 bottom-8">
+        <button
+          nz-button
+          nzType="primary"
+          nzShape="circle"
+          nzSize="large"
+          routerLink="/collections/new"
+          aria-label="Create tracker"
+        >
+          <nz-icon nzType="plus" />
+        </button>
+      </div>
     </div>
   `,
 })
