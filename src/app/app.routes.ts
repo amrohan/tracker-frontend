@@ -66,29 +66,6 @@ export const routes: Routes = [
                   import("./features/collection/table-view").then(
                     (m) => m.TableView,
                   ),
-                children: [
-                  {
-                    path: "records/new",
-                    loadComponent: () =>
-                      import("./features/records/record-form-page").then(
-                        (m) => m.RecordFormPage,
-                      ),
-                  },
-                  {
-                    path: "records/:recordId/edit",
-                    loadComponent: () =>
-                      import("./features/records/record-form-page").then(
-                        (m) => m.RecordFormPage,
-                      ),
-                  },
-                  {
-                    path: "records/:recordId",
-                    loadComponent: () =>
-                      import("./features/records/record-detail-page").then(
-                        (m) => m.RecordDetailPage,
-                      ),
-                  },
-                ],
               },
             ],
           },

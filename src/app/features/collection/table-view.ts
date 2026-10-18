@@ -10,7 +10,7 @@ import {
   untracked,
 } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { Router, RouterLink, RouterOutlet } from "@angular/router";
+
 import { firstValueFrom, map } from "rxjs";
 import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzIconModule } from "ng-zorro-antd/icon";
@@ -28,6 +28,7 @@ import {
 import {
   Field,
   RecordList,
+  RecordReference,
   SummaryReport,
   TrackerRecord,
 } from "../../core/models";
@@ -45,8 +46,6 @@ import { RecordToolbar } from "./record-toolbar";
 @Component({
   selector: "app-table-view",
   imports: [
-    RouterLink,
-    RouterOutlet,
     NzButtonModule,
     NzIconModule,
     NzPaginationModule,
@@ -111,13 +110,14 @@ import { RecordToolbar } from "./record-toolbar";
             </div>
             <h3>No records yet</h3>
             <p>Add your first entry to {{ ctx.detail.value()?.name }}.</p>
-            <a
+            <button
               nz-button
               nzType="primary"
-              [routerLink]="['/collections', collectionId(), 'records', 'new']"
+              type="button"
+              (click)="ctx.openCreate()"
             >
               Add a record
-            </a>
+            </button>
           </div>
         } @else if (d.total === 0) {
           <div class="empty-state">
@@ -154,7 +154,8 @@ import { RecordToolbar } from "./record-toolbar";
               [metrics]="metrics()"
               [filtered]="hasQuery()"
               [dimmed]="list.isLoading()"
-              (open)="open($event)"
+              (open)="openView($event, d.references)"
+              (edit)="openEdit($event, d.references)"
               (delete)="remove($event)"
             />
           } @else {
@@ -168,7 +169,8 @@ import { RecordToolbar } from "./record-toolbar";
               [sortAscending]="sortDir() === 'asc'"
               [loading]="list.isLoading()"
               (toggleSort)="toggleSort($event)"
-              (open)="open($event)"
+              (open)="openView($event, d.references)"
+              (edit)="openEdit($event, d.references)"
               (delete)="remove($event)"
             />
           }
@@ -190,7 +192,6 @@ import { RecordToolbar } from "./record-toolbar";
         }
       }
     </div>
-    <router-outlet />
   `,
   styles: `
     :host {
@@ -276,7 +277,6 @@ export class TableView {
   private readonly records = inject(RecordsApi);
   private readonly modal = inject(NzModalService);
   private readonly notify = inject(Notify);
-  private readonly router = inject(Router);
   private seenVersion = untracked(() => this.ctx.recordsVersion());
 
   /** Phones get cards; tablets and desktops get the table. */
@@ -449,14 +449,19 @@ export class TableView {
     this.filters.set([]);
   }
 
-  /* ---------------------------- navigation ------------------------------ */
-  protected open(record: TrackerRecord): void {
-    void this.router.navigate([
-      "/collections",
-      this.collectionId(),
-      "records",
-      record.id,
-    ]);
+  /* ---------------------------- drawer open ------------------------------ */
+  protected openView(
+    record: TrackerRecord,
+    references: Record<string, RecordReference>,
+  ): void {
+    this.ctx.openView(record, references);
+  }
+
+  protected openEdit(
+    record: TrackerRecord,
+    references: Record<string, RecordReference>,
+  ): void {
+    this.ctx.openEdit(record, references);
   }
 
   /* ------------------------------- export -------------------------------- */

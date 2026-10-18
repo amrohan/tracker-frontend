@@ -69,26 +69,28 @@ function buildInitial(
         </div>
       }
 
-      <div class="flex justify-between">
-        <button
-          nz-button
-          nzType="default"
-          type="button"
-          [disabled]="saving()"
-          (click)="cancelled.emit()"
-        >
-          Cancel
-        </button>
-        <button
-          nz-button
-          nzType="primary"
-          type="submit"
-          [nzLoading]="saving()"
-          [disabled]="saving()"
-        >
-          {{ saving() ? "Saving…" : submitLabel() }}
-        </button>
-      </div>
+      @if (showActions()) {
+        <div class="flex justify-between">
+          <button
+            nz-button
+            nzType="default"
+            type="button"
+            [disabled]="saving()"
+            (click)="cancelled.emit()"
+          >
+            Cancel
+          </button>
+          <button
+            nz-button
+            nzType="primary"
+            type="submit"
+            [nzLoading]="saving()"
+            [disabled]="saving()"
+          >
+            {{ saving() ? "Saving…" : submitLabel() }}
+          </button>
+        </div>
+      }
     </form>
   `,
   styles: `
@@ -175,6 +177,7 @@ export class DynamicForm {
   readonly serverErrors = input<Record<string, string[]>>({});
   readonly saving = input(false);
   readonly submitLabel = input("Save");
+  readonly showActions = input(true);
 
   readonly submitted = output<Record<string, unknown>>();
   readonly cancelled = output<void>();
@@ -236,6 +239,10 @@ export class DynamicForm {
 
   protected onSubmit(event: Event): void {
     event.preventDefault();
+    this.submit();
+  }
+
+  submit(): void {
     this.attempted.set(true);
     if (Object.keys(this.clientErrors()).length > 0) return;
 

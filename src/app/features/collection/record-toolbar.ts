@@ -115,8 +115,12 @@ import { Field } from "../../core/models";
           <nz-dropdown-menu #moreMenu="nzDropdownMenu">
             <ul nz-menu>
               <li nz-menu-item>
-                <a [routerLink]="['/collections', collectionId(), 'import']">
-                  <nz-icon nzType="upload" /><span>Import</span>
+                <a
+                  class="flex items-center gap-2.5"
+                  [routerLink]="['/collections', collectionId(), 'import']"
+                >
+                  <nz-icon nzType="upload" />
+                  <span>Import</span>
                 </a>
               </li>
               <li
@@ -124,7 +128,10 @@ import { Field } from "../../core/models";
                 [nzDisabled]="!canExport()"
                 (click)="canExport() && export.emit()"
               >
-                <nz-icon nzType="download" /><span>Export CSV</span>
+                <div class="flex items-center gap-2.5">
+                  <nz-icon nzType="download" />
+                  <span>Export CSV</span>
+                </div>
               </li>
             </ul>
           </nz-dropdown-menu>

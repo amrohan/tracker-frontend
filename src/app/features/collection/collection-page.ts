@@ -24,6 +24,7 @@ import { Notify } from "../../core/notify.service";
 import { ConfirmDialog } from "../../shared/confirm-dialog";
 import { CoverPickerDialog } from "../../shared/cover-picker-dialog";
 import { CoverView } from "../../shared/cover-view";
+import { RecordDrawer } from "../records/record-drawer";
 
 @Component({
   selector: "app-collection-page",
@@ -38,6 +39,7 @@ import { CoverView } from "../../shared/cover-view";
     NzMenuModule,
     NzTabsModule,
     CoverView,
+    RecordDrawer,
   ],
 
   template: `
@@ -103,12 +105,15 @@ import { CoverView } from "../../shared/cover-view";
 
           <!-- Actions -->
           <div class="actions">
-            <a
-              [routerLink]="['/collections', c.id, 'records', 'new']"
-              [attr.disabled]="c.fields.length === 0 ? '' : null"
+            <button
+              nz-button
+              nzType="primary"
+              type="button"
+              [disabled]="c.fields.length === 0"
+              (click)="ctx.openCreate()"
             >
-              <button nz-button nzType="primary">Add record</button>
-            </a>
+              Add record
+            </button>
 
             <button
               nz-button
@@ -228,12 +233,17 @@ import { CoverView } from "../../shared/cover-view";
           nzType="primary"
           nzShape="circle"
           nzSize="large"
+          type="button"
           class="fab grid! place-content-center!"
-          [routerLink]="['/collections', c.id, 'records', 'new']"
+          (click)="ctx.openCreate()"
+          aria-label="Add record"
         >
           <nz-icon nzType="plus" />
         </button>
       }
+
+      <!-- Native Record Drawer -->
+      <app-record-drawer />
     } @else if (ctx.detail.error()) {
       <!-- ================= ERROR ================= -->
       <div class="page">

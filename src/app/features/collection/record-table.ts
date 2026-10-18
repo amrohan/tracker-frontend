@@ -7,7 +7,6 @@ import {
   output,
   signal,
 } from "@angular/core";
-import { RouterLink } from "@angular/router";
 import { FieldTypeCatalog } from "../../core/field-types.service";
 import { formatMetric } from "../../core/format";
 import {
@@ -24,7 +23,7 @@ import { LocalStorageService } from "../../core/local-storage.service";
 
 @Component({
   selector: "app-record-table",
-  imports: [RouterLink, FieldValue, RecordActionMenu, NzIconModule],
+  imports: [FieldValue, RecordActionMenu, NzIconModule],
   template: `
     <div
       class="table-container surface-card"
@@ -80,22 +79,18 @@ import { LocalStorageService } from "../../core/local-storage.service";
                     [class.sticky-col]="first"
                   >
                     @if (first) {
-                      <a
+                      <span
                         class="first"
-                        [routerLink]="[
-                          '/collections',
-                          collectionId(),
-                          'records',
-                          r.id,
-                        ]"
-                        (click)="$event.stopPropagation()"
+                        role="button"
+                        tabindex="0"
+                        (click)="$event.stopPropagation(); open.emit(r)"
                       >
                         <app-field-value
                           [field]="f"
                           [value]="r.values[f.key]"
                           [references]="references()"
                         />
-                      </a>
+                      </span>
                     } @else {
                       <app-field-value
                         [field]="f"
@@ -113,6 +108,8 @@ import { LocalStorageService } from "../../core/local-storage.service";
                     [collectionId]="collectionId()"
                     [recordId]="r.id"
                     [label]="labelOf(r)"
+                    (view)="open.emit(r)"
+                    (edit)="edit.emit(r)"
                     (delete)="delete.emit(r)"
                   />
                 </td>
@@ -380,6 +377,7 @@ export class RecordTable {
 
   readonly toggleSort = output<Field>();
   readonly open = output<TrackerRecord>();
+  readonly edit = output<TrackerRecord>();
   readonly delete = output<TrackerRecord>();
 
   protected readonly aggregationShortLabel = aggregationShortLabel;

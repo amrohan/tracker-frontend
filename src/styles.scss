@@ -7,16 +7,12 @@
   --app-primary: var(--ant-primary-color, #1890ff);
   --app-primary-hover: var(--ant-primary-color-hover, #40a9ff);
   --app-primary-active: var(--ant-primary-color-active, #096dd9);
-  --app-primary-container: color-mix(
-    in srgb,
-    var(--app-primary) 16%,
-    var(--app-surface)
-  );
-  --app-on-primary-container: color-mix(
-    in srgb,
-    var(--app-primary) 60%,
-    var(--app-text)
-  );
+  --app-primary-container: color-mix(in srgb,
+      var(--app-primary) 16%,
+      var(--app-surface));
+  --app-on-primary-container: color-mix(in srgb,
+      var(--app-primary) 60%,
+      var(--app-text));
   --app-on-primary: #ffffff;
 
   --app-surface: #ffffff;
@@ -259,6 +255,7 @@ a {
 }
 
 @media (max-width: 768px) {
+
   .page,
   .page-narrow {
     padding: 20px 16px 48px;
@@ -266,6 +263,7 @@ a {
 }
 
 @media (max-width: 640px) {
+
   .page,
   .page-narrow {
     padding: 16px 14px 40px;
@@ -371,6 +369,7 @@ a {
 // ================================================================
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -397,12 +396,7 @@ a {
   }
 }
 
-/* Drawer is open – lock the page scroll.
-   app-record-drawer lives in the regular Angular component tree (router outlet)
-   even though nz-drawer portals its panel into the CDK overlay. */
-body:has(app-record-drawer) {
-  overflow: hidden;
-}
+
 
 .ant-btn {
   border-radius: 8px;
@@ -429,11 +423,9 @@ body:has(app-record-drawer) {
 .ant-input,
 .ant-select-selector {
   &:hover {
-    border-color: color-mix(
-      in srgb,
-      var(--app-primary) 70%,
-      var(--app-outline)
-    ) !important;
+    border-color: color-mix(in srgb,
+        var(--app-primary) 70%,
+        var(--app-outline)) !important;
   }
 }
 

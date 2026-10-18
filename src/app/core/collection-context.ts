@@ -8,8 +8,16 @@ import {
   signal,
   untracked,
 } from "@angular/core";
-import { CollectionDetail, Field } from "./models";
+import { CollectionDetail, Field, RecordReference, TrackerRecord } from "./models";
 import { HttpCacheService } from "./http-cache.service";
+
+export type RecordDrawerMode = "view" | "edit" | "create";
+
+export interface RecordDrawerState {
+  mode: RecordDrawerMode;
+  record?: TrackerRecord;
+  references?: Record<string, RecordReference>;
+}
 
 /**
  * Per-route state for one collection. `autoProvided: false` means it is created by the route's
@@ -37,6 +45,23 @@ export class CollectionContext {
   );
 
   readonly recordsVersion = signal(0);
+  readonly drawerState = signal<RecordDrawerState | null>(null);
+
+  openCreate(): void {
+    this.drawerState.set({ mode: "create" });
+  }
+
+  openEdit(record: TrackerRecord, references?: Record<string, RecordReference>): void {
+    this.drawerState.set({ mode: "edit", record, references });
+  }
+
+  openView(record: TrackerRecord, references?: Record<string, RecordReference>): void {
+    this.drawerState.set({ mode: "view", record, references });
+  }
+
+  closeDrawer(): void {
+    this.drawerState.set(null);
+  }
 
   recordsChanged(): void {
     const id = this.id();

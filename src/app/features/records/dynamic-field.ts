@@ -280,7 +280,7 @@ import { ReferenceSelector } from "../../shared/reference-selector";
   `,
   styles: `
     .wrap {
-      margin-bottom: 12px;
+      margin-bottom: 0;
     }
     .field-item {
       display: flex;
@@ -290,8 +290,8 @@ import { ReferenceSelector } from "../../shared/reference-selector";
     .field-label {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-size: 0.875rem;
+      gap: 5px;
+      font-size: 0.84rem;
       font-weight: 500;
       color: var(--app-text);
     }
@@ -299,24 +299,24 @@ import { ReferenceSelector } from "../../shared/reference-selector";
       width: 100%;
     }
     .toggle {
-      padding: 6px 0 10px;
+      padding: 2px 0 4px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
     }
     .toggle-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
     .rating {
-      padding: 4px 0 12px;
+      padding: 2px 0 4px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
     }
     .hint {
-      font-size: 0.8rem;
+      font-size: 0.775rem;
       color: var(--app-text-muted);
     }
     .type-icon {
