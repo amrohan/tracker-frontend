@@ -7,6 +7,7 @@ import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzMenuModule } from "ng-zorro-antd/menu";
 import { AuthService } from "../../core/auth.service";
 import { NzThemeType, ThemeService } from "../../core/theme.service";
+import { HeaderService } from "../../core/header.service";
 
 @Component({
   selector: "app-shell",
@@ -20,19 +21,42 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
     NzAvatarModule,
   ],
   template: `
+    <!-- ================= APP HEADER ================= -->
     <header class="bar">
-      <div class="bar-inner">
-        <!-- Brand -->
-        <a routerLink="/" class="brand" aria-label="Tracker home">
-          <span class="brand-name">Tracker</span>
-        </a>
+      <div class="flex gap-2 p-2 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        @if (header.detail(); as d) {
+          <div class="flex items-center">
+            <button
+              nz-button
+              nzType="text"
+              nzShape="circle"
+              [routerLink]="d.backLink"
+              aria-label="Back to trackers"
+            >
+              <nz-icon nzType="arrow-left" />
+            </button>
+
+            <div class="detail-title">
+              <span class="detail-icon" aria-hidden="true">{{ d.icon }}</span>
+              <span class="detail-name">{{ d.title }}</span>
+            </div>
+          </div>
+        } @else {
+          <!-- Default mode: app brand -->
+          <a routerLink="/" class="brand" aria-label="Tracker home">
+            <div class="brand-icon">
+              <nz-icon nzType="appstore" />
+            </div>
+            <span class="brand-name">Tracker</span>
+          </a>
+        }
 
         <span class="spacer"></span>
 
-        <div class="flex gap-3 items-center justify-end">
-          <!-- Theme Menu -->
+        <!-- Right Controls -->
+        <div class="flex items-center gap-2">
+          <!-- Theme Menu Toggle -->
           <button
-            class="mt-2!"
             nz-button
             nzType="text"
             nzShape="circle"
@@ -62,7 +86,7 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
             </ul>
           </nz-dropdown-menu>
 
-          <!-- User Menu -->
+          <!-- User Menu with Animated Avatar -->
           <button
             nz-button
             nzType="text"
@@ -70,6 +94,7 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
             nz-dropdown
             [nzDropdownMenu]="userMenu"
             aria-label="Account menu"
+            class="avatar-button"
           >
             <nz-avatar class="avatar" [nzText]="initials()" />
           </button>
@@ -112,9 +137,9 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
       position: sticky;
       top: 0;
       z-index: 100;
-      height: 64px;
+      height: 56px;
       padding: 0;
-      background: color-mix(in srgb, var(--app-surface) 92%, transparent);
+      background: color-mix(in srgb, var(--app-surface) 94%, transparent);
       border-bottom: 1px solid var(--app-outline-variant);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
@@ -128,9 +153,9 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
       height: 100%;
       display: flex;
       align-items: center;
-      padding: 0 20px;
+      padding: 0 16px;
       box-sizing: border-box;
-      max-width: 1240px;
+      max-width: 1280px;
       margin: 0 auto;
     }
 
@@ -143,9 +168,26 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
       user-select: none;
     }
 
+    .brand-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: var(--app-primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .brand:hover .brand-icon {
+      transform: scale(1.08);
+    }
+
     .brand-name {
-      font-family: "Bricolage Grotesque", sans-serif;
-      font-size: 1.35rem;
+      font-size: 1.15rem;
       font-weight: 700;
       letter-spacing: -0.025em;
       color: var(--app-text);
@@ -155,16 +197,33 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
       flex: 1;
     }
 
-    .toolbar-button,
     .avatar-button {
-      margin-left: 6px;
-      color: var(--app-text-muted);
-      font-size: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      animation: avatarPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition:
+        transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.2s ease;
     }
 
-    .toolbar-button:hover,
+    @keyframes avatarPop {
+      0% {
+        transform: scale(0.75);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
     .avatar-button:hover {
-      color: var(--app-text);
+      transform: scale(1.08);
+    }
+
+    .avatar-button:active {
+      transform: scale(0.94);
     }
 
     .avatar {
@@ -172,6 +231,12 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
       color: #fff;
       font-size: 12px;
       font-weight: 700;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+      transition: box-shadow 0.2s ease;
+    }
+
+    .avatar-button:hover .avatar {
+      box-shadow: 0 0 0 2px var(--app-primary);
     }
 
     .avatar-large {
@@ -214,7 +279,7 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
     }
 
     .content {
-      min-height: calc(100vh - 64px);
+      min-height: calc(100vh - 56px);
     }
 
     @media (max-width: 600px) {
@@ -222,14 +287,38 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
         padding: 0 12px;
       }
       .brand-name {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
       }
+    }
+    .detail-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      margin-left: 4px;
+      animation: avatarPop 0.2s ease;
+    }
+
+    .detail-icon {
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .detail-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--app-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: min(50vw, 360px);
     }
   `,
 })
 export class Shell {
   protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);
+  protected readonly header = inject(HeaderService);
 
   protected readonly themes: {
     type: NzThemeType;

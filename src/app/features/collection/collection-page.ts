@@ -1,5 +1,5 @@
 import { BreakpointObserver } from "@angular/cdk/layout";
-import { Component, inject, input } from "@angular/core";
+import { Component, DestroyRef, effect, inject, input } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
 import {
   Router,
@@ -25,6 +25,7 @@ import { ConfirmDialog } from "../../shared/confirm-dialog";
 import { CoverPickerDialog } from "../../shared/cover-picker-dialog";
 import { CoverView } from "../../shared/cover-view";
 import { RecordDrawer } from "../records/record-drawer";
+import { HeaderService } from "../../core/header.service";
 
 @Component({
   selector: "app-collection-page",
@@ -191,13 +192,6 @@ import { RecordDrawer } from "../records/record-drawer";
               Summary
             </a>
           </div>
-        </div>
-
-        <div class="goBack">
-          <a nz-button nzType="text" routerLink="/">
-            <nz-icon nzType="arrow-left" />
-            Go Back
-          </a>
         </div>
       </header>
 
@@ -602,6 +596,7 @@ export class CollectionPage {
   private readonly modal = inject(NzModalService);
   private readonly notify = inject(Notify);
   private readonly router = inject(Router);
+  private readonly header = inject(HeaderService);
 
   protected readonly isCompact = toSignal(
     inject(BreakpointObserver)
@@ -613,6 +608,23 @@ export class CollectionPage {
   );
 
   protected readonly dateTime = formatDateTime;
+
+  constructor() {
+    effect(() => {
+      const c = this.ctx.detail.value();
+      if (c) {
+        this.header.set({ icon: c.icon, title: c.name, backLink: "/" });
+      } else {
+        this.header.clear();
+      }
+    });
+
+    inject(DestroyRef).onDestroy(() => this.header.clear());
+  }
+
+  protected goBack(): void {
+    void this.router.navigateByUrl("/");
+  }
 
   protected notFound(): boolean {
     return httpStatus(this.ctx.detail.error()) === 404;
