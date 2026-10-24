@@ -37,6 +37,10 @@ import { NzMenuModule } from "ng-zorro-antd/menu";
           <nz-icon nzType="edit" />
           <span class="action-text">Edit</span>
         </li>
+        <li nz-menu-item (click)="share.emit()">
+          <nz-icon nzType="share-alt" />
+          <span class="action-text">Share</span>
+        </li>
         <li nz-menu-divider></li>
         <li nz-menu-item nzDanger (click)="delete.emit()">
           <nz-icon nzType="delete" />
@@ -61,5 +65,6 @@ export class RecordActionMenu {
 
   readonly view = output<void>();
   readonly edit = output<void>();
+  readonly share = output<void>();
   readonly delete = output<void>();
 }

@@ -27,6 +27,7 @@ import { CoverView } from "../../shared/cover-view";
 import { RecordDrawer } from "../records/record-drawer";
 import { HeaderService } from "../../core/header.service";
 import { WebShareService } from "../../core/web-share.service";
+import { ShareDialog } from "../../shared/share-dialog";
 
 @Component({
   selector: "app-collection-page",
@@ -634,10 +635,43 @@ export class CollectionPage {
   protected shareTracker(): void {
     const c = this.ctx.detail.value();
     if (!c) return;
-    this.webShare.share({
-      title: c.name,
-      text: c.description || `Tracker: ${c.name} (${c.recordCount} records)`,
-      url: typeof window !== "undefined" ? window.location.href : undefined,
+
+    const fieldsList = [
+      {
+        label: "Total Records",
+        value: `${c.recordCount} ${c.recordCount === 1 ? "record" : "records"}`,
+      },
+      {
+        label: "Total Fields",
+        value: `${c.fields.length} ${c.fields.length === 1 ? "field" : "fields"}`,
+      },
+      {
+        label: "Created Date",
+        value: new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
+          new Date(c.createdAt),
+        ),
+      },
+    ];
+    if (c.lastActivityAt) {
+      fieldsList.push({
+        label: "Last Activity",
+        value: formatDateTime(c.lastActivityAt),
+      });
+    }
+
+    this.modal.create({
+      nzContent: ShareDialog,
+      nzData: {
+        type: "collection",
+        title: c.name,
+        subtitle: c.description || `${c.recordCount} records tracked`,
+        icon: c.icon,
+        fields: fieldsList,
+        url: window.location.href,
+      },
+      nzFooter: null,
+      nzWidth: 620,
+      nzStyle: { maxWidth: "95vw" },
     });
   }
 

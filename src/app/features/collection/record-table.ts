@@ -110,6 +110,7 @@ import { LocalStorageService } from "../../core/local-storage.service";
                     [label]="labelOf(r)"
                     (view)="open.emit(r)"
                     (edit)="edit.emit(r)"
+                    (share)="share.emit(r)"
                     (delete)="delete.emit(r)"
                   />
                 </td>
@@ -378,6 +379,7 @@ export class RecordTable {
   readonly toggleSort = output<Field>();
   readonly open = output<TrackerRecord>();
   readonly edit = output<TrackerRecord>();
+  readonly share = output<TrackerRecord>();
   readonly delete = output<TrackerRecord>();
 
   protected readonly aggregationShortLabel = aggregationShortLabel;

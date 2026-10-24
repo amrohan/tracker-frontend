@@ -36,6 +36,13 @@ import {
 import { Notify } from "../../core/notify.service";
 import { RecordsApi } from "../../core/records-api.service";
 import { ConfirmDialog } from "../../shared/confirm-dialog";
+import { ShareDialog } from "../../shared/share-dialog";
+import {
+  formatCurrency,
+  formatDate,
+  formatDateTime,
+  formatNumber,
+} from "../../core/format";
 
 import { recordLabel } from "./record-list.utils";
 import { RecordCardList } from "./record-card-list";
@@ -162,6 +169,7 @@ import { SavedFilterDrawer } from "./saved-filter-drawer";
               [dimmed]="list.isLoading()"
               (open)="openView($event, d.references)"
               (edit)="openEdit($event, d.references)"
+              (share)="shareRecord($event, d.references)"
               (delete)="remove($event)"
             />
           } @else {
@@ -177,6 +185,7 @@ import { SavedFilterDrawer } from "./saved-filter-drawer";
               (toggleSort)="toggleSort($event)"
               (open)="openView($event, d.references)"
               (edit)="openEdit($event, d.references)"
+              (share)="shareRecord($event, d.references)"
               (delete)="remove($event)"
             />
           }
@@ -566,5 +575,58 @@ export class TableView {
 
   protected toggleSavedFilters(): void {
     this.showSavedFilters.update((v) => !v);
+  }
+
+  protected shareRecord(
+    record: TrackerRecord,
+    references: Record<string, RecordReference>,
+  ): void {
+    const col = this.ctx.detail.value();
+    if (!col) return;
+
+    const titleKey = this.titleCol()?.key;
+    const title = recordLabel(record, titleKey, "Record");
+    const fieldsList = col.fields.map((f) => ({
+      label: f.name,
+      value: this.formatShareValue(f, record.values[f.key], references),
+    }));
+
+    this.modal.create({
+      nzContent: ShareDialog,
+      nzData: {
+        type: "record",
+        title,
+        subtitle: col.name,
+        icon: col.icon,
+        fields: fieldsList,
+        url: window.location.href,
+      },
+      nzFooter: null,
+      nzWidth: 620,
+      nzStyle: { maxWidth: "95vw" },
+    });
+  }
+
+  private formatShareValue(
+    f: Field,
+    v: unknown,
+    references: Record<string, RecordReference>,
+  ): string {
+    if (v === null || v === undefined || v === "") return "—";
+    if (f.type === "boolean") return v === true ? "Yes" : "No";
+    if (f.type === "rating") return `${v} / ${f.config?.max ?? 5} ★`;
+    if (f.type === "currency")
+      return formatCurrency(Number(v), f.config?.currency ?? "USD");
+    if (f.type === "number") return formatNumber(Number(v));
+    if (f.type === "date") return formatDate(String(v));
+    if (f.type === "dateTime") return formatDateTime(String(v));
+    if (f.type === "multiSelect" && Array.isArray(v)) return v.join(", ");
+    if (f.type === "reference" && typeof v === "string") {
+      return references[v]?.label ?? String(v);
+    }
+    if (f.type === "multiReference" && Array.isArray(v)) {
+      return v.map((id) => references[id]?.label ?? String(id)).join(", ");
+    }
+    return String(v);
   }
 }

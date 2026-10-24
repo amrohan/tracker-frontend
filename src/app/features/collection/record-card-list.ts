@@ -50,6 +50,7 @@ import { hasVisibleValue } from "./record-list.utils";
                 [label]="labelOf(r)"
                 (view)="open.emit(r)"
                 (edit)="edit.emit(r)"
+                (share)="share.emit(r)"
                 (delete)="delete.emit(r)"
               />
             </div>
@@ -368,6 +369,7 @@ export class RecordCardList {
 
   readonly open = output<TrackerRecord>();
   readonly edit = output<TrackerRecord>();
+  readonly share = output<TrackerRecord>();
   readonly delete = output<TrackerRecord>();
 
   protected readonly expandedRecords = signal<Set<string>>(new Set());

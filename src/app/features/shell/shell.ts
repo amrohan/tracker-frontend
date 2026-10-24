@@ -55,18 +55,6 @@ import { HeaderService } from "../../core/header.service";
 
         <!-- Right Controls -->
         <div class="flex items-center gap-2">
-          <!-- Quick Share / Add Button -->
-          <a
-            nz-button
-            nzType="text"
-            nzShape="circle"
-            routerLink="/share-target"
-            aria-label="Share or quick add content"
-            title="Share content to tracker"
-          >
-            <nz-icon nzType="share-alt" />
-          </a>
-
           <!-- Theme Menu Toggle -->
           <button
             nz-button

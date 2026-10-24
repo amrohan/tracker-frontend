@@ -9,18 +9,25 @@ import { NzModalService } from "ng-zorro-antd/modal";
 import { NzSpinModule } from "ng-zorro-antd/spin";
 
 import { CollectionContext } from "../../core/collection-context";
-import { formatDateTime } from "../../core/format";
+import {
+  formatCurrency,
+  formatDate,
+  formatDateTime,
+  formatNumber,
+} from "../../core/format";
 import {
   fieldErrors,
   httpStatus,
   problemExtension,
   problemMessage,
 } from "../../core/http-errors";
+import { Field } from "../../core/models";
 import { Notify } from "../../core/notify.service";
 import { RecordsApi } from "../../core/records-api.service";
 import { WebShareService } from "../../core/web-share.service";
 import { ConfirmDialog } from "../../shared/confirm-dialog";
 import { FieldValue } from "../../shared/field-value";
+import { ShareDialog } from "../../shared/share-dialog";
 import { recordLabel } from "../collection/record-list.utils";
 import { DynamicForm } from "./dynamic-form";
 
@@ -64,6 +71,16 @@ import { DynamicForm } from "./dynamic-form";
             Delete
           </button>
           <span class="spacer"></span>
+          <button
+            nz-button
+            nzType="default"
+            type="button"
+            (click)="shareRecord()"
+            aria-label="Share record"
+          >
+            <nz-icon nzType="share-alt" />
+            <span>Share</span>
+          </button>
           <button
             nz-button
             nzType="primary"
@@ -491,6 +508,55 @@ export class RecordDrawer {
     this.notify.info("Record deleted.");
     this.ctx.recordsChanged();
     this.close();
+  }
+
+  protected shareRecord(): void {
+    const r = this.record();
+    const col = this.ctx.detail.value();
+    if (!r || !col) return;
+
+    const titleKey = this.ctx.titleField()?.key;
+    const title = recordLabel(r, titleKey, "Record");
+    const fieldsList = col.fields.map((f) => ({
+      label: f.name,
+      value: this.formatShareValue(f, r.values[f.key]),
+    }));
+
+    this.modal.create({
+      nzContent: ShareDialog,
+      nzData: {
+        type: "record",
+        title,
+        subtitle: col.name,
+        icon: col.icon,
+        fields: fieldsList,
+        url: window.location.href,
+      },
+      nzFooter: null,
+      nzWidth: 620,
+      nzStyle: { maxWidth: "95vw" },
+    });
+  }
+
+  private formatShareValue(f: Field, v: unknown): string {
+    if (v === null || v === undefined || v === "") return "—";
+    if (f.type === "boolean") return v === true ? "Yes" : "No";
+    if (f.type === "rating") return `${v} / ${f.config?.max ?? 5} ★`;
+    if (f.type === "currency")
+      return formatCurrency(Number(v), f.config?.currency ?? "USD");
+    if (f.type === "number") return formatNumber(Number(v));
+    if (f.type === "date") return formatDate(String(v));
+    if (f.type === "dateTime") return formatDateTime(String(v));
+    if (f.type === "multiSelect" && Array.isArray(v)) return v.join(", ");
+    if (f.type === "reference" && typeof v === "string") {
+      return this.references()[v]?.label ?? String(v);
+    }
+    if (f.type === "multiReference" && Array.isArray(v)) {
+      return v
+        .map((id) => this.references()[id]?.label ?? String(id))
+        .join(", ");
+    }
+    return String(v);
   }
 
   private confirm(
