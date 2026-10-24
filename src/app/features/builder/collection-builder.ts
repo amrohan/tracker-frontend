@@ -38,6 +38,7 @@ import {
   FieldType,
 } from "../../core/models";
 import { Notify } from "../../core/notify.service";
+import { WebShareService } from "../../core/web-share.service";
 import { CoverPickerDialog } from "../../shared/cover-picker-dialog";
 import { CoverView } from "../../shared/cover-view";
 import {
@@ -622,6 +623,7 @@ export class CollectionBuilder {
   private readonly notify = inject(Notify);
   private readonly router = inject(Router);
   private readonly modal = inject(NzModalService);
+  private readonly webShare = inject(WebShareService);
 
   protected readonly emojis = EMOJIS;
   protected readonly quickTypes: FieldType[] = [
@@ -786,6 +788,7 @@ export class CollectionBuilder {
     try {
       const id = this.id();
       const target = id ? await this.saveExisting(id) : await this.saveNew();
+      this.webShare.setRecentTrackerId(target);
       this.cache.invalidateCollection(target);
       this.cache.invalidate('/api/collections');
       this.notify.info(id ? "Changes saved." : "Tracker created.");

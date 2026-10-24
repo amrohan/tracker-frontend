@@ -18,6 +18,7 @@ import {
 } from "../../core/http-errors";
 import { Notify } from "../../core/notify.service";
 import { RecordsApi } from "../../core/records-api.service";
+import { WebShareService } from "../../core/web-share.service";
 import { ConfirmDialog } from "../../shared/confirm-dialog";
 import { FieldValue } from "../../shared/field-value";
 import { recordLabel } from "../collection/record-list.utils";
@@ -323,6 +324,7 @@ export class RecordDrawer {
   private readonly api = inject(RecordsApi);
   private readonly modal = inject(NzModalService);
   private readonly notify = inject(Notify);
+  private readonly webShare = inject(WebShareService);
 
   protected readonly isMobile = toSignal(
     inject(BreakpointObserver)
@@ -437,6 +439,7 @@ export class RecordDrawer {
         const collectionId = this.ctx.id();
         if (!collectionId) return;
         await this.api.create(collectionId, values);
+        this.webShare.setRecentTrackerId(collectionId);
         this.notify.info("Record added.");
         this.ctx.recordsChanged();
         this.close();

@@ -29,6 +29,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: "share-target",
+        loadComponent: () =>
+          import("./features/share-target/share-target-page").then(
+            (m) => m.ShareTargetPage,
+          ),
+      },
+      {
         path: "collections/new",
         loadComponent: () =>
           import("./features/builder/collection-builder").then(

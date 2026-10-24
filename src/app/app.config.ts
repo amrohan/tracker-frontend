@@ -2,9 +2,11 @@ import {
   ApplicationConfig,
   importProvidersFrom,
   inject,
+  isDevMode,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from "@angular/core";
+import { provideServiceWorker } from "@angular/service-worker";
 import {
   provideRouter,
   withComponentInputBinding,
@@ -56,6 +58,7 @@ import {
   RightOutline,
   SearchOutline,
   SettingOutline,
+  ShareAltOutline,
   StarFill,
   StarOutline,
   SwapOutline,
@@ -119,6 +122,7 @@ const icons = [
   RightOutline,
   SearchOutline,
   SettingOutline,
+  ShareAltOutline,
   StarFill,
   StarOutline,
   SwapOutline,
@@ -143,6 +147,10 @@ export const appConfig: ApplicationConfig = {
       withRouterConfig({ paramsInheritanceStrategy: "always" }),
     ),
     provideHttpClient(withInterceptors([authInterceptor, httpCacheInterceptor])),
+    provideServiceWorker("ngsw-worker.js", {
+      enabled: !isDevMode(),
+      registrationStrategy: "registerWhenStable:30000",
+    }),
     provideAppInitializer(async () => {
       await Promise.all([
         inject(AuthService).restoreSession(),

@@ -276,8 +276,20 @@ import { CollectionCard } from "./collection-card";
         </div>
       }
 
-      <!-- Mobile Floating Action Button (Native NG-ZORRO circular button) -->
-      <div class="fixed right-8 bottom-8">
+      <!-- Floating Action Buttons -->
+      <div class="fixed right-6 bottom-6 flex flex-col gap-2.5 items-end z-20">
+        <a
+          nz-button
+          nzType="default"
+          nzShape="circle"
+          nzSize="large"
+          routerLink="/share-target"
+          aria-label="Share or quick add content"
+          title="Share content to tracker"
+          class="grid! place-content-center! shadow-md! border-(--app-outline)! bg-(--app-surface)!"
+        >
+          <nz-icon nzType="share-alt" />
+        </a>
         <button
           nz-button
           nzType="primary"
@@ -285,6 +297,7 @@ import { CollectionCard } from "./collection-card";
           nzSize="large"
           routerLink="/collections/new"
           aria-label="Create tracker"
+          class="shadow-lg!"
         >
           <nz-icon nzType="plus" />
         </button>

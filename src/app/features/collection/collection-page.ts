@@ -26,6 +26,7 @@ import { CoverPickerDialog } from "../../shared/cover-picker-dialog";
 import { CoverView } from "../../shared/cover-view";
 import { RecordDrawer } from "../records/record-drawer";
 import { HeaderService } from "../../core/header.service";
+import { WebShareService } from "../../core/web-share.service";
 
 @Component({
   selector: "app-collection-page",
@@ -134,6 +135,12 @@ import { HeaderService } from "../../core/header.service";
                   <div class="flex gap-2">
                     <nz-icon nzType="picture" />
                     <span>Change cover</span>
+                  </div>
+                </li>
+                <li nz-menu-item (click)="shareTracker()">
+                  <div class="flex gap-2">
+                    <nz-icon nzType="share-alt" />
+                    <span>Share tracker</span>
                   </div>
                 </li>
                 <li nz-menu-item>
@@ -597,6 +604,7 @@ export class CollectionPage {
   private readonly notify = inject(Notify);
   private readonly router = inject(Router);
   private readonly header = inject(HeaderService);
+  private readonly webShare = inject(WebShareService);
 
   protected readonly isCompact = toSignal(
     inject(BreakpointObserver)
@@ -614,12 +622,23 @@ export class CollectionPage {
       const c = this.ctx.detail.value();
       if (c) {
         this.header.set({ icon: c.icon, title: c.name, backLink: "/" });
+        this.webShare.setRecentTrackerId(c.id);
       } else {
         this.header.clear();
       }
     });
 
     inject(DestroyRef).onDestroy(() => this.header.clear());
+  }
+
+  protected shareTracker(): void {
+    const c = this.ctx.detail.value();
+    if (!c) return;
+    this.webShare.share({
+      title: c.name,
+      text: c.description || `Tracker: ${c.name} (${c.recordCount} records)`,
+      url: typeof window !== "undefined" ? window.location.href : undefined,
+    });
   }
 
   protected goBack(): void {
