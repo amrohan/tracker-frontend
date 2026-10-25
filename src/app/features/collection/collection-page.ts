@@ -13,6 +13,7 @@ import { NzDropdownModule } from "ng-zorro-antd/dropdown";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzMenuModule } from "ng-zorro-antd/menu";
 import { NzTabsModule } from "ng-zorro-antd/tabs";
+import { NzTagModule } from "ng-zorro-antd/tag";
 import { NzModalService } from "ng-zorro-antd/modal";
 
 import { CollectionsApi } from "../../core/collections-api.service";
@@ -28,6 +29,7 @@ import { RecordDrawer } from "../records/record-drawer";
 import { HeaderService } from "../../core/header.service";
 import { WebShareService } from "../../core/web-share.service";
 import { ShareDialog } from "../../shared/share-dialog";
+import { CollaborationDialog } from "../../shared/collaboration-dialog";
 
 @Component({
   selector: "app-collection-page",
@@ -41,6 +43,7 @@ import { ShareDialog } from "../../shared/share-dialog";
     NzDropdownModule,
     NzMenuModule,
     NzTabsModule,
+    NzTagModule,
     CoverView,
     RecordDrawer,
   ],
@@ -60,7 +63,15 @@ import { ShareDialog } from "../../shared/share-dialog";
 
           <!-- Title / Description / Meta -->
           <div class="titles">
-            <h1>{{ c.name }}</h1>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h1>{{ c.name }}</h1>
+              @if (c.role && c.role !== 'owner') {
+                <nz-tag [nzColor]="c.role === 'editor' ? 'processing' : 'default'" class="rounded-full! text-xs font-semibold">
+                  <nz-icon [nzType]="c.role === 'editor' ? 'edit' : 'eye'" />
+                  {{ c.role === 'editor' ? 'Editor' : 'Viewer' }}
+                </nz-tag>
+              }
+            </div>
 
             @if (c.description) {
               <p class="desc">
@@ -69,6 +80,14 @@ import { ShareDialog } from "../../shared/share-dialog";
             }
 
             <div class="meta">
+              @if (c.role && c.role !== 'owner' && c.ownerDisplayName) {
+                <span class="meta-item">
+                  <nz-icon nzType="user" class="meta-icon" aria-hidden="true" />
+                  <span>Shared by {{ c.ownerDisplayName }}</span>
+                </span>
+                <span class="dot" aria-hidden="true">·</span>
+              }
+
               <span class="meta-item">
                 <nz-icon
                   nzType="database"
@@ -108,15 +127,32 @@ import { ShareDialog } from "../../shared/share-dialog";
 
           <!-- Actions -->
           <div class="actions">
-            <button
-              nz-button
-              nzType="primary"
-              type="button"
-              [disabled]="c.fields.length === 0"
-              (click)="ctx.openCreate()"
-            >
-              Add record
-            </button>
+            @if (ctx.isOwner()) {
+              <button
+                nz-button
+                nzType="default"
+                type="button"
+                (click)="manageSharing()"
+                class="flex items-center gap-1.5"
+                nz-tooltip
+                nzTooltipTitle="Share public link or invite collaborators"
+              >
+                <nz-icon nzType="team" />
+                <span class="hidden sm:inline">Share</span>
+              </button>
+            }
+
+            @if (ctx.canEdit()) {
+              <button
+                nz-button
+                nzType="primary"
+                type="button"
+                [disabled]="c.fields.length === 0"
+                (click)="ctx.openCreate()"
+              >
+                Add record
+              </button>
+            }
 
             <button
               nz-button
@@ -132,43 +168,57 @@ import { ShareDialog } from "../../shared/share-dialog";
 
             <nz-dropdown-menu #optionsMenu="nzDropdownMenu">
               <ul nz-menu>
-                <li nz-menu-item (click)="changeCover()">
-                  <div class="flex gap-2">
-                    <nz-icon nzType="picture" />
-                    <span>Change cover</span>
-                  </div>
-                </li>
+                @if (ctx.isOwner()) {
+                  <li nz-menu-item (click)="changeCover()">
+                    <div class="flex gap-2">
+                      <nz-icon nzType="picture" />
+                      <span>Change cover</span>
+                    </div>
+                  </li>
+                }
                 <li nz-menu-item (click)="shareTracker()">
                   <div class="flex gap-2">
                     <nz-icon nzType="share-alt" />
-                    <span>Share tracker</span>
+                    <span>Share as text / image / PDF</span>
                   </div>
                 </li>
-                <li nz-menu-item>
-                  <a
-                    class="flex gap-2"
-                    [routerLink]="['/collections', c.id, 'edit']"
-                  >
-                    <nz-icon nzType="setting" /><span
-                      >Edit fields &amp; details</span
+                @if (ctx.isOwner()) {
+                  <li nz-menu-item (click)="manageSharing()">
+                    <div class="flex gap-2">
+                      <nz-icon nzType="team" />
+                      <span>Share links &amp; collaborators</span>
+                    </div>
+                  </li>
+                  <li nz-menu-item>
+                    <a
+                      class="flex gap-2"
+                      [routerLink]="['/collections', c.id, 'edit']"
                     >
-                  </a>
-                </li>
-                <li nz-menu-item>
-                  <a
-                    class="flex gap-2"
-                    [routerLink]="['/collections', c.id, 'import']"
-                  >
-                    <nz-icon nzType="upload" /><span>Import records</span>
-                  </a>
-                </li>
-                <li nz-menu-divider></li>
-                <li nz-menu-item nzDanger (click)="removeColl()">
-                  <div class="flex gap-2">
-                    <nz-icon nzType="delete" />
-                    <span>Delete tracker</span>
-                  </div>
-                </li>
+                      <nz-icon nzType="setting" /><span
+                        >Edit fields &amp; details</span
+                      >
+                    </a>
+                  </li>
+                }
+                @if (ctx.canEdit()) {
+                  <li nz-menu-item>
+                    <a
+                      class="flex gap-2"
+                      [routerLink]="['/collections', c.id, 'import']"
+                    >
+                      <nz-icon nzType="upload" /><span>Import records</span>
+                    </a>
+                  </li>
+                }
+                @if (ctx.isOwner()) {
+                  <li nz-menu-divider></li>
+                  <li nz-menu-item nzDanger (click)="removeColl()">
+                    <div class="flex gap-2">
+                      <nz-icon nzType="delete" />
+                      <span>Delete tracker</span>
+                    </div>
+                  </li>
+                }
               </ul>
             </nz-dropdown-menu>
           </div>
@@ -672,6 +722,18 @@ export class CollectionPage {
       nzFooter: null,
       nzWidth: 620,
       nzStyle: { maxWidth: "95vw" },
+    });
+  }
+
+  protected manageSharing(): void {
+    const c = this.ctx.detail.value();
+    if (!c) return;
+    this.modal.create({
+      nzContent: CollaborationDialog,
+      nzData: { collectionId: c.id, collectionName: c.name, collectionIcon: c.icon },
+      nzFooter: null,
+      nzWidth: 680,
+      nzStyle: { maxWidth: '95vw' },
     });
   }
 

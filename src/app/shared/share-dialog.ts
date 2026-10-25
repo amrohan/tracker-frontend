@@ -49,7 +49,7 @@ export interface ShareDialogData {
       </div>
       <div>
         <h3 class="text-base font-bold text-(--app-text) leading-tight m-0">
-          Share {{ data.type === 'record' ? 'Record' : 'Tracker' }}
+          Share {{ data.type === "record" ? "Record" : "Tracker" }}
         </h3>
         <p class="text-xs text-(--app-text-muted) m-0">
           Export or share as formatted text, image card, PDF, or link
@@ -57,163 +57,187 @@ export interface ShareDialogData {
       </div>
     </div>
 
-    <div *nzModalContent class="py-2 flex flex-col gap-4">
-      <!-- Format Selector Pills -->
-      <div
-        class="flex p-1 rounded-xl bg-(--app-surface-container) border border-(--app-outline-variant) gap-1"
-        role="tablist"
-      >
-        @for (fmt of formats; track fmt.id) {
+    <!-- Format Selector Pills -->
+    <div
+      class="flex p-1 rounded-xl bg-(--app-surface-container) border border-(--app-outline-variant) gap-1"
+      role="tablist"
+    >
+      @for (fmt of formats; track fmt.id) {
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="activeFormat() === fmt.id"
+          (click)="activeFormat.set(fmt.id)"
+          class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer border-none"
+          [class.bg-(--app-surface)]="activeFormat() === fmt.id"
+          [class.text-(--app-primary)]="activeFormat() === fmt.id"
+          [class.shadow-2xs]="activeFormat() === fmt.id"
+          [class.text-(--app-text-muted)]="activeFormat() !== fmt.id"
+        >
+          <nz-icon [nzType]="fmt.icon" class="text-sm" />
+          <span>{{ fmt.label }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- FORMAT 1: TEXT / MARKDOWN PREVIEW -->
+    @if (activeFormat() === "text") {
+      <div class="flex flex-col gap-2.5">
+        <div class="flex items-center justify-between">
+          <span
+            class="text-xs font-semibold text-(--app-text-muted) uppercase tracking-wider"
+          >
+            Text Preview (Markdown / Plaintext)
+          </span>
           <button
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeFormat() === fmt.id"
-            (click)="activeFormat.set(fmt.id)"
-            class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer border-none"
-            [class.bg-(--app-surface)]="activeFormat() === fmt.id"
-            [class.text-(--app-primary)]="activeFormat() === fmt.id"
-            [class.shadow-2xs]="activeFormat() === fmt.id"
-            [class.text-(--app-text-muted)]="activeFormat() !== fmt.id"
+            nz-button
+            nzType="text"
+            nzSize="small"
+            (click)="copyText()"
+            class="flex items-center gap-1 text-(--app-primary)!"
           >
-            <nz-icon [nzType]="fmt.icon" class="text-sm" />
-            <span>{{ fmt.label }}</span>
+            <nz-icon [nzType]="copied() ? 'check' : 'copy'" />
+            <span>{{ copied() ? "Copied!" : "Copy text" }}</span>
           </button>
-        }
+        </div>
+
+        <div
+          class="p-3.5 rounded-xl border border-(--app-outline-variant) bg-(--app-surface-container-high) text-(--app-text) font-mono text-xs whitespace-pre-wrap leading-relaxed select-all max-h-64 overflow-y-auto"
+        >
+          {{ formattedText() }}
+        </div>
       </div>
+    }
 
-      <!-- FORMAT 1: TEXT / MARKDOWN PREVIEW -->
-      @if (activeFormat() === 'text') {
-        <div class="flex flex-col gap-2.5">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-(--app-text-muted) uppercase tracking-wider">
-              Text Preview (Markdown / Plaintext)
-            </span>
-            <button
-              nz-button
-              nzType="text"
-              nzSize="small"
-              (click)="copyText()"
-              class="flex items-center gap-1 text-(--app-primary)!"
+    <!-- FORMAT 2: IMAGE CARD PREVIEW -->
+    @if (activeFormat() === "image") {
+      <div class="flex flex-col gap-2.5">
+        <div class="flex items-center justify-between">
+          <span
+            class="text-xs font-semibold text-(--app-text-muted) uppercase tracking-wider"
+          >
+            Visual Card Preview
+          </span>
+          <span class="text-xs text-(--app-text-muted)"
+            >High Resolution PNG</span
+          >
+        </div>
+
+        <!-- Image container -->
+        <div
+          class="relative rounded-2xl border border-(--app-outline-variant) bg-(--app-surface-container) p-3 flex justify-center items-center overflow-hidden max-h-72"
+        >
+          @if (generatingImage()) {
+            <div
+              class="py-12 flex flex-col items-center gap-2 text-xs text-(--app-text-muted)"
             >
-              <nz-icon [nzType]="copied() ? 'check' : 'copy'" />
-              <span>{{ copied() ? 'Copied!' : 'Copy text' }}</span>
-            </button>
-          </div>
-
-          <div
-            class="p-3.5 rounded-xl border border-(--app-outline-variant) bg-(--app-surface-container-high) text-(--app-text) font-mono text-xs whitespace-pre-wrap leading-relaxed select-all max-h-64 overflow-y-auto"
-          >{{ formattedText() }}</div>
-        </div>
-      }
-
-      <!-- FORMAT 2: IMAGE CARD PREVIEW -->
-      @if (activeFormat() === 'image') {
-        <div class="flex flex-col gap-2.5">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-(--app-text-muted) uppercase tracking-wider">
-              Visual Card Preview
-            </span>
-            <span class="text-xs text-(--app-text-muted)">High Resolution PNG</span>
-          </div>
-
-          <!-- Image container -->
-          <div
-            class="relative rounded-2xl border border-(--app-outline-variant) bg-(--app-surface-container) p-3 flex justify-center items-center overflow-hidden max-h-72"
-          >
-            @if (generatingImage()) {
-              <div class="py-12 flex flex-col items-center gap-2 text-xs text-(--app-text-muted)">
-                <nz-icon nzType="loading" class="text-xl text-(--app-primary)" />
-                <span>Rendering high-res card...</span>
-              </div>
-            } @else if (cardImageUrl()) {
-              <img
-                [src]="cardImageUrl()"
-                alt="Shared card preview"
-                class="max-w-full max-h-64 rounded-xl shadow-md object-contain border border-(--app-outline-variant)"
-              />
-            }
-          </div>
-        </div>
-      }
-
-      <!-- FORMAT 3: PDF / PRINT DOCUMENT -->
-      @if (activeFormat() === 'pdf') {
-        <div class="flex flex-col gap-2.5">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-(--app-text-muted) uppercase tracking-wider">
-              Printable PDF Document
-            </span>
-            <span class="text-xs text-(--app-text-muted)">Print / Save as PDF</span>
-          </div>
-
-          <!-- Print Preview Card -->
-          <div
-            class="p-4 sm:p-6 rounded-2xl border border-(--app-outline-variant) bg-(--app-surface) shadow-2xs flex flex-col gap-3.5 max-h-64 overflow-y-auto"
-          >
-            <div class="flex items-center gap-3 border-b border-(--app-outline-variant) pb-3">
-              <span class="text-2xl">{{ data.icon || '📋' }}</span>
-              <div>
-                <h4 class="text-base font-bold text-(--app-text) m-0">{{ data.title }}</h4>
-                @if (data.subtitle) {
-                  <p class="text-xs text-(--app-text-muted) m-0">{{ data.subtitle }}</p>
-                }
-              </div>
+              <nz-icon nzType="loading" class="text-xl text-(--app-primary)" />
+              <span>Rendering high-res card...</span>
             </div>
+          } @else if (cardImageUrl()) {
+            <img
+              [src]="cardImageUrl()"
+              alt="Shared card preview"
+              class="max-w-full max-h-64 rounded-xl shadow-md object-contain border border-(--app-outline-variant)"
+            />
+          }
+        </div>
+      </div>
+    }
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-              @for (f of data.fields || []; track f.label) {
-                <div class="p-2 rounded-lg bg-(--app-surface-container)">
-                  <span class="block text-[11px] font-semibold text-(--app-text-muted) uppercase tracking-wider">
-                    {{ f.label }}
-                  </span>
-                  <span class="block text-xs font-medium text-(--app-text) mt-0.5">
-                    {{ f.value }}
-                  </span>
-                </div>
+    <!-- FORMAT 3: PDF / PRINT DOCUMENT -->
+    @if (activeFormat() === "pdf") {
+      <div class="flex flex-col gap-2.5">
+        <div class="flex items-center justify-between">
+          <span
+            class="text-xs font-semibold text-(--app-text-muted) uppercase tracking-wider"
+          >
+            Printable PDF Document
+          </span>
+          <span class="text-xs text-(--app-text-muted)"
+            >Print / Save as PDF</span
+          >
+        </div>
+
+        <!-- Print Preview Card -->
+        <div
+          class="p-4 sm:p-6 rounded-2xl border border-(--app-outline-variant) bg-(--app-surface) shadow-2xs flex flex-col gap-3.5 max-h-64 overflow-y-auto"
+        >
+          <div
+            class="flex items-center gap-3 border-b border-(--app-outline-variant) pb-3"
+          >
+            <span class="text-2xl">{{ data.icon || "📋" }}</span>
+            <div>
+              <h4 class="text-base font-bold text-(--app-text) m-0">
+                {{ data.title }}
+              </h4>
+              @if (data.subtitle) {
+                <p class="text-xs text-(--app-text-muted) m-0">
+                  {{ data.subtitle }}
+                </p>
               }
             </div>
+          </div>
 
-            <div class="text-[10px] text-(--app-text-muted) text-right pt-2 border-t border-(--app-outline-variant)">
-              Personal Tracker · {{ currentDateStr }}
-            </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            @for (f of data.fields || []; track f.label) {
+              <div class="p-2 rounded-lg bg-(--app-surface-container)">
+                <span
+                  class="block text-[11px] font-semibold text-(--app-text-muted) uppercase tracking-wider"
+                >
+                  {{ f.label }}
+                </span>
+                <span
+                  class="block text-xs font-medium text-(--app-text) mt-0.5"
+                >
+                  {{ f.value }}
+                </span>
+              </div>
+            }
+          </div>
+
+          <div
+            class="text-[10px] text-(--app-text-muted) text-right pt-2 border-t border-(--app-outline-variant)"
+          >
+            Personal Tracker · {{ currentDateStr }}
           </div>
         </div>
-      }
+      </div>
+    }
 
-      <!-- FORMAT 4: LINK -->
-      @if (activeFormat() === 'link') {
-        <div class="flex flex-col gap-2.5">
-          <span class="text-xs font-semibold text-(--app-text-muted) uppercase tracking-wider">
-            Shareable Link
-          </span>
-          <div class="flex gap-2">
-            <input
-              nz-input
-              readonly
-              [value]="shareUrl()"
-              class="rounded-lg! font-mono text-xs"
-              (click)="$any($event.target).select()"
-            />
-            <button nz-button nzType="primary" (click)="copyLink()">
-              <nz-icon [nzType]="copied() ? 'check' : 'copy'" />
-              <span>{{ copied() ? 'Copied' : 'Copy' }}</span>
-            </button>
-          </div>
+    <!-- FORMAT 4: LINK -->
+    @if (activeFormat() === "link") {
+      <div class="flex flex-col gap-2.5">
+        <span
+          class="text-xs font-semibold text-(--app-text-muted) uppercase tracking-wider"
+        >
+          Shareable Link
+        </span>
+        <div class="flex gap-2">
+          <input
+            nz-input
+            readonly
+            [value]="shareUrl()"
+            class="rounded-lg! font-mono text-xs"
+            (click)="$any($event.target).select()"
+          />
+          <button nz-button nzType="primary" (click)="copyLink()">
+            <nz-icon [nzType]="copied() ? 'check' : 'copy'" />
+            <span>{{ copied() ? "Copied" : "Copy" }}</span>
+          </button>
         </div>
-      }
+      </div>
+    }
 
-      <!-- Hidden canvas for rendering image cards -->
-      <canvas #canvas class="hidden"></canvas>
-    </div>
+    <!-- Hidden canvas for rendering image cards -->
+    <canvas #canvas class="hidden"></canvas>
 
     <!-- Modal Footer Actions -->
     <div *nzModalFooter class="flex items-center justify-between gap-2">
-      <button nz-button nzType="default" (click)="close()">
-        Close
-      </button>
+      <button nz-button nzType="default" (click)="close()">Close</button>
 
       <div class="flex items-center gap-2">
-        @if (activeFormat() === 'text') {
+        @if (activeFormat() === "text") {
           <button nz-button nzType="default" (click)="copyText()">
             <nz-icon [nzType]="copied() ? 'check' : 'copy'" />
             <span>Copy Text</span>
@@ -226,7 +250,7 @@ export interface ShareDialogData {
           }
         }
 
-        @if (activeFormat() === 'image') {
+        @if (activeFormat() === "image") {
           <button nz-button nzType="default" (click)="copyImage()">
             <nz-icon nzType="copy" />
             <span>Copy Image</span>
@@ -243,14 +267,14 @@ export interface ShareDialogData {
           }
         }
 
-        @if (activeFormat() === 'pdf') {
+        @if (activeFormat() === "pdf") {
           <button nz-button nzType="primary" (click)="printDocument()">
             <nz-icon nzType="printer" />
             <span>Print / Save as PDF</span>
           </button>
         }
 
-        @if (activeFormat() === 'link') {
+        @if (activeFormat() === "link") {
           <button nz-button nzType="default" (click)="copyLink()">
             <nz-icon [nzType]="copied() ? 'check' : 'copy'" />
             <span>Copy Link</span>
@@ -272,7 +296,8 @@ export class ShareDialog implements OnInit {
   private readonly notify = inject(Notify);
   private readonly webShare = inject(WebShareService);
 
-  private readonly canvasRef = viewChild<ElementRef<HTMLCanvasElement>>("canvas");
+  private readonly canvasRef =
+    viewChild<ElementRef<HTMLCanvasElement>>("canvas");
 
   readonly activeFormat = signal<"text" | "image" | "pdf" | "link">("text");
   readonly copied = signal(false);
@@ -294,7 +319,10 @@ export class ShareDialog implements OnInit {
   readonly canShare = computed(() => this.webShare.canShare());
 
   readonly shareUrl = computed(() => {
-    return this.data.url || (typeof window !== "undefined" ? window.location.href : "");
+    return (
+      this.data.url ||
+      (typeof window !== "undefined" ? window.location.href : "")
+    );
   });
 
   readonly formattedText = computed(() => {
@@ -407,7 +435,8 @@ export class ShareDialog implements OnInit {
 
       // Top brand badge
       ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-      ctx.font = "bold 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+      ctx.font =
+        "bold 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
       ctx.fillText("PERSONAL TRACKER", 24, 28);
 
       // Icon badge
@@ -430,12 +459,14 @@ export class ShareDialog implements OnInit {
 
       // Title & Subtitle
       ctx.fillStyle = "#111827";
-      ctx.font = "bold 20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+      ctx.font =
+        "bold 20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
       ctx.fillText(this.data.title, 96, 78);
 
       if (this.data.subtitle) {
         ctx.fillStyle = "#6b7280";
-        ctx.font = "13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+        ctx.font =
+          "13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
         ctx.fillText(this.data.subtitle, 96, 96);
       }
 
@@ -459,13 +490,16 @@ export class ShareDialog implements OnInit {
 
         // Field label
         ctx.fillStyle = "#6b7280";
-        ctx.font = "bold 10px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+        ctx.font =
+          "bold 10px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
         ctx.fillText(f.label.toUpperCase(), x + 12, y + 18);
 
         // Field value
         ctx.fillStyle = "#1f2937";
-        ctx.font = "bold 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-        const valText = f.value.length > 28 ? f.value.slice(0, 27) + "…" : f.value;
+        ctx.font =
+          "bold 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+        const valText =
+          f.value.length > 28 ? f.value.slice(0, 27) + "…" : f.value;
         ctx.fillText(valText, x + 12, y + 36);
       });
 
@@ -480,7 +514,8 @@ export class ShareDialog implements OnInit {
 
       // Footer branding
       ctx.fillStyle = "#9ca3af";
-      ctx.font = "11px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+      ctx.font =
+        "11px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
       ctx.fillText("Generated from Personal Tracker", 24, footerY + 4);
       ctx.textAlign = "right";
       ctx.fillText(this.currentDateStr, width - 24, footerY + 4);
@@ -646,10 +681,10 @@ export class ShareDialog implements OnInit {
         </head>
         <body>
           <div class="header">
-            <div class="icon">${this.data.icon || '📋'}</div>
+            <div class="icon">${this.data.icon || "📋"}</div>
             <div>
               <h1 class="title">${this.data.title}</h1>
-              ${this.data.subtitle ? `<p class="subtitle">${this.data.subtitle}</p>` : ''}
+              ${this.data.subtitle ? `<p class="subtitle">${this.data.subtitle}</p>` : ""}
             </div>
           </div>
           <div class="grid">${fieldsHtml}</div>

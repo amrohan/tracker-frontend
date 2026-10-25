@@ -33,19 +33,23 @@ import { NzMenuModule } from "ng-zorro-antd/menu";
           <nz-icon nzType="eye" />
           <span class="action-text">View</span>
         </li>
-        <li nz-menu-item (click)="edit.emit()">
-          <nz-icon nzType="edit" />
-          <span class="action-text">Edit</span>
-        </li>
+        @if (canEdit()) {
+          <li nz-menu-item (click)="edit.emit()">
+            <nz-icon nzType="edit" />
+            <span class="action-text">Edit</span>
+          </li>
+        }
         <li nz-menu-item (click)="share.emit()">
           <nz-icon nzType="share-alt" />
           <span class="action-text">Share</span>
         </li>
-        <li nz-menu-divider></li>
-        <li nz-menu-item nzDanger (click)="delete.emit()">
-          <nz-icon nzType="delete" />
-          <span class="action-text">Delete</span>
-        </li>
+        @if (canEdit()) {
+          <li nz-menu-divider></li>
+          <li nz-menu-item nzDanger (click)="delete.emit()">
+            <nz-icon nzType="delete" />
+            <span class="action-text">Delete</span>
+          </li>
+        }
       </ul>
     </nz-dropdown-menu>
   `,
@@ -62,6 +66,7 @@ export class RecordActionMenu {
   readonly collectionId = input.required<string>();
   readonly recordId = input.required<string>();
   readonly label = input("this record");
+  readonly canEdit = input(true);
 
   readonly view = output<void>();
   readonly edit = output<void>();

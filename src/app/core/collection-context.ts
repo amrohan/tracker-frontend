@@ -44,6 +44,11 @@ export class CollectionContext {
       this.fields()[0],
   );
 
+  readonly role = computed(() => this.detail.value()?.role ?? "owner");
+  readonly isOwner = computed(() => this.role() === "owner");
+  readonly canEdit = computed(() => this.role() === "owner" || this.role() === "editor");
+  readonly isViewer = computed(() => this.role() === "viewer");
+
   readonly recordsVersion = signal(0);
   readonly drawerState = signal<RecordDrawerState | null>(null);
 

@@ -95,6 +95,8 @@ export interface CollectionSummary {
   lastActivityAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  role?: 'owner' | 'editor' | 'viewer';
+  ownerDisplayName?: string | null;
 }
 
 export interface CollectionDetail {
@@ -108,6 +110,8 @@ export interface CollectionDetail {
   createdAt: string;
   updatedAt: string;
   fields: Field[];
+  role?: 'owner' | 'editor' | 'viewer';
+  ownerDisplayName?: string | null;
 }
 
 export interface FieldTypeInfo {
@@ -231,4 +235,76 @@ export interface SavedFilter {
 export interface SavedFilterRequest {
   name: string;
   filtersJson: string;
+}
+
+// ─── Sharing ──────────────────────────────────────────────────────────────────
+
+export interface ShareLink {
+  id: string;
+  collectionId: string;
+  token: string;
+  label?: string | null;
+  expiresAt?: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CreateShareLinkRequest {
+  label?: string | null;
+  expiresAt?: string | null;
+}
+
+export interface Collaborator {
+  id: string;
+  collectionId: string;
+  inviteEmail: string;
+  collaboratorDisplayName?: string | null;
+  role: 'viewer' | 'editor';
+  accepted: boolean;
+  createdAt: string;
+  inviteToken?: string | null;
+  collectionName?: string | null;
+  collectionIcon?: string | null;
+}
+
+export interface InviteCollaboratorRequest {
+  email: string;
+  role: 'viewer' | 'editor';
+}
+
+// ─── Public view (anonymous) ──────────────────────────────────────────────────
+
+export interface PublicField {
+  id: string;
+  name: string;
+  key: string;
+  type: string;
+  isTitle: boolean;
+  showInList: boolean;
+}
+
+export interface PublicCollection {
+  id: string;
+  name: string;
+  description?: string | null;
+  icon: string;
+  coverType: string;
+  coverValue?: string | null;
+  coverVersion?: number | null;
+  fields: PublicField[];
+  ownerDisplayName: string;
+}
+
+export interface PublicRecord {
+  id: string;
+  values: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PublicRecordList {
+  items: PublicRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
 }

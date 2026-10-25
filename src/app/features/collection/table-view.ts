@@ -167,6 +167,7 @@ import { SavedFilterDrawer } from "./saved-filter-drawer";
               [metrics]="metrics()"
               [filtered]="hasQuery()"
               [dimmed]="list.isLoading()"
+              [canEdit]="ctx.canEdit()"
               (open)="openView($event, d.references)"
               (edit)="openEdit($event, d.references)"
               (share)="shareRecord($event, d.references)"
@@ -182,6 +183,7 @@ import { SavedFilterDrawer } from "./saved-filter-drawer";
               [sortFieldId]="sortBy()"
               [sortAscending]="sortDir() === 'asc'"
               [loading]="list.isLoading()"
+              [canEdit]="ctx.canEdit()"
               (toggleSort)="toggleSort($event)"
               (open)="openView($event, d.references)"
               (edit)="openEdit($event, d.references)"
@@ -493,7 +495,11 @@ export class TableView {
     record: TrackerRecord,
     references: Record<string, RecordReference>,
   ): void {
-    this.ctx.openEdit(record, references);
+    if (this.ctx.canEdit()) {
+      this.ctx.openEdit(record, references);
+    } else {
+      this.ctx.openView(record, references);
+    }
   }
 
   /* ------------------------------- export -------------------------------- */

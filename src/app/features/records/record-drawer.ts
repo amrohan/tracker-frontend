@@ -30,6 +30,7 @@ import { FieldValue } from "../../shared/field-value";
 import { ShareDialog } from "../../shared/share-dialog";
 import { recordLabel } from "../collection/record-list.utils";
 import { DynamicForm } from "./dynamic-form";
+import { NzTooltipDirective } from "ng-zorro-antd/tooltip";
 
 @Component({
   selector: "app-record-drawer",
@@ -40,6 +41,7 @@ import { DynamicForm } from "./dynamic-form";
     NzSpinModule,
     FieldValue,
     DynamicForm,
+    NzTooltipDirective,
   ],
   template: `
     <!-- Header Template -->
@@ -48,7 +50,9 @@ import { DynamicForm } from "./dynamic-form";
         @if (ctx.detail.value(); as col) {
           <p class="drawer-eyebrow">
             @if (col.icon) {
-              <span class="drawer-eyebrow-icon" aria-hidden="true">{{ col.icon }}</span>
+              <span class="drawer-eyebrow-icon" aria-hidden="true">{{
+                col.icon
+              }}</span>
             }
             <span>{{ col.name }}</span>
           </p>
@@ -60,35 +64,40 @@ import { DynamicForm } from "./dynamic-form";
     <!-- Unified Drawer Footer (Always at bottom) -->
     <ng-template #footerTpl>
       <div class="drawer-footer-actions">
-        @if (mode() === 'view') {
-          <button
-            nz-button
-            nzType="default"
-            nzDanger
-            type="button"
-            (click)="remove()"
-          >
-            Delete
-          </button>
+        @if (mode() === "view") {
+          @if (ctx.canEdit()) {
+            <button
+              nz-button
+              nzType="primary"
+              nzDanger
+              type="button"
+              (click)="remove()"
+            >
+              Delete
+            </button>
+          }
           <span class="spacer"></span>
           <button
+            class="mr-2!"
             nz-button
             nzType="default"
             type="button"
             (click)="shareRecord()"
+            nz-tooltip="Share record"
             aria-label="Share record"
           >
             <nz-icon nzType="share-alt" />
-            <span>Share</span>
           </button>
-          <button
-            nz-button
-            nzType="primary"
-            type="button"
-            (click)="switchToEdit()"
-          >
-            Edit
-          </button>
+          @if (ctx.canEdit()) {
+            <button
+              nz-button
+              nzType="primary"
+              type="button"
+              (click)="switchToEdit()"
+            >
+              Edit
+            </button>
+          }
         } @else {
           <button
             nz-button
@@ -108,7 +117,13 @@ import { DynamicForm } from "./dynamic-form";
             [disabled]="saving()"
             (click)="submitForm()"
           >
-            {{ saving() ? 'Saving…' : (mode() === 'edit' ? 'Save changes' : 'Add record') }}
+            {{
+              saving()
+                ? "Saving…"
+                : mode() === "edit"
+                  ? "Save changes"
+                  : "Add record"
+            }}
           </button>
         }
       </div>
@@ -127,7 +142,7 @@ import { DynamicForm } from "./dynamic-form";
       (nzOnClose)="close()"
     >
       <ng-container *nzDrawerContent>
-        @if (mode() === 'view') {
+        @if (mode() === "view") {
           <!-- ================= VIEW MODE ================= -->
           @if (record(); as r) {
             <div class="view-content">
@@ -170,7 +185,7 @@ import { DynamicForm } from "./dynamic-form";
           <div class="form-content">
             <app-dynamic-form
               [fields]="ctx.fields()"
-              [initial]="mode() === 'edit' ? record()?.values ?? null : null"
+              [initial]="mode() === 'edit' ? (record()?.values ?? null) : null"
               [references]="references()"
               [serverErrors]="serverErrors()"
               [saving]="saving()"
@@ -358,7 +373,9 @@ export class RecordDrawer {
   protected readonly visible = computed(() => !!this.state());
   protected readonly mode = computed(() => this.state()?.mode ?? "view");
   protected readonly record = computed(() => this.state()?.record);
-  protected readonly references = computed(() => this.state()?.references ?? {});
+  protected readonly references = computed(
+    () => this.state()?.references ?? {},
+  );
 
   protected readonly saving = signal(false);
   protected readonly serverErrors = signal<Record<string, string[]>>({});

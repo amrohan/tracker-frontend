@@ -6,12 +6,13 @@ import {
   minLength,
   required,
 } from "@angular/forms/signals";
-import { Router, RouterLink } from "@angular/router";
+import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzFormModule } from "ng-zorro-antd/form";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzInputModule } from "ng-zorro-antd/input";
 import { AuthService } from "../../core/auth.service";
+import { safeReturnUrl } from "../../core/guards";
 import { problemMessage } from "../../core/http-errors";
 import { AuthLayout } from "../../shared/auth-layout";
 
@@ -169,6 +170,11 @@ export class RegisterPage {
     return kind ? (texts[kind] ?? "This value is not valid.") : null;
   }
 
+  private readonly route = inject(ActivatedRoute);
+  private get returnUrl(): string | null {
+    return this.route.snapshot.queryParamMap.get("returnUrl");
+  }
+
   protected async submit(event: Event): Promise<void> {
     event.preventDefault();
     this.attempted.set(true);
@@ -188,7 +194,7 @@ export class RegisterPage {
         email: email.trim(),
         password,
       });
-      await this.router.navigateByUrl("/");
+      await this.router.navigateByUrl(safeReturnUrl(this.returnUrl));
     } catch (err) {
       this.serverError.set(
         problemMessage(err, "Could not create the account."),

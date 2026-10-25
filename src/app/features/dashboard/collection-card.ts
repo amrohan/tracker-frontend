@@ -35,13 +35,24 @@ import { CoverView } from "../../shared/cover-view";
       <!-- Card Body -->
       <div class="pt-7 pb-3.5 px-4 flex flex-col justify-between flex-1">
         <div>
-          <h3
-            class="text-base font-bold text-[var(--app-text)] group-hover:text-[var(--app-primary)] transition-colors line-clamp-1 m-0 tracking-tight"
-          >
-            {{ collection().name }}
-          </h3>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <h3
+              class="text-base font-bold text-[var(--app-text)] group-hover:text-[var(--app-primary)] transition-colors line-clamp-1 m-0 tracking-tight"
+            >
+              {{ collection().name }}
+            </h3>
+            @if (collection().role && collection().role !== 'owner') {
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-[var(--app-primary-container)] text-[var(--app-primary)]">
+                <nz-icon [nzType]="collection().role === 'editor' ? 'edit' : 'eye'" class="text-[9px]" />
+                {{ collection().role === 'editor' ? 'Editor' : 'Viewer' }}
+              </span>
+            }
+          </div>
 
           <p class="text-xs text-[var(--app-text-muted)] line-clamp-1 mt-1 m-0 min-h-[16px] leading-relaxed">
+            @if (collection().role && collection().role !== 'owner' && collection().ownerDisplayName) {
+              <span class="text-[var(--app-primary)] font-medium">Shared by {{ collection().ownerDisplayName }}</span> ·
+            }
             {{ collection().description || "No description provided" }}
           </p>
         </div>

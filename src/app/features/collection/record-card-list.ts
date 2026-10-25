@@ -48,6 +48,7 @@ import { hasVisibleValue } from "./record-list.utils";
                 [collectionId]="collectionId()"
                 [recordId]="r.id"
                 [label]="labelOf(r)"
+                [canEdit]="canEdit()"
                 (view)="open.emit(r)"
                 (edit)="edit.emit(r)"
                 (share)="share.emit(r)"
@@ -366,6 +367,7 @@ export class RecordCardList {
   readonly metrics = input<SummaryMetric[]>([]);
   readonly filtered = input(false);
   readonly dimmed = input(false);
+  readonly canEdit = input(true);
 
   readonly open = output<TrackerRecord>();
   readonly edit = output<TrackerRecord>();

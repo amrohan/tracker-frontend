@@ -108,6 +108,7 @@ import { LocalStorageService } from "../../core/local-storage.service";
                     [collectionId]="collectionId()"
                     [recordId]="r.id"
                     [label]="labelOf(r)"
+                    [canEdit]="canEdit()"
                     (view)="open.emit(r)"
                     (edit)="edit.emit(r)"
                     (share)="share.emit(r)"
@@ -375,6 +376,7 @@ export class RecordTable {
   readonly sortFieldId = input<string | null>(null);
   readonly sortAscending = input(false);
   readonly loading = input(false);
+  readonly canEdit = input(true);
 
   readonly toggleSort = output<Field>();
   readonly open = output<TrackerRecord>();

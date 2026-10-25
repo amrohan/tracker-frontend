@@ -3,6 +3,21 @@ import { CollectionContext } from "./core/collection-context";
 import { authGuard, guestGuard } from "./core/guards";
 
 export const routes: Routes = [
+  // Public routes — no auth required
+  {
+    path: "view/:token",
+    loadComponent: () =>
+      import("./features/public-view/public-view-page").then(
+        (m) => m.PublicViewPage,
+      ),
+  },
+  {
+    path: "invite/accept",
+    loadComponent: () =>
+      import("./features/public-view/accept-invite-page").then(
+        (m) => m.AcceptInvitePage,
+      ),
+  },
   {
     path: "login",
     canActivate: [guestGuard],

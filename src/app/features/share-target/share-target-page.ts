@@ -1,10 +1,4 @@
-import {
-  Component,
-  OnInit,
-  computed,
-  inject,
-  signal,
-} from "@angular/core";
+import { Component, OnInit, computed, inject, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { HttpClient } from "@angular/common/http";
@@ -46,7 +40,8 @@ import { DynamicForm } from "../records/dynamic-form";
         </div>
         <h1 class="hero-title">Add Shared Content to Tracker</h1>
         <p class="hero-desc">
-          Capture links, notes, or snippets into your trackers. Pick where to add this record and review the fields below.
+          Capture links, notes, or snippets into your trackers. Pick where to
+          add this record and review the fields below.
         </p>
       </div>
 
@@ -85,7 +80,9 @@ import { DynamicForm } from "../records/dynamic-form";
           </div>
 
           <div class="preview-field">
-            <label class="preview-label" for="shared-url-input">URL / Link</label>
+            <label class="preview-label" for="shared-url-input"
+              >URL / Link</label
+            >
             <input
               id="shared-url-input"
               nz-input
@@ -97,7 +94,9 @@ import { DynamicForm } from "../records/dynamic-form";
           </div>
 
           <div class="preview-field">
-            <label class="preview-label" for="shared-text-input">Notes / Text</label>
+            <label class="preview-label" for="shared-text-input"
+              >Notes / Text</label
+            >
             <textarea
               id="shared-text-input"
               nz-input
@@ -141,11 +140,18 @@ import { DynamicForm } from "../records/dynamic-form";
         } @else if (filteredCollections().length === 0) {
           <div class="empty-state">
             <div class="empty-icon-wrap">
-              <nz-icon nzType="inbox" class="text-3xl text-(--app-text-muted)" />
+              <nz-icon
+                nzType="inbox"
+                class="text-3xl text-(--app-text-muted)"
+              />
             </div>
             <p class="font-semibold text-(--app-text)">No trackers found</p>
             <p class="text-xs text-(--app-text-muted) mb-3">
-              {{ trackerSearchQuery() ? 'No tracker matches your search.' : 'You have not created any trackers yet.' }}
+              {{
+                trackerSearchQuery()
+                  ? "No tracker matches your search."
+                  : "You have not created any trackers yet."
+              }}
             </p>
             <button nz-button nzType="primary" routerLink="/collections/new">
               <nz-icon nzType="plus" />
@@ -153,7 +159,11 @@ import { DynamicForm } from "../records/dynamic-form";
             </button>
           </div>
         } @else {
-          <div class="trackers-grid" role="radiogroup" aria-label="Available Trackers">
+          <div
+            class="trackers-grid"
+            role="radiogroup"
+            aria-label="Available Trackers"
+          >
             @for (col of filteredCollections(); track col.id) {
               <button
                 type="button"
@@ -165,7 +175,7 @@ import { DynamicForm } from "../records/dynamic-form";
               >
                 <!-- Squircle Icon -->
                 <div class="chip-icon" aria-hidden="true">
-                  {{ col.icon || '📁' }}
+                  {{ col.icon || "📁" }}
                 </div>
 
                 <div class="chip-info">
@@ -176,13 +186,18 @@ import { DynamicForm } from "../records/dynamic-form";
                     }
                   </div>
                   <span class="chip-meta">
-                    {{ col.recordCount }} {{ col.recordCount === 1 ? 'record' : 'records' }} · {{ col.fieldCount }} fields
+                    {{ col.recordCount }}
+                    {{ col.recordCount === 1 ? "record" : "records" }} ·
+                    {{ col.fieldCount }} fields
                   </span>
                 </div>
 
                 <div class="chip-check" aria-hidden="true">
                   @if (selectedTrackerId() === col.id) {
-                    <nz-icon nzType="check-circle" class="text-lg text-(--app-primary)" />
+                    <nz-icon
+                      nzType="check-circle"
+                      class="text-lg text-(--app-primary)"
+                    />
                   } @else {
                     <div class="chip-radio-circle"></div>
                   }
@@ -199,18 +214,25 @@ import { DynamicForm } from "../records/dynamic-form";
           <div class="fields-header">
             <div class="flex items-center gap-3">
               <div class="selected-tracker-icon" aria-hidden="true">
-                {{ currentTracker.icon || '📝' }}
+                {{ currentTracker.icon || "📝" }}
               </div>
               <div>
                 <div class="flex items-center gap-2">
-                  <span class="text-xs font-semibold uppercase tracking-wider text-(--app-primary)">Target Tracker</span>
-                  <span class="fields-count-badge">{{ currentTracker.fields.length }} fields</span>
+                  <span
+                    class="text-xs font-semibold uppercase tracking-wider text-(--app-primary)"
+                    >Target Tracker</span
+                  >
+                  <span class="fields-count-badge"
+                    >{{ currentTracker.fields.length }} fields</span
+                  >
                 </div>
                 <h3 class="tracker-active-name">{{ currentTracker.name }}</h3>
               </div>
             </div>
             @if (currentTracker.description) {
-              <p class="text-xs text-(--app-text-muted) max-w-md hidden sm:block">
+              <p
+                class="text-xs text-(--app-text-muted) max-w-md hidden sm:block"
+              >
                 {{ currentTracker.description }}
               </p>
             }
@@ -222,8 +244,14 @@ import { DynamicForm } from "../records/dynamic-form";
             </div>
           } @else if (currentTracker.fields.length === 0) {
             <div class="empty-state py-8">
-              <p class="text-sm text-(--app-text-muted)">This tracker has no fields configured yet.</p>
-              <button nz-button nzType="default" [routerLink]="['/collections', currentTracker.id, 'edit']">
+              <p class="text-sm text-(--app-text-muted)">
+                This tracker has no fields configured yet.
+              </p>
+              <button
+                nz-button
+                nzType="default"
+                [routerLink]="['/collections', currentTracker.id, 'edit']"
+              >
                 Add Fields
               </button>
             </div>
@@ -407,7 +435,9 @@ import { DynamicForm } from "../records/dynamic-form";
     .tracker-chip-btn.selected {
       border-color: var(--app-primary);
       background: var(--app-surface-container);
-      box-shadow: 0 0 0 2px var(--app-primary-container), 0 4px 12px rgba(0, 0, 0, 0.06);
+      box-shadow:
+        0 0 0 2px var(--app-primary-container),
+        0 4px 12px rgba(0, 0, 0, 0.06);
     }
     .chip-icon {
       width: 2.75rem;
