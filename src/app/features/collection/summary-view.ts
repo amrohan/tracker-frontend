@@ -123,25 +123,32 @@ import { SummaryReport } from "../../core/models";
     /* ---------------- grid ---------------- */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: clamp(10px, 2vw, 16px);
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
     }
 
     .tile {
       min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: clamp(10px, 2vw, 16px);
-      padding: clamp(14px, 2.4vw, 20px);
-      border-radius: clamp(14px, 2vw, 18px);
-      background: var(--app-surface-container-low);
-      border: 1px solid var(--app-outline-variant);
+      gap: 12px;
+      padding: 16px 18px;
+      border-radius: var(--radius-xl);
+      background: var(--app-surface);
+      border: 1px solid var(--app-outline);
+      box-shadow: var(--app-shadow-xs);
+      transition: all var(--transition-fast);
+
+      &:hover {
+        border-color: color-mix(in srgb, var(--app-primary) 40%, var(--app-outline));
+        box-shadow: var(--app-shadow-sm);
+      }
     }
 
     .tile-primary {
-      background: var(--app-primary-container);
-      color: var(--app-on-primary-container);
-      border-color: transparent;
+      background: var(--app-surface);
+      border-color: var(--app-primary);
+      box-shadow: var(--app-shadow-xs);
     }
 
     .tile-wide {
@@ -162,7 +169,7 @@ import { SummaryReport } from "../../core/models";
     }
 
     .label {
-      font-size: 0.85rem;
+      font-size: 0.8125rem;
       font-weight: 600;
       line-height: 1.3;
       color: var(--app-text-muted);
@@ -173,37 +180,37 @@ import { SummaryReport } from "../../core/models";
       -webkit-box-orient: vertical;
     }
     .tile-primary .label {
-      color: var(--app-on-primary-container);
-      opacity: 0.85;
+      color: var(--app-text-secondary);
     }
 
     .tile-icon-badge {
-      width: clamp(30px, 4vw, 36px);
-      height: clamp(30px, 4vw, 36px);
+      width: 32px;
+      height: 32px;
       flex: none;
       display: grid;
       place-items: center;
-      border-radius: 10px;
+      border-radius: var(--radius-md);
       background: var(--app-surface-container-high);
-      color: var(--app-text-muted);
-      font-size: 18px;
+      color: var(--app-text-secondary);
+      font-size: 15px;
     }
     .primary-badge {
-      background: var(--app-primary);
-      color: var(--app-on-primary);
+      background: var(--app-primary-container);
+      color: var(--app-on-primary-container);
     }
 
     .value {
       display: block;
-      font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.2rem);
+      font-size: clamp(1.4rem, 1.1rem + 1.2vw, 2rem);
       font-weight: 700;
       line-height: 1.15;
       letter-spacing: -0.02em;
       font-variant-numeric: tabular-nums;
+      color: var(--app-text);
       overflow-wrap: anywhere;
     }
     .value-date {
-      font-size: clamp(1rem, 0.9rem + 0.4vw, 1.15rem);
+      font-size: 1rem;
       font-weight: 600;
     }
 

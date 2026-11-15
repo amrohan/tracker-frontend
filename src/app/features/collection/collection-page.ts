@@ -50,7 +50,7 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
 
   template: `
     @if (ctx.detail.value(); as c) {
-      <header>
+      <header class="collection-header">
         <div class="hero">
           <app-cover-view [cover]="c.cover" [collectionId]="c.id" />
         </div>
@@ -66,10 +66,10 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
             <div class="flex items-center gap-2 flex-wrap">
               <h1>{{ c.name }}</h1>
               @if (c.role && c.role !== 'owner') {
-                <nz-tag [nzColor]="c.role === 'editor' ? 'processing' : 'default'" class="rounded-full! text-xs font-semibold">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-(--app-primary-container) text-(--app-on-primary-container)">
                   <nz-icon [nzType]="c.role === 'editor' ? 'edit' : 'eye'" />
                   {{ c.role === 'editor' ? 'Editor' : 'Viewer' }}
-                </nz-tag>
+                </span>
               }
             </div>
 
@@ -94,7 +94,7 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
                   class="meta-icon"
                   aria-hidden="true"
                 />
-                <span>
+                <span class="tabular-nums">
                   {{ c.recordCount }}
                   {{ c.recordCount === 1 ? "record" : "records" }}
                 </span>
@@ -104,7 +104,7 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
 
               <span class="meta-item">
                 <nz-icon nzType="table" class="meta-icon" aria-hidden="true" />
-                <span>
+                <span class="tabular-nums">
                   {{ c.fields.length }}
                   {{ c.fields.length === 1 ? "field" : "fields" }}
                 </span>
@@ -149,8 +149,10 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
                 type="button"
                 [disabled]="c.fields.length === 0"
                 (click)="ctx.openCreate()"
+                class="add-record-btn"
               >
-                Add record
+                <nz-icon nzType="plus" />
+                <span>Add record</span>
               </button>
             }
 
@@ -170,40 +172,38 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
               <ul nz-menu>
                 @if (ctx.isOwner()) {
                   <li nz-menu-item (click)="changeCover()">
-                    <div class="flex gap-2">
+                    <div class="flex items-center gap-2">
                       <nz-icon nzType="picture" />
                       <span>Change cover</span>
                     </div>
                   </li>
                 }
                 <li nz-menu-item (click)="shareTracker()">
-                  <div class="flex gap-2">
+                  <div class="flex items-center gap-2">
                     <nz-icon nzType="share-alt" />
                     <span>Share as text / image / PDF</span>
                   </div>
                 </li>
                 @if (ctx.isOwner()) {
                   <li nz-menu-item (click)="manageSharing()">
-                    <div class="flex gap-2">
+                    <div class="flex items-center gap-2">
                       <nz-icon nzType="team" />
                       <span>Share links &amp; collaborators</span>
                     </div>
                   </li>
                   <li nz-menu-item>
                     <a
-                      class="flex gap-2"
+                      class="flex items-center gap-2"
                       [routerLink]="['/collections', c.id, 'edit']"
                     >
-                      <nz-icon nzType="setting" /><span
-                        >Edit fields &amp; details</span
-                      >
+                      <nz-icon nzType="setting" /><span>Edit fields &amp; details</span>
                     </a>
                   </li>
                 }
                 @if (ctx.canEdit()) {
                   <li nz-menu-item>
                     <a
-                      class="flex gap-2"
+                      class="flex items-center gap-2"
                       [routerLink]="['/collections', c.id, 'import']"
                     >
                       <nz-icon nzType="upload" /><span>Import records</span>
@@ -213,7 +213,7 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
                 @if (ctx.isOwner()) {
                   <li nz-menu-divider></li>
                   <li nz-menu-item nzDanger (click)="removeColl()">
-                    <div class="flex gap-2">
+                    <div class="flex items-center gap-2">
                       <nz-icon nzType="delete" />
                       <span>Delete tracker</span>
                     </div>
@@ -224,30 +224,34 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
           </div>
         </div>
 
-        <!-- ================= TABS ================= -->
-        <div class="page tabs-wrap">
-          <div class="tab-nav">
+        <!-- ================= VIEW SEGMENTED TABS ================= -->
+        <div class="page views-bar-wrap">
+          <div class="segmented-pill-container" role="tablist" aria-label="Views">
             <a
-              class="tab-link"
+              class="segmented-pill-item"
               [routerLink]="['/collections', c.id]"
               routerLinkActive
               #tableLink="routerLinkActive"
               [routerLinkActiveOptions]="{ exact: true }"
               [class.active]="tableLink.isActive"
+              role="tab"
+              [attr.aria-selected]="tableLink.isActive"
             >
-              <nz-icon nzType="unordered-list" class="tab-icon" />
-              Table
+              <nz-icon nzType="unordered-list" />
+              <span>Table</span>
             </a>
 
             <a
-              class="tab-link"
+              class="segmented-pill-item"
               [routerLink]="['/collections', c.id, 'summary']"
               routerLinkActive
               #summaryLink="routerLinkActive"
               [class.active]="summaryLink.isActive"
+              role="tab"
+              [attr.aria-selected]="summaryLink.isActive"
             >
-              <nz-icon nzType="bar-chart" class="tab-icon" />
-              Summary
+              <nz-icon nzType="bar-chart" />
+              <span>Summary</span>
             </a>
           </div>
         </div>
@@ -462,56 +466,38 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
     .actions {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       align-self: start;
       padding-top: calc(clamp(60px, 8vw, 84px) / 2 + 6px);
     }
 
-    /* =========================================================
-       TABS (custom nav bar)
-       ========================================================= */
-
-    .tabs-wrap {
-      padding-top: 0;
-      padding-bottom: 0;
-    }
-
-    .tab-nav {
-      display: flex;
-      border-bottom: 2px solid var(--app-outline-variant);
-      gap: 0;
-    }
-
-    .tab-link {
+    .add-record-btn {
+      height: 36px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 0 20px;
-      height: 48px;
-      font-size: 0.9375rem;
-      font-weight: 500;
+    }
+
+    .options-btn {
       color: var(--app-text-muted);
-      text-decoration: none;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -2px;
-      transition:
-        color 0.15s ease,
-        border-color 0.15s ease;
+      &:hover {
+        color: var(--app-text);
+        background: var(--app-surface-container-high);
+      }
     }
 
-    .tab-link.active {
-      color: var(--app-primary);
-      border-bottom-color: var(--app-primary);
-    }
+    /* =========================================================
+       VIEWS BAR WRAP
+       ========================================================= */
 
-    .tab-link:hover:not(.active) {
-      color: var(--app-text);
-      border-bottom-color: var(--app-outline);
-    }
-
-    .tab-icon {
-      font-size: 20px;
-      opacity: 0.85;
+    .views-bar-wrap {
+      padding-top: 4px;
+      padding-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
     }
 
     .goBack {

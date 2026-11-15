@@ -227,20 +227,31 @@ import { Field, SavedFilter } from "../../core/models";
     .toolbar {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: 10px;
+      margin-bottom: 14px;
     }
     .spacer {
       flex: 1 1 auto;
     }
     .search {
-      flex: 0 1 380px;
+      flex: 0 1 360px;
       min-width: 200px;
       align-items: center;
+    }
+    .search-input {
+      border-radius: var(--radius-md) !important;
+      height: 36px !important;
     }
     .search-icon {
       color: var(--app-text-muted);
       opacity: 0.8;
+    }
+    .clear-search {
+      color: var(--app-text-muted);
+      cursor: pointer;
+      &:hover {
+        color: var(--app-text);
+      }
     }
     .tools {
       flex: 1;
@@ -250,15 +261,15 @@ import { Field, SavedFilter } from "../../core/models";
       min-width: 0;
     }
     .count {
-      min-width: 20px;
-      height: 20px;
+      min-width: 18px;
+      height: 18px;
       display: inline-grid;
       place-items: center;
       margin-left: 6px;
       padding: 0 5px;
-      border-radius: 999px;
+      border-radius: var(--radius-full);
       background: var(--app-primary);
-      color: var(--app-on-primary);
+      color: #ffffff;
       font-size: 0.6875rem;
       font-weight: 700;
       line-height: 1;
@@ -266,11 +277,17 @@ import { Field, SavedFilter } from "../../core/models";
     .on {
       border-color: var(--app-primary) !important;
       color: var(--app-primary) !important;
+      background: var(--app-primary-container) !important;
     }
     .dropdown-arrow {
       font-size: 10px;
       margin-left: 4px;
       opacity: 0.7;
+    }
+    .tool-btn {
+      height: 36px;
+      border-radius: var(--radius-md);
+      font-weight: 500;
     }
     @media (max-width: 767px) {
       .toolbar {
@@ -284,6 +301,7 @@ import { Field, SavedFilter } from "../../core/models";
       }
       .tools {
         gap: 6px;
+        flex-wrap: wrap;
       }
       .tool-btn {
         padding: 0 12px;

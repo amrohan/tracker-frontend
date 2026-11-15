@@ -1,9 +1,11 @@
 import { Component, inject } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+import { NzAvatarModule } from "ng-zorro-antd/avatar";
 import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzCardModule } from "ng-zorro-antd/card";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzRadioModule } from "ng-zorro-antd/radio";
+import { AuthService } from "../../core/auth.service";
 import { COLOR_THEMES } from "../../core/color-themes";
 import { NzThemeType, ThemeService } from "../../core/theme.service";
 
@@ -15,6 +17,7 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
     NzIconModule,
     NzCardModule,
     NzButtonModule,
+    NzAvatarModule,
   ],
   template: `
     <div class="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
@@ -43,21 +46,64 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
             sm:text-base
           "
         >
-          Choose how Tracker looks. Changes apply immediately and are remembered
-          on this device.
+          Customize your workspace appearance and manage your account.
         </p>
       </header>
+
+      <!-- Account Profile Section -->
+      @if (auth.user(); as u) {
+        <section
+          class="
+            mb-6
+            rounded-2xl
+            border border-(--app-outline)
+            bg-(--app-surface)
+            p-5
+            sm:p-6
+            shadow-xs
+          "
+          aria-labelledby="account-h"
+        >
+          <div class="flex items-center justify-between gap-4 flex-wrap">
+            <div class="flex items-center gap-4">
+              <nz-avatar
+                [nzText]="initials()"
+                class="size-12! text-base! font-bold! bg-(--app-primary)! text-white!"
+              />
+              <div>
+                <h2 id="account-h" class="text-base font-bold text-(--app-text) m-0">
+                  {{ u.displayName || "User" }}
+                </h2>
+                <p class="text-xs sm:text-sm text-(--app-text-muted) m-0 mt-0.5">
+                  {{ u.email }}
+                </p>
+              </div>
+            </div>
+
+            <button
+              nz-button
+              nzType="default"
+              nzDanger
+              (click)="auth.logout()"
+              class="rounded-lg! flex items-center gap-2"
+            >
+              <nz-icon nzType="logout" />
+              <span>Sign out</span>
+            </button>
+          </div>
+        </section>
+      }
 
       <!-- Official Themes -->
       <section
         class="
-          mb-5
+          mb-6
           rounded-2xl
-          border border-(--app-outline-variant)
-          bg-(--app-surface-container-low)
-          p-4
-          sm:p-5
-          md:p-6
+          border border-(--app-outline)
+          bg-(--app-surface)
+          p-5
+          sm:p-6
+          shadow-xs
         "
         aria-labelledby="appearance-h"
       >
@@ -70,10 +116,9 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
               font-semibold
               leading-6
               text-(--app-text)
-              sm:text-lg
             "
           >
-            Official Themes
+            Interface Theme
           </h2>
 
           <p
@@ -85,7 +130,7 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
               sm:text-sm
             "
           >
-            Choose from NG-ZORRO's officially supported design themes.
+            Choose your preferred light or dark mode theme style.
           </p>
         </div>
 
@@ -97,7 +142,7 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
         >
           @for (m of officialThemes; track m.type) {
             <label nz-radio-button [nzValue]="m.type">
-              <div class="flex gap-2">
+              <div class="flex items-center gap-2">
                 <nz-icon [nzType]="m.icon" />
                 <span>{{ m.label }}</span>
               </div>
@@ -109,28 +154,30 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
       <!-- Accent Color -->
       <section
         class="
-          mb-5
+          mb-6
           rounded-2xl
-          border border-(--app-outline-variant)
-          bg-(--app-surface-container-low)
-          p-4
-          sm:p-5
-          md:p-6
+          border border-(--app-outline)
+          bg-(--app-surface)
+          p-5
+          sm:p-6
+          shadow-xs
         "
         aria-labelledby="color-h"
       >
         <div class="mb-4">
-          <h2 id="color-h">Accent Color</h2>
+          <h2 id="color-h" class="m-0 text-base font-semibold leading-6 text-(--app-text)">
+            Accent Palette
+          </h2>
 
           <p
             class="m-0 mt-1 text-xs leading-5 text-(--app-text-muted) sm:text-sm"
           >
-            Pick an accent palette for buttons, links and highlights.
+            Select an accent color for active buttons, badges, links and highlights.
           </p>
         </div>
 
         <div
-          class="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 "
+          class="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3"
           role="radiogroup"
           aria-labelledby="color-h"
         >
@@ -148,18 +195,18 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
                 w-full
                 min-w-0
                 items-center
-                gap-2.5
-                rounded-[14px]
-                border-[1.5px]
-                border-(--app-outline-variant)
+                gap-3
+                rounded-xl
+                border
+                border-(--app-outline)
                 bg-(--app-surface)
                 px-3.5
-                py-3
+                py-2.5
                 text-left
                 text-(--app-text)
                 transition-all
                 duration-150
-                hover:border-(--app-outline)
+                hover:border-(--app-primary)
                 hover:bg-(--app-surface-container-high)
                 focus:outline-none
                 focus:ring-2
@@ -173,7 +220,7 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
               <span
                 class="
                   relative
-                  size-7
+                  size-6
                   shrink-0
                 "
                 aria-hidden="true"
@@ -183,7 +230,7 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
                     absolute
                     left-0
                     top-0
-                    size-5
+                    size-4.5
                     rounded-full
                     shadow-[0_0_0_2px_var(--app-surface)]
                   "
@@ -195,7 +242,7 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
                     absolute
                     left-2
                     top-2
-                    size-5
+                    size-4.5
                     rounded-full
                     shadow-[0_0_0_2px_var(--app-surface)]
                   "
@@ -223,7 +270,7 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
                   nzTheme="fill"
                   class="
                     shrink-0
-                    text-lg
+                    text-base
                     text-(--app-primary)!
                   "
                 />
@@ -237,6 +284,7 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
 })
 export class SettingsPage {
   protected readonly theme = inject(ThemeService);
+  protected readonly auth = inject(AuthService);
   protected readonly colorThemes = COLOR_THEMES;
 
   protected readonly officialThemes: {
@@ -270,4 +318,12 @@ export class SettingsPage {
       icon: "setting",
     },
   ];
+
+  protected initials(): string {
+    const name = this.auth.user()?.displayName?.trim();
+    if (!name) return "?";
+    const parts = name.split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
 }

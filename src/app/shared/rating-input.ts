@@ -12,9 +12,10 @@ import { NzRateModule } from "ng-zorro-antd/rate";
         (ngModelChange)="value.set($event)"
         [nzCount]="max()"
         [nzAllowClear]="true"
+        class="custom-rate"
       />
       @if (value()) {
-        <button type="button" class="clear" (click)="value.set(null)">
+        <button type="button" class="clear-btn" (click)="value.set(null)" aria-label="Clear rating">
           Clear
         </button>
       }
@@ -24,19 +25,29 @@ import { NzRateModule } from "ng-zorro-antd/rate";
     .rating-wrap {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
-    .clear {
+
+    .custom-rate {
+      color: #f59e0b;
+      font-size: 18px;
+    }
+
+    .clear-btn {
       background: none;
       border: 0;
       cursor: pointer;
       color: var(--app-text-muted);
-      font-size: 0.85rem;
+      font-size: 0.75rem;
+      font-weight: 500;
       text-decoration: underline;
-      padding: 0;
-    }
-    .clear:hover {
-      color: var(--app-text);
+      padding: 2px 4px;
+      border-radius: var(--radius-xs);
+      transition: color var(--transition-fast);
+
+      &:hover {
+        color: var(--app-error);
+      }
     }
   `,
 })

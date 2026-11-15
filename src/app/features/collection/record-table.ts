@@ -148,10 +148,11 @@ import { LocalStorageService } from "../../core/local-storage.service";
   styles: `
     .table-container {
       padding: 0;
-      border-radius: 16px;
+      border-radius: var(--radius-xl);
       overflow: hidden;
-      border: 1px solid var(--app-outline-variant);
+      border: 1px solid var(--app-outline);
       background: var(--app-surface);
+      box-shadow: var(--app-shadow-xs);
       transition: opacity 0.18s ease;
     }
     .table-container.loading-table {
@@ -163,7 +164,7 @@ import { LocalStorageService } from "../../core/local-storage.service";
       cursor: col-resize;
     }
     .table-scroll {
-      max-height: calc(100vh - 290px);
+      max-height: calc(100vh - 280px);
       min-height: 220px;
       overflow: auto;
       -webkit-overflow-scrolling: touch;
@@ -178,23 +179,26 @@ import { LocalStorageService } from "../../core/local-storage.service";
 
     th,
     td {
-      padding: 12px 16px;
+      padding: 10px 14px;
       vertical-align: middle;
       border-bottom: 1px solid var(--app-outline-variant);
-      font-size: 0.9375rem;
+      font-size: 0.875rem;
       box-sizing: border-box;
     }
 
     th {
-      position: relative;
-      height: 46px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      height: 42px;
       white-space: nowrap;
       background: var(--app-surface-container);
       color: var(--app-text);
-      font-size: 0.75rem;
-      font-weight: 700;
+      font-size: 0.71875rem;
+      font-weight: 600;
       letter-spacing: 0.04em;
       text-transform: uppercase;
+      border-bottom: 1px solid var(--app-outline);
     }
 
     .header-cell-content {
@@ -213,7 +217,7 @@ import { LocalStorageService } from "../../core/local-storage.service";
       width: 10px;
       cursor: col-resize;
       user-select: none;
-      z-index: 10;
+      z-index: 15;
       touch-action: none;
     }
     .resize-handle::after {
@@ -225,11 +229,7 @@ import { LocalStorageService } from "../../core/local-storage.service";
       width: 2px;
       background: var(--app-outline-variant);
       border-radius: 1px;
-      transition:
-        background-color 0.15s ease,
-        width 0.15s ease,
-        top 0.15s ease,
-        bottom 0.15s ease;
+      transition: all var(--transition-fast);
     }
     .resize-handle:hover::after,
     .resize-handle.active::after {
@@ -242,27 +242,30 @@ import { LocalStorageService } from "../../core/local-storage.service";
     .sticky-col {
       position: sticky;
       left: 0;
-      z-index: 2;
+      z-index: 5;
     }
     td.sticky-col {
       background: var(--app-surface);
+      box-shadow: 2px 0 6px -2px rgba(0, 0, 0, 0.06);
     }
     th.sticky-col {
       background: var(--app-surface-container);
-      z-index: 3;
+      z-index: 12;
+      box-shadow: 2px 0 6px -2px rgba(0, 0, 0, 0.06);
     }
 
     .sticky-end {
       position: sticky;
       right: 0;
-      z-index: 2;
+      z-index: 5;
     }
 
     .record-row {
       cursor: pointer;
+      transition: background-color var(--transition-fast);
     }
     .record-row:hover > td {
-      background: color-mix(in srgb, var(--app-primary) 7%, var(--app-surface));
+      background: color-mix(in srgb, var(--app-primary) 5%, var(--app-surface));
     }
     .record-row:last-child td {
       border-bottom: 0;
@@ -271,25 +274,26 @@ import { LocalStorageService } from "../../core/local-storage.service";
     .sort {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px 6px;
-      margin: -4px -6px;
+      gap: 5px;
+      padding: 3px 6px;
+      margin: -3px -6px;
       border: 0;
-      border-radius: 6px;
+      border-radius: var(--radius-sm);
       background: transparent;
       color: inherit;
       font: inherit;
       letter-spacing: inherit;
       text-transform: inherit;
       cursor: pointer;
+      transition: background-color var(--transition-fast), color var(--transition-fast);
     }
     .sort:hover {
       background: var(--app-surface-container-high);
       color: var(--app-primary);
     }
     .sort .arrow {
-      opacity: 0.55;
-      font-size: 16px;
+      opacity: 0.5;
+      font-size: 13px;
     }
     .sort:hover .arrow,
     th[aria-sort] .arrow {
@@ -310,10 +314,10 @@ import { LocalStorageService } from "../../core/local-storage.service";
     }
 
     .actions-col {
-      width: 52px;
-      min-width: 52px;
-      max-width: 52px;
-      padding: 6px 8px;
+      width: 48px;
+      min-width: 48px;
+      max-width: 48px;
+      padding: 4px 6px;
       text-align: right;
       box-shadow: -1px 0 0 var(--app-outline-variant);
     }
@@ -330,25 +334,27 @@ import { LocalStorageService } from "../../core/local-storage.service";
       border-top: 2px solid var(--app-outline-variant);
       border-bottom: 0;
       font-weight: 600;
+      padding: 8px 14px;
     }
     .agg {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 8px;
-      border-radius: 6px;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
       background: var(--app-surface-container-high);
       white-space: nowrap;
     }
     .agg-label {
       color: var(--app-text-muted);
-      font-size: 0.7rem;
+      font-size: 0.6875rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.03em;
     }
     .agg-value {
-      font-weight: 700;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
     }
 
     .sr-only {

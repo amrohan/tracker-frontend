@@ -199,12 +199,21 @@ import { Field, RecordReference } from "../core/models";
 
     .chip {
       margin: 2px 4px 2px 0;
-      border-radius: 6px;
-      font-size: 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.78125rem;
+      font-weight: 500;
+      border: 1px solid var(--app-outline);
+      background: var(--app-surface-container);
+      color: var(--app-text);
+      padding: 1px 7px;
     }
 
     .clickable {
       cursor: pointer;
+      &:hover {
+        border-color: var(--app-primary);
+        color: var(--app-primary);
+      }
     }
 
     .chip-link {
@@ -229,9 +238,9 @@ import { Field, RecordReference } from "../core/models";
 
     .more-button {
       padding: 0 4px;
-      height: 22px;
-      line-height: 22px;
-      font-size: 12px;
+      height: 20px;
+      line-height: 20px;
+      font-size: 11px;
       color: var(--app-text-muted);
     }
 
@@ -243,23 +252,23 @@ import { Field, RecordReference } from "../core/models";
     }
 
     .star {
-      font-size: 16px;
-      color: #d9d9d9;
+      font-size: 14px;
+      color: var(--app-outline);
     }
 
     .star.on {
-      color: #fadb14;
+      color: #f59e0b;
     }
 
     .bool-yes {
-      color: #52c41a;
-      font-size: 18px;
+      color: var(--app-success, #10b981);
+      font-size: 16px;
       vertical-align: middle;
     }
 
     .bool-no {
-      color: #d9d9d9;
-      font-size: 18px;
+      color: var(--app-outline);
+      font-size: 16px;
       vertical-align: middle;
     }
 
