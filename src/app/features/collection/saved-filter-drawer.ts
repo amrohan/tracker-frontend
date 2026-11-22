@@ -377,7 +377,8 @@ export class SavedFilterDrawer {
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly newName = signal("");
-  protected readonly activeFilterId = signal<string | null>(null);
+  /** Exposed as readonly so parent (table-view) can keep it in sync when applying presets inline. */
+  readonly activeFilterId = signal<string | null>(null);
 
   constructor() {
     let wasOpen = false;

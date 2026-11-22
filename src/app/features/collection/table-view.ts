@@ -32,6 +32,8 @@ import {
   RecordReference,
   SummaryReport,
   TrackerRecord,
+  SavedFilter,
+  ApiFilter,
 } from "../../core/models";
 import { Notify } from "../../core/notify.service";
 import { RecordsApi } from "../../core/records-api.service";
@@ -75,9 +77,17 @@ import { SavedFilterDrawer } from "./saved-filter-drawer";
         [filtersOpen]="showFilters()"
         (toggleFilters)="showFilters.set(!showFilters())"
         [activeFilterCount]="activeFilters().length"
+        [filters]="filters()"
+        [fields]="ctx.fields()"
+        (removeFilter)="removeFilterByIndex($event)"
+        (clearAllFilters)="clearAllFilters()"
         [savedFiltersOpen]="showSavedFilters()"
         [savedFiltersCount]="savedFilterCount()"
+        [savedFilters]="savedFilterList()"
+        [activeSavedFilterId]="activeSavedFilterId()"
         (toggleSavedFilters)="toggleSavedFilters()"
+        (selectSavedFilter)="applyFromSavedInline($event)"
+        (clearSavedFilter)="clearActiveSavedFilter()"
         [sortableFields]="sortableColumns()"
         [sortField]="sortField()"
         [sortAscending]="sortDir() === 'asc'"
@@ -89,7 +99,11 @@ import { SavedFilterDrawer } from "./saved-filter-drawer";
 
       @if (showFilters()) {
         <div class="filters">
-          <app-filter-panel [fields]="ctx.fields()" [(filters)]="filters" />
+          <app-filter-panel
+            [fields]="ctx.fields()"
+            [(filters)]="filters"
+            (close)="showFilters.set(false)"
+          />
         </div>
       }
 
@@ -332,6 +346,12 @@ export class TableView {
   protected readonly savedFilterCount = computed(
     () => this.savedFilterDrawerRef()?.savedFilters().length ?? 0,
   );
+  /** Expose the saved filter list to the toolbar for instant preset pills */
+  protected readonly savedFilterList = computed(
+    () => this.savedFilterDrawerRef()?.savedFilters() ?? [],
+  );
+  /** Currently applied saved filter id (tracked at this level for toolbar) */
+  protected readonly activeSavedFilterId = signal<string | null>(null);
 
   /* -------------------------- derived from fields --------------------------- */
   protected readonly columns = computed<Field[]>(() =>
@@ -425,6 +445,14 @@ export class TableView {
       });
     });
 
+    // keep activeSavedFilterId in sync with the drawer's internal state
+    effect(() => {
+      const drawerId = this.savedFilterDrawerRef()?.activeFilterId();
+      untracked(() => {
+        if (drawerId !== undefined) this.activeSavedFilterId.set(drawerId ?? null);
+      });
+    });
+
     // debounce the search box
     effect((onCleanup) => {
       const value = this.searchInput().trim();
@@ -481,6 +509,21 @@ export class TableView {
     this.searchInput.set("");
     this.search.set("");
     this.filters.set([]);
+    this.activeSavedFilterId.set(null);
+    this.savedFilterDrawerRef()?.activeFilterId.set(null);
+  }
+
+  protected removeFilterByIndex(index: number): void {
+    this.filters.update((list) => list.filter((_, idx) => idx !== index));
+    if (this.filters().length === 0) {
+      this.activeSavedFilterId.set(null);
+    }
+  }
+
+  protected clearAllFilters(): void {
+    this.filters.set([]);
+    this.activeSavedFilterId.set(null);
+    this.savedFilterDrawerRef()?.activeFilterId.set(null);
   }
 
   /* ---------------------------- drawer open ------------------------------ */
@@ -577,6 +620,37 @@ export class TableView {
     this.filters.set(drafts);
     // this.showFilters.set(drafts.length > 0);
     this.showSavedFilters.set(false);
+  }
+
+  /** Inline (toolbar pill) application of a saved filter — no drawer needed */
+  protected applyFromSavedInline(sf: SavedFilter): void {
+    if (this.activeSavedFilterId() === sf.id) {
+      // clicking the active preset again clears it
+      this.clearActiveSavedFilter();
+      return;
+    }
+    try {
+      const apiFilters: ApiFilter[] = JSON.parse(sf.filtersJson);
+      const drafts: FilterDraft[] = apiFilters.map((f) => ({
+        id: crypto.randomUUID(),
+        fieldId: f.fieldId,
+        op: f.operator,
+        value: f.value ?? null,
+        value2: f.value2 ?? null,
+      }));
+      this.filters.set(drafts);
+      this.activeSavedFilterId.set(sf.id);
+      // keep drawer in sync
+      this.savedFilterDrawerRef()?.activeFilterId.set(sf.id);
+    } catch {
+      this.notify.error('Could not parse this saved filter.');
+    }
+  }
+
+  protected clearActiveSavedFilter(): void {
+    this.filters.set([]);
+    this.activeSavedFilterId.set(null);
+    this.savedFilterDrawerRef()?.activeFilterId.set(null);
   }
 
   protected toggleSavedFilters(): void {

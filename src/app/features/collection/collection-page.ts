@@ -79,46 +79,29 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
               </p>
             }
 
-            <div class="meta">
+            <div class="meta-pills-row">
               @if (c.role && c.role !== 'owner' && c.ownerDisplayName) {
-                <span class="meta-item">
-                  <nz-icon nzType="user" class="meta-icon" aria-hidden="true" />
-                  <span>Shared by {{ c.ownerDisplayName }}</span>
+                <span class="meta-pill">
+                  <nz-icon nzType="user" class="meta-pill-icon" aria-hidden="true" />
+                  <span>By {{ c.ownerDisplayName }}</span>
                 </span>
-                <span class="dot" aria-hidden="true">·</span>
               }
 
-              <span class="meta-item">
-                <nz-icon
-                  nzType="database"
-                  class="meta-icon"
-                  aria-hidden="true"
-                />
-                <span class="tabular-nums">
-                  {{ c.recordCount }}
-                  {{ c.recordCount === 1 ? "record" : "records" }}
-                </span>
+              <span class="meta-pill">
+                <nz-icon nzType="database" class="meta-pill-icon" aria-hidden="true" />
+                <span class="tabular-nums font-semibold">{{ c.recordCount }}</span>
+                <span>{{ c.recordCount === 1 ? "record" : "records" }}</span>
               </span>
 
-              <span class="dot" aria-hidden="true">·</span>
-
-              <span class="meta-item">
-                <nz-icon nzType="table" class="meta-icon" aria-hidden="true" />
-                <span class="tabular-nums">
-                  {{ c.fields.length }}
-                  {{ c.fields.length === 1 ? "field" : "fields" }}
-                </span>
+              <span class="meta-pill">
+                <nz-icon nzType="table" class="meta-pill-icon" aria-hidden="true" />
+                <span class="tabular-nums font-semibold">{{ c.fields.length }}</span>
+                <span>{{ c.fields.length === 1 ? "field" : "fields" }}</span>
               </span>
 
               @if (c.lastActivityAt) {
-                <span class="dot" aria-hidden="true">·</span>
-
-                <span class="meta-item last">
-                  <nz-icon
-                    nzType="clock-circle"
-                    class="meta-icon"
-                    aria-hidden="true"
-                  />
+                <span class="meta-pill">
+                  <nz-icon nzType="clock-circle" class="meta-pill-icon" aria-hidden="true" />
                   <span>Updated {{ dateTime(c.lastActivityAt) }}</span>
                 </span>
               }
@@ -133,7 +116,7 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
                 nzType="default"
                 type="button"
                 (click)="manageSharing()"
-                class="flex items-center gap-1.5"
+                class="header-btn share-btn"
                 nz-tooltip
                 nzTooltipTitle="Share public link or invite collaborators"
               >
@@ -149,7 +132,7 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
                 type="button"
                 [disabled]="c.fields.length === 0"
                 (click)="ctx.openCreate()"
-                class="add-record-btn"
+                class="header-btn add-record-btn add-desktop"
               >
                 <nz-icon nzType="plus" />
                 <span>Add record</span>
@@ -160,7 +143,7 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
               nz-button
               nzType="text"
               nzShape="circle"
-              class="options-btn"
+              class="header-btn options-btn"
               nz-dropdown
               [nzDropdownMenu]="optionsMenu"
               aria-label="Collection options"
@@ -370,7 +353,7 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
       position: relative;
       display: grid;
       grid-template-columns: auto minmax(0, 1fr) auto;
-      align-items: end;
+      align-items: center;
       column-gap: 20px;
       padding-top: 0;
       padding-bottom: 16px;
@@ -408,8 +391,8 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
 
     h1 {
       margin: 0;
-      font-size: clamp(1.5rem, 1.15rem + 1.6vw, 2.35rem);
-      line-height: 1.18;
+      font-size: clamp(1.45rem, 1.15rem + 1.4vw, 2.25rem);
+      line-height: 1.2;
       font-weight: 700;
       letter-spacing: -0.02em;
       color: var(--app-text, #1d1b20);
@@ -419,7 +402,7 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
 
     .desc {
       margin: 6px 0 0;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       line-height: 1.45;
       color: var(--app-text-muted, #49454f);
       display: -webkit-box;
@@ -429,34 +412,42 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
     }
 
     /* =========================================================
-       META
+       META PILLS ROW
        ========================================================= */
 
-    .meta {
-      margin: 10px 0 0;
-      font-size: 0.875rem;
-      color: var(--app-text-muted, #49454f);
+    .meta-pills-row {
+      margin-top: 10px;
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 4px 8px;
+      gap: 6px;
     }
 
-    .meta-item {
+    .meta-pill {
       display: inline-flex;
       align-items: center;
       gap: 5px;
+      padding: 3px 9px;
+      border-radius: var(--radius-full);
+      background: var(--app-surface-container);
+      border: 1px solid var(--app-outline-variant);
+      color: var(--app-text-secondary);
+      font-size: 0.75rem;
       font-weight: 500;
+      line-height: 1.2;
+      white-space: nowrap;
+      transition: all var(--transition-fast);
+
+      &:hover {
+        background: var(--app-surface-container-high);
+        color: var(--app-text);
+      }
     }
 
-    .meta-icon {
-      font-size: 16px;
-      opacity: 0.75;
-    }
-
-    .dot {
-      opacity: 0.45;
-      font-weight: 700;
+    .meta-pill-icon {
+      font-size: 13px;
+      opacity: 0.85;
+      color: var(--app-primary);
     }
 
     /* =========================================================
@@ -467,21 +458,38 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
       display: flex;
       align-items: center;
       gap: 8px;
-      align-self: start;
-      padding-top: calc(clamp(60px, 8vw, 84px) / 2 + 6px);
+      align-self: center;
+    }
+
+    .header-btn {
+      height: 36px !important;
+      border-radius: var(--radius-md) !important;
+      font-size: 0.8125rem !important;
+      font-weight: 600 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      transition: all var(--transition-fast) !important;
+    }
+
+    .share-btn {
+      background: var(--app-surface) !important;
+      border: 1px solid var(--app-outline) !important;
+      color: var(--app-text) !important;
+      &:hover {
+        border-color: var(--app-primary) !important;
+        color: var(--app-primary) !important;
+      }
     }
 
     .add-record-btn {
-      height: 36px;
-      border-radius: var(--radius-md);
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      padding: 0 14px !important;
     }
 
     .options-btn {
       color: var(--app-text-muted);
+      width: 36px !important;
+      height: 36px !important;
       &:hover {
         color: var(--app-text);
         background: var(--app-surface-container-high);
@@ -558,18 +566,22 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
       display: none;
       position: fixed;
       right: 20px;
-      bottom: max(20px, calc(env(safe-area-inset-bottom) + 16px));
-      z-index: 25;
+      bottom: calc(64px + env(safe-area-inset-bottom) + 16px);
+      z-index: 70;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      font-size: 22px;
       box-shadow:
-        0 6px 18px rgba(0, 0, 0, 0.16),
-        0 2px 6px rgba(0, 0, 0, 0.08);
+        0 6px 18px rgba(0, 0, 0, 0.18),
+        0 2px 6px rgba(0, 0, 0, 0.1);
       transition:
         transform 0.15s ease,
         box-shadow 0.15s ease;
     }
 
     .fab:active {
-      transform: scale(0.97);
+      transform: scale(0.95);
     }
 
     /* =========================================================
@@ -589,17 +601,16 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
       .icon {
         grid-column: 1;
         grid-row: 1;
-        width: 58px;
-        height: 58px;
+        width: 56px;
+        height: 56px;
         border-radius: 16px;
-        font-size: 1.8rem;
+        font-size: 1.75rem;
       }
 
       .actions {
         grid-column: 2;
         grid-row: 1;
         align-self: center;
-        padding-top: 0;
       }
 
       .titles {
@@ -609,15 +620,19 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
       }
 
       h1 {
-        font-size: 1.45rem;
+        font-size: 1.35rem;
       }
 
       .add-desktop {
-        display: none;
+        display: none !important;
       }
 
       .fab {
-        display: inline-flex;
+        display: inline-flex !important;
+      }
+
+      .views-bar-wrap {
+        padding-bottom: 8px;
       }
     }
 
@@ -626,7 +641,7 @@ import { CollaborationDialog } from "../../shared/collaboration-dialog";
         margin-top: -24px;
       }
       h1 {
-        font-size: 1.25rem;
+        font-size: 1.2rem;
       }
     }
   `,

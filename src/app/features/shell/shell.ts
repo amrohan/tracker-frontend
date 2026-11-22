@@ -179,8 +179,9 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
             class="user-profile-tile"
             [class.collapsed]="isCollapsed()"
             nz-dropdown
-            [nzDropdownMenu]="userMenu"
+            [nzDropdownMenu]="sidebarUserMenu"
             nzTrigger="click"
+            nzPlacement="topRight"
             role="button"
             tabindex="0"
             aria-label="Account options"
@@ -378,6 +379,8 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
                 nzShape="circle"
                 nz-dropdown
                 [nzDropdownMenu]="userMenu"
+                nzTrigger="click"
+                nzPlacement="bottomRight"
                 aria-label="Account options"
                 class="topbar-avatar-btn"
               >
@@ -426,8 +429,37 @@ import { NzThemeType, ThemeService } from "../../core/theme.service";
         </nav>
       </div>
 
-      <!-- Shared User Dropdown Menu -->
+      <!-- Shared User Dropdown Menu (topbar) -->
       <nz-dropdown-menu #userMenu="nzDropdownMenu">
+        <ul nz-menu>
+          <li nz-menu-item class="user-info-item" [nzDisabled]="true">
+            <div class="user-card-header">
+              <nz-avatar class="user-avatar-lg" [nzText]="initials()" />
+              <div class="user-card-meta">
+                <strong class="user-card-name">{{ auth.user()?.displayName || "User" }}</strong>
+                <span class="user-card-email">{{ auth.user()?.email }}</span>
+              </div>
+            </div>
+          </li>
+          <li nz-menu-divider></li>
+          <li nz-menu-item>
+            <a routerLink="/settings" class="dropdown-flex-link">
+              <nz-icon nzType="setting" />
+              <span class="menu-label">Settings</span>
+            </a>
+          </li>
+          <li nz-menu-divider></li>
+          <li nz-menu-item nzDanger (click)="auth.logout()">
+            <div class="dropdown-flex-link">
+              <nz-icon nzType="logout" />
+              <span class="menu-label">Sign out</span>
+            </div>
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+
+      <!-- Sidebar User Dropdown Menu (separate instance to fix hover-dismiss bug) -->
+      <nz-dropdown-menu #sidebarUserMenu="nzDropdownMenu">
         <ul nz-menu>
           <li nz-menu-item class="user-info-item" [nzDisabled]="true">
             <div class="user-card-header">

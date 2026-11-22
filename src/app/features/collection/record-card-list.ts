@@ -356,6 +356,17 @@ import { hasVisibleValue } from "./record-list.utils";
       color: var(--app-text);
       overflow-wrap: anywhere;
     }
+
+    @media (max-width: 420px) {
+      .card {
+        padding: 12px 14px;
+        border-radius: 14px;
+      }
+      .card-body {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+    }
   `,
 })
 export class RecordCardList {
