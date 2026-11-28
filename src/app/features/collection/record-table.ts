@@ -121,11 +121,12 @@ import { LocalStorageService } from "../../core/local-storage.service";
           @if (metrics().length) {
             <tfoot>
               <tr>
-                @for (f of columns(); track f.id) {
+                @for (f of columns(); track f.id; let first = $first) {
                   <td
                     [style.width.px]="colWidth(f.id)"
                     [style.min-width.px]="colWidth(f.id) || 120"
                     class="footer-cell"
+                    [class.sticky-col]="first"
                   >
                     @if (metricOf(f.id); as m) {
                       <span class="agg">
@@ -133,6 +134,10 @@ import { LocalStorageService } from "../../core/local-storage.service";
                           aggregationShortLabel(m.aggregation)
                         }}</span>
                         <span class="agg-value">{{ format(m) }}</span>
+                      </span>
+                    } @else if (first) {
+                      <span class="agg agg-summary">
+                        <span class="agg-label">Summary</span>
                       </span>
                     }
                   </td>
@@ -250,7 +255,7 @@ import { LocalStorageService } from "../../core/local-storage.service";
     }
     th.sticky-col {
       background: var(--app-surface-container);
-      z-index: 12;
+      z-index: 20;
       box-shadow: 2px 0 6px -2px rgba(0, 0, 0, 0.06);
     }
 
@@ -258,6 +263,11 @@ import { LocalStorageService } from "../../core/local-storage.service";
       position: sticky;
       right: 0;
       z-index: 5;
+    }
+    th.sticky-end,
+    th.actions-col {
+      z-index: 20;
+      box-shadow: -2px 0 6px -2px rgba(0, 0, 0, 0.06);
     }
 
     .record-row {
@@ -324,18 +334,52 @@ import { LocalStorageService } from "../../core/local-storage.service";
     td.actions-col {
       background: var(--app-surface);
     }
-    th.actions-col,
-    .footer-cell.actions-col {
+    th.actions-col {
       background: var(--app-surface-container);
     }
 
+    tfoot {
+      position: sticky;
+      bottom: 0;
+      z-index: 12;
+    }
+
+    tfoot tr {
+      position: sticky;
+      bottom: 0;
+    }
+
     .footer-cell {
+      position: sticky;
+      bottom: 0;
+      z-index: 12;
       background: var(--app-surface-container);
-      border-top: 2px solid var(--app-outline-variant);
+      border-top: 2px solid var(--app-outline);
       border-bottom: 0;
       font-weight: 600;
       padding: 8px 14px;
+      box-shadow: 0 -3px 8px -2px rgba(0, 0, 0, 0.08);
     }
+
+    .footer-cell.sticky-col {
+      position: sticky;
+      left: 0;
+      bottom: 0;
+      z-index: 22;
+      background: var(--app-surface-container);
+      box-shadow: 2px -3px 8px -2px rgba(0, 0, 0, 0.1);
+    }
+
+    .footer-cell.actions-col,
+    .footer-cell.sticky-end {
+      position: sticky;
+      right: 0;
+      bottom: 0;
+      z-index: 22;
+      background: var(--app-surface-container);
+      box-shadow: -2px -3px 8px -2px rgba(0, 0, 0, 0.1);
+    }
+
     .agg {
       display: inline-flex;
       align-items: center;
@@ -344,6 +388,14 @@ import { LocalStorageService } from "../../core/local-storage.service";
       border-radius: var(--radius-sm);
       background: var(--app-surface-container-high);
       white-space: nowrap;
+    }
+    .agg-summary {
+      background: var(--app-surface-container-high);
+      border: 1px solid var(--app-outline-variant);
+    }
+    .agg-summary .agg-label {
+      color: var(--app-primary);
+      font-weight: 700;
     }
     .agg-label {
       color: var(--app-text-muted);
