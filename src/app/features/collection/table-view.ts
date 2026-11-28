@@ -35,6 +35,7 @@ import {
   SavedFilter,
   ApiFilter,
 } from "../../core/models";
+import { LocalStorageService } from "../../core/local-storage.service";
 import { Notify } from "../../core/notify.service";
 import { RecordsApi } from "../../core/records-api.service";
 import { ConfirmDialog } from "../../shared/confirm-dialog";
@@ -53,6 +54,13 @@ import { FilterDraft, toApiFilters } from "./filters";
 import { RecordTable } from "./record-table";
 import { RecordToolbar } from "./record-toolbar";
 import { SavedFilterDrawer } from "./saved-filter-drawer";
+
+export interface TrackerViewPreferences {
+  sortBy?: string | null;
+  sortDir?: "asc" | "desc";
+  filters?: FilterDraft[];
+  activeSavedFilterId?: string | null;
+}
 
 @Component({
   selector: "app-table-view",
@@ -233,6 +241,7 @@ import { SavedFilterDrawer } from "./saved-filter-drawer";
       [fields]="ctx.fields()"
       [currentFilters]="filters()"
       [(open)]="showSavedFilters"
+      [(activeFilterId)]="activeSavedFilterId"
       (applyFilter)="applyFromSaved($event)"
     />
   `,
@@ -320,7 +329,25 @@ export class TableView {
   private readonly records = inject(RecordsApi);
   private readonly modal = inject(NzModalService);
   private readonly notify = inject(Notify);
+  private readonly storage = inject(LocalStorageService);
   private seenVersion = untracked(() => this.ctx.recordsVersion());
+  private lastLoadedCollectionId: string | null = untracked(
+    () => this.ctx.id() ?? null,
+  );
+  private isRestoring = false;
+
+  private storageKey(id: string): string {
+    return `tracker_view_pref_${id}`;
+  }
+
+  private loadPreferences(id: string): TrackerViewPreferences | null {
+    if (!id) return null;
+    return this.storage.getItem<TrackerViewPreferences>(this.storageKey(id));
+  }
+
+  private readonly initialPref = this.loadPreferences(
+    untracked(() => this.ctx.id() ?? ""),
+  );
 
   /** Phones get cards; tablets and desktops get the table. */
   protected readonly isMobile = toSignal(
@@ -335,11 +362,17 @@ export class TableView {
   /* ------------------------------ query state ------------------------------ */
   protected readonly searchInput = signal("");
   protected readonly search = signal("");
-  protected readonly sortBy = signal<string | null>(null);
-  protected readonly sortDir = signal<"asc" | "desc">("desc");
+  protected readonly sortBy = signal<string | null>(
+    this.initialPref?.sortBy ?? null,
+  );
+  protected readonly sortDir = signal<"asc" | "desc">(
+    this.initialPref?.sortDir ?? "desc",
+  );
   protected readonly page = signal(1);
   protected readonly pageSize = signal(25);
-  protected readonly filters = signal<FilterDraft[]>([]);
+  protected readonly filters = signal<FilterDraft[]>(
+    this.initialPref?.filters ?? [],
+  );
   protected readonly showFilters = signal(false);
   protected readonly showSavedFilters = signal(false);
   private readonly savedFilterDrawerRef = viewChild(SavedFilterDrawer);
@@ -351,7 +384,9 @@ export class TableView {
     () => this.savedFilterDrawerRef()?.savedFilters() ?? [],
   );
   /** Currently applied saved filter id (tracked at this level for toolbar) */
-  protected readonly activeSavedFilterId = signal<string | null>(null);
+  protected readonly activeSavedFilterId = signal<string | null>(
+    this.initialPref?.activeSavedFilterId ?? null,
+  );
 
   /* -------------------------- derived from fields --------------------------- */
   protected readonly columns = computed<Field[]>(() =>
@@ -445,12 +480,73 @@ export class TableView {
       });
     });
 
-    // keep activeSavedFilterId in sync with the drawer's internal state
+    // Restore saved preferences whenever the collection id switches
     effect(() => {
-      const drawerId = this.savedFilterDrawerRef()?.activeFilterId();
+      const currentId = this.collectionId();
+      if (!currentId) return;
+
+      if (currentId !== this.lastLoadedCollectionId) {
+        this.lastLoadedCollectionId = currentId;
+        const pref = this.loadPreferences(currentId);
+        untracked(() => {
+          this.isRestoring = true;
+          this.sortBy.set(pref?.sortBy ?? null);
+          this.sortDir.set(pref?.sortDir ?? "desc");
+          this.filters.set(pref?.filters ?? []);
+          this.activeSavedFilterId.set(pref?.activeSavedFilterId ?? null);
+          this.isRestoring = false;
+        });
+      }
+    });
+
+    // Validate restored preferences against schema fields when loaded
+    effect(() => {
+      const fields = this.ctx.fields();
+      if (!fields || fields.length === 0) return;
+
+      const fieldIds = new Set(fields.map((f) => f.id));
+
       untracked(() => {
-        if (drawerId !== undefined) this.activeSavedFilterId.set(drawerId ?? null);
+        // Validate sortBy field
+        const currentSortBy = this.sortBy();
+        if (currentSortBy && !fieldIds.has(currentSortBy)) {
+          this.sortBy.set(null);
+        }
+
+        // Validate filters
+        const currentFilters = this.filters();
+        if (currentFilters.length > 0) {
+          const validFilters = currentFilters.filter(
+            (f) => !f.fieldId || fieldIds.has(f.fieldId),
+          );
+          if (validFilters.length !== currentFilters.length) {
+            this.filters.set(validFilters);
+            if (validFilters.length === 0 && this.activeSavedFilterId()) {
+              this.activeSavedFilterId.set(null);
+            }
+          }
+        }
       });
+    });
+
+    // Persist preferences to localStorage whenever sorting or filters change
+    effect(() => {
+      const colId = this.collectionId();
+      const by = this.sortBy();
+      const dir = this.sortDir();
+      const f = this.filters();
+      const savedId = this.activeSavedFilterId();
+
+      if (!colId || this.isRestoring) return;
+
+      const pref: TrackerViewPreferences = {
+        sortBy: by,
+        sortDir: dir,
+        filters: f,
+        activeSavedFilterId: savedId,
+      };
+
+      this.storage.setItem(this.storageKey(colId), pref);
     });
 
     // debounce the search box
@@ -510,7 +606,6 @@ export class TableView {
     this.search.set("");
     this.filters.set([]);
     this.activeSavedFilterId.set(null);
-    this.savedFilterDrawerRef()?.activeFilterId.set(null);
   }
 
   protected removeFilterByIndex(index: number): void {
@@ -523,7 +618,6 @@ export class TableView {
   protected clearAllFilters(): void {
     this.filters.set([]);
     this.activeSavedFilterId.set(null);
-    this.savedFilterDrawerRef()?.activeFilterId.set(null);
   }
 
   /* ---------------------------- drawer open ------------------------------ */
@@ -640,8 +734,6 @@ export class TableView {
       }));
       this.filters.set(drafts);
       this.activeSavedFilterId.set(sf.id);
-      // keep drawer in sync
-      this.savedFilterDrawerRef()?.activeFilterId.set(sf.id);
     } catch {
       this.notify.error('Could not parse this saved filter.');
     }
@@ -650,7 +742,6 @@ export class TableView {
   protected clearActiveSavedFilter(): void {
     this.filters.set([]);
     this.activeSavedFilterId.set(null);
-    this.savedFilterDrawerRef()?.activeFilterId.set(null);
   }
 
   protected toggleSavedFilters(): void {
